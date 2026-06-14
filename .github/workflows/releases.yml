@@ -1,0 +1,35 @@
+name: Compilar y publicar memoria
+
+on:
+  release:
+    types: [created]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Compilar (pdflatex + bibtex + makeglossaries)
+        run: |
+          docker run --rm -v "$PWD:/work" -w /work texlive/texlive:latest sh -c '
+            pdflatex -interaction=nonstopmode main.tex
+            bibtex main
+            makeglossaries main
+            pdflatex -interaction=nonstopmode main.tex
+            pdflatex -interaction=nonstopmode main.tex
+            pdflatex -interaction=nonstopmode main.tex'
+
+      - name: Renombrar y verificar el PDF
+        run: |
+          test -f main.pdf
+          cp main.pdf "UPM-Match-Memoria-${{ github.event.release.tag_name }}.pdf"
+
+      - name: Adjuntar a la release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: UPM-Match-Memoria-*.pdf
