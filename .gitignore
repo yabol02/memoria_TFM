@@ -36,7 +36,7 @@
 # Archivos gráficos y de visualización
 *.dvi
 *.ps
-# *.pdf
+*.pdf
 
 # Metadatos del compilador (ej. TeXstudio, TeXshop, Emacs)
 *.backup
