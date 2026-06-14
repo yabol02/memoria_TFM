@@ -1,0 +1,56 @@
+\chapter[Discusión]{Discusión: alcance e implicaciones}
+\label{ch:discusion}
+
+Este capítulo interpreta los resultados del capítulo anterior a la luz de los requisitos planteados en el Capítulo~\ref{ch:problema}, examina los compromisos de diseño que esos resultados iluminan y delimita hasta dónde pueden generalizarse las conclusiones.
+
+\section{Lectura de los resultados}
+\label{sec:disc-lectura}
+
+\pendiente{Redactar una vez disponibles los resultados del banco de pruebas.
+Guion previsto: (i) qué estrategia domina y en qué métricas; (ii) si la ventaja es consistente o depende del tipo de consulta; (iii) lectura de las métricas absolutas con la cautela del optimismo por solapamiento (Sección~\ref{sec:eval-validez}); (iv) si la estrategia híbrida justifica su coste adicional frente a la mejor señal individual.}
+
+\section{Interpretabilidad frente a potencia semántica}
+\label{sec:disc-interpretabilidad}
+
+Con independencia de las cifras finales, el diseño dual del sistema permite discutir un compromiso que trasciende este trabajo.
+La señal léxica dispersa es \emph{explicable por construcción}: cada coincidencia se reduce a términos visibles que la interfaz puede resaltar y un estudiante (o un responsable académico) puede auditar la recomendación sin confiar ciegamente en el sistema.
+La señal densa, en cambio, captura afinidades que la léxica no alcanza (parafraseo, cruce de idiomas) al precio de la opacidad: la similitud de coseno no se deja explicar en términos accionables.
+
+En una herramienta institucional de orientación, donde la confianza del usuario es condición de adopción, este compromiso no es accesorio.
+La posición adoptada aquí (fusionar ambas señales y mostrar siempre las evidencias léxicas junto a la biografía) es un equilibrio pragmático: la semántica aporta cobertura y la léxica aporta justificación.
+\pendiente{Matizar esta sección con lo observado en los casos ilustrativos.}
+
+\section{El coste de poner un \gls{llm} en el bucle}
+\label{sec:disc-coste-llm}
+
+Incorporar un modelo de lenguaje a la consulta (extracción de términos, enriquecimiento) y al corpus (biografías, dominios) tiene costes de naturaleza distinta.
+En el corpus, el coste es masivo pero amortizado: se paga una vez por actualización, fuera de línea y habilita la representación densa homogénea sobre la que descansan las estrategias semánticas.
+\pendiente{Hablar del tiempo que le llevó al script generar todos los resúmenes de tan solo 4 escuelas}
+En la consulta, el coste es por interacción y se traduce en latencia percibida y su justificación depende de que la mejora de calidad sea significativa.
+\pendiente{Completar con los números de latencia y la diferencia de métricas entre los modos con y sin \gls{llm}.}
+
+Conviene subrayar el resultado de viabilidad en sí mismo: todo el sistema (incluida la generación de miles de biografías y la atención interactiva de consultas) opera con un modelo abierto de 7000 millones de parámetros (Qwen2.5-7B-Instruct) en hardware propio, sin enviar un solo dato a servicios externos y con coste marginal nulo por consulta (requisito \ref{req:cinco}).
+\duda{Cuidado con esto, he trabajado tanto en local como en el server, habrá que mirar qué modelo usé en el server}
+Hace dos años, esta afirmación habría sido difícilmente sostenible.
+
+\section{Validez externa y generalización}
+\label{sec:disc-generalizacion}
+
+¿Hasta dónde viajan estos resultados?
+Tres elementos del trabajo son específicos del caso \gls{upm}: la estructura del portal científico, el perímetro de cuatro escuelas (ampliable a toda la universidad) y el sesgo lingüístico español-inglés del corpus.
+Nada de ello afecta, sin embargo, a la arquitectura conceptual: cualquier institución con un repositorio público de actividad investigadora puede instanciar el mismo flujo (adquisición, grafo, enriquecimiento, doble indexación, fusión), y la metodología de evaluación por supervisión histórica es aplicable allí donde existan registros de trabajos dirigidos, es decir, en prácticamente toda universidad.
+
+La principal amenaza a la validez externa es temática: las cuatro escuelas del perímetro comparten vocabulario tecnológico y el comportamiento de las estrategias podría variar en áreas con registros lingüísticos distintos (otras ingenierías o incluso a humanidades).
+Extender el corpus al conjunto de la \gls{upm} permitiría medirlo directamente.
+
+\section{Consideraciones éticas}
+\label{sec:disc-etica}
+\duda{Esto lo tengo escrito de la asignatura de ética. Debería ser un capítulo entero, no una sección.}
+
+Un recomendador de personas exige cautelas adicionales a las de un buscador de documentos.
+Tres merecen mención.
+Primera, el \emph{sesgo de visibilidad}: los perfiles con más actividad registrada acumulan más evidencia y, por tanto, más probabilidad de ser recomendados. Sin contrapesos, el sistema puede amplificar la concentración de estudiantes en el profesorado ya saturado y de mayor trayectoria, en detrimento del novel (el arranque en frío señalado en la Sección~\ref{sec:eval-validez}).
+No es un riesgo menor: equilibrar la distribución de tutorías por afinidad temática es precisamente uno de los objetivos del proyecto institucional en que se enmarca este trabajo, por lo que la mitigación de este sesgo debe tratarse como requisito y no como refinamiento opcional.
+Segunda, la \emph{transparencia}: el sistema opera exclusivamente con datos que la universidad ya publica, pero su agregación crea una visibilidad nueva sobre las personas. Esto obliga a la fidelidad estricta a la fuente (el enriquecimiento tiene instrucciones explícitas de no inventar) y a la trazabilidad de toda afirmación mostrada.
+\pendiente{Decir que hay datos que no son accesibles ni aún estando aparentemtente en abierto}
+Tercera, la \emph{posición del sistema en la decisión}: \proyecto informa una decisión que sigue siendo humana y bidireccional (el tutor también elige) y tanto la interfaz como esta memoria lo presentan así, evitando cualquier lectura de asignación automática.

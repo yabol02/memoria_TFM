@@ -1,0 +1,58 @@
+# Archivos auxiliares y de compilación
+*.aux
+*.bbl
+*.blg
+*.brf
+*.idx
+*.ilg
+*.ind
+*.lof
+*.log
+*.lol
+*.lot
+*.out
+*.toc
+*.synctex.gz
+*.synctex.gz(busy)
+*.fls
+*.fdb_latexmk
+*.upa
+*.upb
+
+# Archivos de bibliografía y glosarios
+*.acn
+*.acr
+*.alg
+*.glg
+*.gls
+*.ist
+*.glsdefs
+
+# Archivos de tipografías y fuentes
+*.nav
+*.snm
+*.vrb
+
+# Archivos gráficos y de visualización
+*.dvi
+*.ps
+# *.pdf
+
+# Metadatos del compilador (ej. TeXstudio, TeXshop, Emacs)
+*.backup
+*.loe
+*.maf
+*.mtc
+*.mtc1
+*.nlo
+*.backup
+*.synctex
+*.synctex(busy)
+*.loe
+auto/
+*.pdfsync
+
+# Carpetas de editores o sistemas específicos
+.vscode/
+.texpadtmp/
+*.fdb_latexmk

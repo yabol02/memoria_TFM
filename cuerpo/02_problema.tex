@@ -1,0 +1,80 @@
+\chapter[Planteamiento del problema]{Un problema abierto: por qué la orientación académica sigue siendo artesanal}
+\label{ch:problema}
+
+Si los datos son públicos y las técnicas de recuperación de información llevan décadas de madurez, cabe preguntarse por qué la búsqueda de tutor sigue resolviéndose, en la práctica, de forma artesanal.
+La respuesta no está en una única barrera insalvable, sino en la \emph{conjunción} de varias dificultades de naturaleza distinta (de ingeniería de datos, lingüísticas, metodológicas y organizativas) que, combinadas, han mantenido el problema sin resolver.
+Este capítulo las analiza una a una y concluye destilando los requisitos que cualquier solución realista debe satisfacer.
+
+\section{Información pública, pero no operativa}
+\label{sec:problema-datos}
+
+El Portal Científico de la UPM está diseñado para la consulta humana, ficha a ficha.
+No ofrece una interfaz programática de acceso a los datos, los identificadores de los investigadores no están publicados como un censo descargable y la información de cada perfil se sirve como HTML semiestructurado cuya organización interna no está documentada ni garantizada en el tiempo.
+
+Convertir esa fuente en un activo operativo exige, por tanto, un esfuerzo previo considerable: descubrir el censo de investigadores, descargar de forma respetuosa y reproducible las miles de páginas y transformar un marcado pensado para presentación visual en datos estructurados.
+Es un trabajo de ingeniería poco vistoso, pero es la condición de posibilidad de todo lo demás.
+Su ausencia explica que muchos intentos similares no pasen de la idea.
+
+\section{Heterogeneidad y ruido}
+\label{sec:problema-heterogeneidad}
+
+Aun una vez estructurados, los datos distan de ser homogéneos.
+La densidad de los perfiles varía en órdenes de magnitud: conviven investigadores con cientos de publicaciones y décadas de actividad con perfiles prácticamente vacíos.
+Los temas de investigación se expresan en vocabularios no controlados, con duplicados, variantes morfológicas y mezcla de idiomas.
+Los resúmenes de las publicaciones presentan formatos idiosincrásicos que requieren una limpieza cuidadosa para no introducir ruido en las representaciones semánticas posteriores.
+
+Esta heterogeneidad tiene una consecuencia metodológica importante\pendiente{simplificar esta oración}: cualquier representación de los investigadores debe ser robusta frente a perfiles incompletos y debe agregar la evidencia disponible (publicaciones, proyectos, temas declarados) en lugar de depender de un único campo bien cumplimentado.
+
+\section{La brecha de vocabulario entre estudiante e investigador}
+\label{sec:problema-vocabulario}
+
+La dificultad principal del emparejamiento es lingüística.
+Un estudiante describe su interés en lenguaje coloquial, habitualmente en español y orientado a la aplicación («me gustaría detectar bulos en redes sociales»).
+La actividad de un investigador, en cambio, queda registrada en el lenguaje de las publicaciones: técnico, mayoritariamente en inglés y orientado al método (\emph{misinformation detection}, \emph{transformer-based fact verification}).
+Entre ambos registros media una doble brecha (tanto de idioma como de vocabulario) que hace fracasar la coincidencia léxica directa: los términos del estudiante, literalmente, no aparecen en el perfil del tutor idóneo.
+
+Este fenómeno, conocido en recuperación de información como \emph{desajuste de vocabulario} \pendiente{Añadir referencia?}, es aquí especialmente severo por su carácter multilingüe, lo que constituye la razón técnica por la que una solución ingenua basada en búsqueda de palabras clave resulta insuficiente.\duda{Podemos ya afirmar esto?}
+Abordarlo exige representaciones que capturen proximidad semántica más allá de la superficie léxica, o bien mecanismos que traduzcan y expandan la consulta del estudiante hacia el registro de los perfiles, idealmente, ambas cosas (se abordan en el Capítulo~\ref{ch:sota}).
+
+\section{La ausencia de verdad de referencia}
+\label{sec:problema-groundtruth}
+
+Supongamos construido el sistema: ¿cómo saber si recomienda bien? Evaluar un recomendador de tutores requiere pares (consulta, tutor correcto), y obtenerlos por etiquetado manual es costoso y delicado: exigiría que expertos conocedores de toda la plantilla juzgaran, para cada consulta, qué investigadores son pertinentes, convirtiendo el problema en un juicio subjetivo, caro y difícilmente reproducible.
+
+Esta carencia de verdad de referencia es, a nuestro juicio,\duda{Puedo poner valoraciones personales?} una de las razones de fondo por las que las herramientas de este tipo rara vez superan la fase de demostración: sin evaluación objetiva no hay forma de comparar alternativas ni de justificar mejoras y el desarrollo se estanca en la anécdota.
+Este trabajo propone una salida: explotar la \emph{historia real de supervisión} (los trabajos que cada investigador ha dirigido efectivamente) como fuente automática de \emph{pares consulta-respuesta} (Capítulo~\ref{ch:evaluacion}).
+
+\section{Restricciones institucionales: soberanía del dato y coste}
+\label{sec:problema-institucional}
+
+Por último, el contexto de despliegue impone restricciones propias.
+Una herramienta institucional que procesa consultas de estudiantes y perfiles de empleados públicos no debería depender de servicios de inteligencia artificial de terceros: el envío sistemático de esos datos a APIs externas plantea reservas de gobernanza y genera un coste recurrente difícil de asumir y de justificar.
+A ello se suma la exigencia práctica de que el sistema completo sea operable por la propia institución con recursos modestos.
+
+Hasta hace muy poco, esta restricción era casi eliminatoria: la calidad necesaria para interpretar consultas y sintetizar perfiles solo la ofrecían modelos propietarios accesibles por \gls{api}.
+La reciente madurez de los modelos de lenguaje abiertos ejecutables en local (y de los ecosistemas para servirlos) cambia ese panorama y abre, por primera vez, la posibilidad de un sistema de esta naturaleza íntegramente \emph{on-premise}.
+Este trabajo adopta esa vía y la somete a prueba.
+
+\section{Síntesis: requisitos de la solución}
+\label{sec:problema-requisitos}
+
+Del análisis anterior se desprende que el problema sigue abierto no por falta de técnicas, sino porque su resolución exige atravesar \emph{todas} las barreras a la vez: sin adquisición no hay datos, sin normalización no hay perfiles, sin representación semántica no hay emparejamiento útil, sin verdad de referencia no hay progreso medible y sin despliegue local no hay adopción institucional.
+La Tabla~\ref{tab:requisitos} resume esta correspondencia entre problemas y requisitos, que actúa como hilo conductor del resto de la memoria.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Correspondencia entre las barreras identificadas y los requisitos de diseño del sistema.}
+    \label{tab:requisitos}
+    \begin{tabularx}{\textwidth}{l X X}
+        \toprule
+        \rowcolor{upmblue!8} \colhead{Id.} & \colhead{Barrera} & \colhead{Requisito derivado} \\
+        \midrule
+        \reqid{req:uno}    & Fuente pública no operativa (\ref{sec:problema-datos}) & Adquisición automatizada, incremental y reproducible de los datos del portal.\\
+        \reqid{req:dos}    & Heterogeneidad y ruido (\ref{sec:problema-heterogeneidad}) & Perfiles normalizados que agreguen toda la evidencia disponible y toleren datos incompletos.\\
+        \reqid{req:tres}   & Brecha de vocabulario e idioma (\ref{sec:problema-vocabulario}) & Emparejamiento robusto al desajuste léxico y translingüe entre consulta y perfil.\\
+        \reqid{req:cuatro} & Ausencia de verdad de referencia (\ref{sec:problema-groundtruth}) & Evaluación objetiva y reproducible sin etiquetado manual.\\
+        \reqid{req:cinco}  & Soberanía del dato y coste (\ref{sec:problema-institucional}) & Despliegue íntegro en infraestructura propia, con modelos abiertos y coste marginal nulo por consulta.\\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+\pendiente{Tengo que intentar que se quede en la página anterior, que parece que cabe}

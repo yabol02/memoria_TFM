@@ -1,0 +1,36 @@
+\chapter{Conclusiones y líneas futuras}
+\label{ch:conclusiones}
+\pendiente{Capítulo completamente redactado por Claude a modo de placeholder temporal hasta que tengamos la evaluación hecha.}
+
+Este trabajo partió de una observación sencilla: la elección de tutor académico es un problema de recuperación de información que las universidades tienen sin resolver pese a publicar los datos necesarios para resolverlo. Sobre esa base se ha diseñado, construido y evaluado UPM Match, un sistema completo que convierte el Portal Científico de la UPM en un servicio de recomendación de tutores consultable en lenguaje natural.
+
+Retomando los objetivos formulados en la Sección~\ref{sec:objetivos}:
+
+\begin{itemize}
+    \item \textbf{O1 — Adquisición y estructuración.} Se ha construido un pipeline automatizado e incremental que censa, descarga y estructura la actividad pública de cuatro escuelas de la UPM en un grafo de investigadores, publicaciones, proyectos y supervisiones, con la fuente cruda conservada para reprocesado. \pendiente{Cerrar con las cifras finales del corpus.}
+    \item \textbf{O2 — Perfilado semántico.} Cada investigador dispone de un perfil enriquecido —temas normalizados, dominios de especialización y biografía investigadora generada incrementalmente con un LLM local— que agrega toda su evidencia pública en una representación homogénea.
+    \item \textbf{O3 — Emparejamiento.} El sistema implementa cuatro estrategias de recuperación operativas (léxica con LLM, semántica directa, semántica enriquecida e híbrida con fusión RRF) que atienden consultas libres en cualquier idioma.
+    \item \textbf{O4 — Evaluación objetiva.} Se ha definido y aplicado un marco de evaluación reproducible que usa la supervisión histórica como verdad de referencia, eliminando el etiquetado manual. \pendiente{Resumir el resultado principal de la comparación: estrategia ganadora y magnitud de la diferencia.}
+    \item \textbf{O5 — Prototipo.} El prototipo web es funcional, explica sus recomendaciones y se despliega íntegramente on-premise con componentes abiertos, sin dependencia de servicios externos ni coste por consulta.
+\end{itemize}
+
+\pendiente{Párrafo final de síntesis, a redactar con los resultados cerrados: respuesta global a la hipótesis de partida (¿basta el dato público institucional, procesado con modelos abiertos locales, para recomendar tutores de forma útil y medible?).}
+
+\section{Contribuciones}
+\label{sec:conc-contribuciones}
+
+Más allá del sistema concreto, el trabajo deja cuatro aportaciones reutilizables: (i) un corpus estructurado y reconstruible de la actividad investigadora de cuatro escuelas de la UPM; (ii) una metodología de evaluación sin etiquetado manual aplicable a cualquier institución con registros de supervisión; (iii) una comparación empírica de estrategias de recuperación representativas del estado del arte sobre un corpus institucional real; y (iv) un prototipo de código abierto que demuestra la viabilidad del despliegue local extremo a extremo.
+
+\section{Líneas futuras}
+\label{sec:conc-futuro}
+
+El trabajo abre varias líneas naturales de continuación, ordenadas aquí de la más inmediata a la más ambiciosa:
+
+\begin{mydescription}
+    \item[Detección de colaboraciones entre investigadores.] El grafo y los perfiles semánticos ya construidos permiten plantear la pregunta simétrica a la de este TFM: qué pares de investigadores presentan afinidad temática sin historial de colaboración. Es la extensión prevista desde el diseño (Sección~\ref{sec:objetivos}) y un objetivo explícito del proyecto IE26.6102 —fomentar colaboraciones interdepartamentales mediante el análisis de redes de coautoría—, que contempla incluso su métrica de éxito (número de colaboraciones sugeridas viables).
+    \item[Evaluación con usuarios reales.] Complementar la evaluación retrospectiva con la prueba piloto prevista en el proyecto IE26.6102: consultas genuinas de estudiantes, tasa de aceptación de las recomendaciones y encuestas de satisfacción. Ello permitiría, además, cuantificar el sesgo del marco retrospectivo (Sección~\ref{sec:eval-validez}).
+    \item[Mejoras de recuperación.] Dos candidatas claras: el \emph{re-ranking} de los primeros resultados con un modelo más potente (cross-encoder o LLM como juez), y el ajuste fino del modelo de embedding al dominio académico bilingüe utilizando los propios pares supervisión--proyecto como señal de entrenamiento.
+    \item[Equidad y arranque en frío.] Incorporar mecanismos que den visibilidad al profesorado con poco historial —desde la exploración controlada en el ranking hasta perfiles basados en su producción doctoral— y métricas de equidad en el banco de pruebas.
+    \item[Ampliación del perímetro.] Extender el corpus al conjunto de la UPM y validar la portabilidad del flujo en otra institución, idealmente con un portal de estructura distinta, para convertir la generalización argumentada (Sección~\ref{sec:disc-generalizacion}) en generalización demostrada.
+    \item[Integración institucional.] Llevar el prototipo a un servicio: autenticación corporativa, retroalimentación de los usuarios como señal de mejora continua y conexión con los procesos reales de oferta y asignación de trabajos.
+\end{mydescription}

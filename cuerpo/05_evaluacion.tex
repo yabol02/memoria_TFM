@@ -1,0 +1,121 @@
+\chapter[Marco de evaluación]{Marco de evaluación: la supervisión histórica como verdad de referencia}
+\label{ch:evaluacion}
+
+Comparar estrategias de recomendación exige una vara de medir objetiva.
+Este capítulo presenta la principal aportación metodológica del trabajo en ese frente: un marco de evaluación \emph{sin etiquetado manual}, construido a partir de la historia real de supervisión, junto con las métricas y el protocolo experimental con que se comparan las estrategias descritas en el capítulo anterior.
+
+\section{El problema de evaluar sin etiquetas}
+\label{sec:eval-problema}
+
+La evaluación clásica en recuperación de información requiere un conjunto de consultas con sus juicios de relevancia: para cada consulta, qué candidatos son los más adecuados
+En nuestro dominio, producir esos juicios manualmente es especialmente problemático (Sección~\ref{sec:problema-groundtruth}): exigiría jueces que conocieran la actividad de toda la plantilla, el juicio «¿es esta persona un buen tutor para esta idea?» es intrínsecamente subjetivo y el coste de etiquetar un volumen suficiente de consultas lo hace inviable para un trabajo de estas dimensiones (y, lo que es peor, irrepetible cuando el corpus se actualice).
+
+La alternativa adoptada consiste en buscar pares $consulta-respuesta$ que ya existan en los datos.
+La observación clave es que el corpus contiene miles de decisiones de emparejamiento reales y validadas: cada trabajo académico supervisado fue, en su día, una «consulta» (la descripción del trabajo) que encontró su «respuesta correcta» (el investigador que efectivamente lo supervisó).
+Conviene anticipar una limitación inherente a este diseño: el sistema puede recomendar investigadores tan aptos o más que el supervisor original, que sin embargo se contabilizan como fallos al marcarse una única respuesta correcta. Las cifras absolutas son, por tanto, cotas inferiores de la utilidad real (Sección~\ref{sec:eval-validez}), y de ahí que se reporten varias métricas complementarias en lugar de una sola.
+
+\section{Construcción de la verdad de referencia}
+\label{sec:eval-groundtruth}
+
+El perfil enriquecido de cada investigador incluye los proyectos y trabajos que ha supervisado recientemente, con su título, resumen y palabras clave.
+A partir de ellos, cada trabajo supervisado genera un ejemplo etiquetado:
+
+\begin{itemize}
+    \item \textbf{Consulta}: el texto del trabajo supervisado (título, resumen y palabras clave), que aproxima razonablemente lo que un estudiante interesado en ese tema habría escrito en el buscador.
+    \item \textbf{Respuesta relevante}: el investigador que realmente lo supervisó.
+\end{itemize}
+
+Este procedimiento tiene tres virtudes.
+Primera, las etiquetas son \emph{decisiones reales}, no opiniones de jueces: ese tutor aceptó y dirigió ese trabajo.
+Segunda, el conjunto se regenera automáticamente con cada actualización del corpus, lo que hace la evaluación reproducible y sostenible en el tiempo (requisito \ref{req:cuatro}).
+Tercera, la tarea evaluada es exactamente la tarea objetivo del sistema (de un texto de tipo «idea de trabajo» a su supervisor), sin la distorsión de evaluar una tarea sustituta.
+
+Para que la comparación entre estrategias sea justa, el conjunto de candidatos se restringe a los investigadores presentes en \emph{todos} los índices (disperso y denso): de lo contrario, una estrategia podría verse penalizada no por su calidad, sino por buscar sobre un universo distinto.
+
+En la implementación, la consulta no se toma literalmente del trabajo: para acercarla a lo que escribiría un estudiante y, sobre todo, para reducir el solapamiento léxico con el perfil del propio tutor, cada descripción se reformula automáticamente en una propuesta breve en primera persona.
+Tres \glspl{llm} distintos locales generan, cada uno, una propuesta candidata, y un panel formado por esos mismos modelos (esquema \emph{LLM como juez}) las puntúa y selecciona la mejor. El proceso es reproducible (semilla fija) y se aplica sobre un conjunto de referencia de 500 trabajos reales (250 \gls{tfg} y 250 \gls{tfm}).
+
+Este diseño formaliza, además, el \emph{retroanálisis} previsto en el plan de evaluación del proyecto de innovación educativa en que se enmarca el trabajo (Sección~\ref{sec:contexto}), que contempla la «precisión de las recomendaciones en retroanálisis» como métrica de éxito del sistema: las cifras de este capítulo son, por tanto, directamente reportables al proyecto.
+
+\section{Métricas}
+\label{sec:eval-metricas}
+
+Cada consulta tiene un único candidato relevante (el supervisor real), lo que sitúa el problema en la variante \emph{de un solo relevante} de las métricas clásicas de recuperación y simplifica varias de ellas.
+Sea $Q$ el conjunto de consultas y, para cada $q \in Q$, sea $r_q$ la posición (rango) en que la estrategia evaluada devuelve al supervisor real, con $r_q = \infty$ si no aparece entre los resultados recuperados.
+Todas las métricas se reportan en los cortes $k \in \{1, 3, 5, 10, 25\}$.
+
+El acierto en los $k$ primeros puestos se mide con $\mathrm{Hit@}k$ y, para un único relevante, con la precisión y la exhaustividad asociadas:
+
+\begin{equation}
+    \mathrm{Hit@}k = \frac{1}{|Q|} \sum_{q \in Q} \mathbb{I}\!\left[ r_q \le k \right],
+    \qquad
+    \mathrm{P@}k = \frac{\mathrm{Hit@}k}{k},
+    \qquad
+    \mathrm{R@}k = \mathrm{Hit@}k,
+    \label{eq:hitk}
+\end{equation}
+
+donde $\mathbb{I}[\cdot]$ vale $1$ si la condición se cumple y $0$ en caso contrario. La media armónica de $\mathrm{P@}k$ y $\mathrm{R@}k$ da la $\mathrm{F1@}k$.
+La calidad del posicionamiento se resume con el rango recíproco medio (MRR) que, al haber un solo relevante, coincide con la precisión media (MAP) y con la ganancia acumulada descontada normalizada:
+
+\begin{equation}
+\mathrm{MRR} = \mathrm{MAP} = \frac{1}{|Q|} \sum_{q \in Q} \frac{1}{r_q},
+\qquad
+\mathrm{nDCG@}k = \frac{1}{|Q|} \sum_{q \in Q} \frac{\mathbb{I}\!\left[ r_q \le k \right]}{\log_2(r_q + 1)},
+\label{eq:mrr}
+\end{equation}
+
+con el convenio $1/r_q = 0$ cuando $r_q = \infty$, y donde la ganancia ideal de la nDCG vale $1$ por existir un único relevante.
+
+Cada familia responde a una pregunta distinta.
+$\mathrm{Hit@1}$ mide la precisión estricta («¿acierta a la primera?»); $\mathrm{Hit@}5$ y $\mathrm{Hit@}10$ reflejan el uso real del sistema, en el que el estudiante inspecciona la primera pantalla de resultados y decide entre varios candidatos; la MRR resume en un único número la calidad del posicionamiento, premiando los primeros puestos; y la nDCG aporta una lectura graduada de esa misma calidad.
+Todas ellas se desglosan, además, por tipo de trabajo (\gls{tfg}/\gls{tfm}), escuela y curso académico.
+
+\section{Estrategias comparadas}
+\label{sec:eval-estrategias}
+
+Se evalúan las cuatro estrategias del sistema más una quinta de control, resumidas en la Tabla~\ref{tab:modos}.
+La estrategia de control (léxica directa) lanza la búsqueda dispersa usando las palabras clave originales del propio trabajo supervisado, sin intervención del modelo de lenguaje: actúa como una \emph{extracción} que aísla la contribución del \gls{llm} en la interpretación de la consulta y como línea base clásica de coincidencia léxica.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Estrategias evaluadas. Las cuatro primeras están disponibles en el prototipo; la quinta es una ablación propia del banco de pruebas.}
+    \label{tab:modos}
+    \begin{tabularx}{\textwidth}{l X c c}
+        \toprule
+        \rowcolor{upmblue!8} \colhead{Estrategia} & \colhead{Procesamiento de la consulta} & \colhead{\gls{llm}} & \colhead{Índice} \\
+        \midrule
+        Léxica con \gls{llm} & Extracción de términos generales y específicos; fusión RRF de ambas búsquedas & Sí & Disperso \\
+        Léxica directa (control) & Palabras clave originales del trabajo, sin transformación & No & Disperso \\
+        Semántica directa & Embedding del texto tal cual & No & Denso \\
+        Semántica enriquecida & Traducción y expansión controlada; embedding del texto reformulado & Sí & Denso \\
+        Híbrida & Términos extraídos (señal dispersa) + texto enriquecido (señal densa); fusión RRF & Sí & Ambos \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\section{Protocolo experimental}
+\label{sec:eval-protocolo}
+
+El protocolo fija las condiciones comunes a todas las estrategias:
+
+\begin{itemize}
+    \item \textbf{Profundidad de recuperación}: cada estrategia devuelve sus $25$ primeros candidatos, profundidad que cubre el mayor de los cortes $k$ evaluados.
+    \item \textbf{Universo común}: todas las estrategias buscan sobre el mismo conjunto de investigadores (los presentes en todos los índices), de modo que ninguna se ve favorecida ni penalizada por operar sobre un universo distinto (Sección~\ref{sec:eval-groundtruth}).
+    \item \textbf{Muestreo controlado}: las consultas sintéticas se generan con semilla fija, lo que hace la evaluación reproducible y permite muestrear subconjuntos para ejecuciones rápidas; los resultados finales se reportan sobre los 500 registros del conjunto de referencia (250 \gls{tfg} y 250 \gls{tfm}).
+    \item \textbf{Misma infraestructura}: las cinco estrategias se ejecutan contra los mismos índices, con los mismos modelos y en la misma máquina, registrándose también el tiempo medio por consulta como indicador del coste de incorporar el \gls{llm} al bucle.
+\end{itemize}
+
+\section{Amenazas a la validez}
+\label{sec:eval-validez}
+
+El marco propuesto es objetivo y reproducible, pero no está libre de sesgos, que conviene declarar:
+
+\begin{mydescription}
+    \item[Optimismo absoluto por solapamiento.]\duda{Creo que esto lo estoy evitando con lo de los resúmenes por año} Los perfiles agregan la actividad completa de cada investigador, que puede incluir evidencia relacionada con el propio trabajo usado como consulta.
+    Las cifras absolutas deben leerse, por tanto, como cota optimista; el valor del marco está en la \emph{comparación relativa} entre estrategias, que se realiza en condiciones idénticas.
+    \item[Un único relevante por consulta.] Otros investigadores podrían ser tutores igualmente válidos para la misma idea; al contar solo al supervisor real, las métricas son cotas inferiores de la utilidad percibida.
+    \item[Sesgo de historial.]\duda{No deberíamos tener problemas con esto ahora mismo, solo usamos las tutorizaciones anteriores para evaluación, no para el proceso de recomendación} La verdad de referencia solo contiene investigadores que ya han supervisado trabajos, por lo que no mide la capacidad del sistema para recomendar a profesorado novel (problema de arranque en frío, que afecta por igual a todas las estrategias comparadas).
+    \item[Deriva temporal.] Consultas y perfiles proceden del mismo corte temporal del corpus; el rendimiento con ideas genuinamente nuevas podría diferir.
+\pendiente{Si da tiempo, complementar con una pequeña validación cualitativa con consultas redactadas por estudiantes reales.}
+\end{mydescription}

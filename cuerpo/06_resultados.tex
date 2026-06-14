@@ -1,0 +1,221 @@
+\chapter[Resultados]{Resultados: arquitectura, prototipo y comparación de estrategias}
+\label{ch:resultados}
+
+Los capítulos anteriores describieron el diseño y su marco de medida.
+Este presenta su materialización y los resultados obtenidos.
+Se organiza en cuatro partes: la arquitectura tecnológica que implementa la metodología (\ref{sec:res-arquitectura}), el corpus resultante (\ref{sec:res-corpus}), el prototipo \proyecto (\ref{sec:res-prototipo}) y la comparación cuantitativa de las estrategias de recuperación (\ref{sec:res-benchmark}).
+
+\section{De la metodología a la implementación}
+\label{sec:res-arquitectura}
+
+Todas las decisiones tecnológicas comparten dos criterios heredados de los requisitos: componentes de código abierto desplegables en infraestructura propia (requisito \ref{req:cinco}) y herramientas maduras con las que el coste de operación sea asumible por una institución.
+La Figura~\ref{fig:arquitectura} muestra la arquitectura completa y la Tabla~\ref{tab:stack} su correspondencia con las etapas metodológicas del Capítulo~\ref{ch:metodologia}.
+
+\begin{figure}[htbp]
+      \centering
+      \resizebox{\textwidth}{!}{
+            \begin{tikzpicture}[
+                  font=\small,
+                  node distance=7mm and 7mm,
+                  proc/.style={draw=upmblue!80!black, fill=upmblue!8, thick, rounded corners=3pt, align=center, minimum height=13mm, text width=27mm, inner sep=2mm},
+                  store/.style={draw=teal!60!black, fill=teal!9, thick, rounded corners=3pt, align=center, minimum height=13mm, text width=27mm, inner sep=2mm},
+                  ext/.style={draw=black!60, fill=black!4, thick, rounded corners=3pt, align=center, minimum height=13mm, text width=27mm, inner sep=2mm},
+                  infra/.style={draw=black!50, fill=orange!8, thick, rounded corners=3pt, align=center, minimum height=10mm, inner sep=2mm},
+                  flecha/.style={-{Stealth[length=2.6mm]}, semithick, draw=black!75},
+                  flechad/.style={{Stealth[length=2.6mm]}-{Stealth[length=2.6mm]}, semithick, draw=black!75}
+            ]
+            % Fila 1: ingesta y estructuración
+            \node[ext] (portal) {\textbf{Portal Científico UPM}\\[0.5mm] \footnotesize Fuente pública};
+            \node[proc, right=of portal] (descarga) {\textbf{Descarga asíncrona}\\[0.5mm] \footnotesize httpx + tenacity};
+            \node[store, right=of descarga] (minio1) {\textbf{MinIO}\\[0.5mm] \footnotesize Bucket con los datos crudos};
+            \node[proc, right=of minio1] (parsing) {\textbf{Parseo y modelado}\\[0.5mm] \footnotesize Scrapy + Pydantic};
+            \node[store, right=of parsing] (memgraph) {\textbf{Memgraph}\\[0.5mm] \footnotesize Grafo de actividad};
+
+            \draw[flecha] (portal) -- (descarga);
+            \draw[flecha] (descarga) -- (minio1);
+            \draw[flecha] (minio1) -- (parsing);
+            \draw[flecha] (parsing) -- (memgraph);
+
+            % Fila 2 (sentido inverso): enriquecimiento e indexación
+            \node[proc, below=16mm of memgraph] (consol) {\textbf{Consolidación y biografías}\\[0.5mm] \footnotesize Ollama + Agno};
+            \node[store, below=16mm of parsing] (minio2) {\textbf{MinIO}\\[0.5mm] \footnotesize Bucket con los perfiles enriquecidos};
+            \node[proc, below=16mm of minio1] (indexa) {\textbf{Indexación}\\[0.5mm] \footnotesize Dispersa y densa};
+            \node[store, below=16mm of descarga] (qdrant) {\textbf{Qdrant}\\[0.5mm] \footnotesize Índices disperso y denso};
+
+            \draw[flecha] (memgraph) -- (consol);
+            \draw[flecha] (consol) -- (minio2);
+            \draw[flecha] (minio2) -- (indexa);
+            \draw[flecha] (indexa) -- (qdrant);
+
+            % Fila 3: servicio en línea
+            \node[ext, below=16mm of qdrant] (estudiante) {\textbf{Estudiante}\\[0.5mm] \footnotesize navegador web};
+            \node[proc, below=16mm of indexa] (flask) {\textbf{UPM Match}\\[0.5mm] \footnotesize Flask + Gunicorn};
+            \node[proc, below=16mm of minio2] (agentes) {\textbf{Agentes \gls{llm}}\\[0.5mm] \footnotesize Ollama (Qwen2.5)};
+
+            \draw[flechad] (estudiante) -- (flask);
+            \draw[flechad] (flask) -- (agentes);
+            \draw[flechad] (flask) -- (qdrant);
+
+            % Infraestructura transversal
+            \node[infra, below=14mm of flask, text width=120mm] (infra) {\textbf{Orquestación y despliegue:} Airflow (ejecución periódica del pipeline) · Docker Compose (todos los servicios) · Traefik (proxy inverso) — íntegramente \emph{on-premise}};  % TODO: Bajar algo más este cuadro, está muy pegado a "Servicio"
+
+            \begin{scope}[on background layer]
+            \node[draw=black!30, dashed, rounded corners=4pt, fill=black!1, inner sep=4mm,
+                  fit=(portal)(memgraph)(qdrant)(consol),
+                  label={[black!60, font=\footnotesize\bfseries]90:Preparación del corpus (fases 1--6)}] {};
+            \node[draw=black!30, dashed, rounded corners=4pt, fill=black!1, inner sep=4mm,
+                  fit=(estudiante)(flask)(agentes),
+                  label={[black!60, font=\footnotesize\bfseries]180:Servicio}] {};
+            \end{scope}
+            \end{tikzpicture}
+      }
+      \caption{Arquitectura tecnológica del sistema.
+      Las filas superiores implementan la preparación del corpus (Figura~\ref{fig:flujo}); la inferior, la atención de consultas.
+      Los almacenes (MinIO, Memgraph, Qdrant) materializan los artefactos persistentes entre etapas.}
+      \label{fig:arquitectura}
+\end{figure}
+
+\begin{table}[htbp]
+      \centering
+      \caption{Correspondencia entre etapas metodológicas y tecnologías empleadas.}
+      \label{tab:stack}
+      \begin{tabularx}{\textwidth}{l X l}
+            \toprule
+            \rowcolor{upmblue!8} \colhead{Etapa} & \colhead{Cometido} & \colhead{Tecnología} \\
+            \midrule
+            Adquisición & Censo de investigadores y descarga concurrente con reintentos & Python (httpx, tenacity) \\
+            Capa cruda & Conservación inmutable del HTML y artefactos intermedios & MinIO \\
+            Estructuración & Extracción de entidades y carga del grafo de actividad & Scrapy (selectores), Memgraph (Cypher) \\
+            Validación & Esquemas tipados de perfiles y documentos & Pydantic \\
+            Enriquecimiento & Biografías incrementales y dominios con \gls{llm} local y salida estructurada & Ollama + Agno (Qwen2.5 7B) \\
+            Embeddings densos & Representación semántica de las biografías & nomic-embed-text-v2-moe (Ollama) \\
+            Vectores dispersos & Términos ponderados por atención (temas y dominios) & BM42 (fastembed) \\
+            Índice y búsqueda & Almacenamiento vectorial, similitud y fusión RRF nativa & Qdrant \\
+            Aplicación web & Interfaz de búsqueda y API & Flask + Gunicorn \\
+            Orquestación & Ejecución programada e incremental del pipeline & Airflow \\
+            Despliegue & Contenedores y proxy inverso, todo on-premise & Docker Compose + Nginx \\
+            \bottomrule
+      \end{tabularx}
+\end{table}
+
+Tres decisiones merecen justificación expresa.
+\duda{Creo que habría que justificar algo más cada tecnología}
+Primera, el \textbf{\gls{llm} local} (Qwen2.5 7B instruccional servido por Ollama): es el punto donde el requisito \ref{req:cinco} se juega su viabilidad, pues sustituye a las API propietarias tanto en el enriquecimiento masivo del corpus como en la interpretación de consultas en línea; el marco Agno aporta la capa de agentes con salida estructurada validada por Pydantic.
+Segunda, \textbf{Qdrant} como índice vectorial único para ambas representaciones: soporta vectores densos y dispersos en la misma colección y ofrece fusión \gls{rrf} nativa, lo que simplifica la estrategia híbrida a una sola consulta.
+Además, el algoritmo BM42 fue inventado por los desarrolladores de esta tecnología, de modo que está integrado de forma nativa.
+Tercera, \textbf{Airflow} como orquestador: las \textcolor{red}{seis} fases del pipeline son tareas idempotentes con reanudación (\emph{skip-existing}), de modo que la actualización periódica del corpus es un proceso desatendido.
+Completan el cuadro \textbf{MinIO}, como capa de objetos que materializa el principio de fuente cruda inmutable y reprocesable y \textbf{Memgraph}, como base de grafo elegida por la naturaleza de vecindad del dominio (Sección~\ref{sec:met-grafo}) y porque deja preparada la línea futura de detección de colaboraciones.
+El modelo de datos se mantuvo agnóstico del motor de grafo, de modo que podría migrarse a otro motor sin reescribir la lógica de carga.
+
+\section{El corpus resultante}
+\label{sec:res-corpus}
+
+La ejecución del pipeline sobre el perímetro de las cuatro escuelas del ámbito de las Tecnologías de la Información y las Comunicaciones produce un grafo de conocimiento de 172\,621 nodos y 268\,886 relaciones.
+La Tabla~\ref{tab:corpus-grafo} desglosa su composición por tipo (el esquema del grafo se detalla en el Anexo~\ref{annex:modelo-datos}).
+
+\begin{table}[htbp]
+    \centering
+    \caption{Composición del grafo de conocimiento: nodos y relaciones por tipo.}
+    \label{tab:corpus-grafo}
+    \begin{tabularx}{\textwidth}{l r X}
+        \toprule
+        \rowcolor{upmblue!8} \colhead{Elemento} & \colhead{Cantidad} & \colhead{Descripción} \\
+        \midrule
+        \multicolumn{3}{l}{\textit{Nodos (172\,621)}} \\
+        \texttt{Publication}     & 109\,296 & Publicaciones (artículos, conferencias, etc.) \\
+        \texttt{LastYearProject} & 44\,297  & Trabajos supervisados (TFG/TFM). \\
+        \texttt{Subject}         & 12\,602  & Asignaturas. \\
+        \texttt{Pdi}             & 5\,998   & Investigadores censados. \\
+        \texttt{Position}        & 428      & Unidades organizativas y cargos. \\
+        \midrule
+        \multicolumn{3}{l}{\textit{Aristas (268\,886)}} \\
+        \texttt{AUTHORSHIP} & 157\,556 & Autorías ($\mathrm{Pdi}\rightarrow\mathrm{Publication}$). \\
+        \texttt{TUTORING}   & 48\,916  & Supervisiones ($\mathrm{Pdi}\rightarrow\mathrm{LastYearProject}$). \\
+        \texttt{TEACHING}   & 32\,567  & Docencia ($\mathrm{Pdi}\rightarrow\mathrm{Subject}$). \\
+        \texttt{COAUTHORED} & 19\,125  & Coautorías entre investigadores ($\mathrm{Pdi}\rightarrow\mathrm{Pdi}$). \\
+        \texttt{WORKS}      & 10\,722  & Pertenencia a unidades ($\mathrm{Pdi}\rightarrow\mathrm{Position}$). \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+Las 428 unidades organizativas (\texttt{Position}) heredan las categorías del portal: 226 grupos de investigación, 88 áreas de conocimiento, 62 departamentos universitarios, 22 institutos o centros de investigación, 20 escuelas y un puñado de unidades de otro tipo.
+
+La afiliación de los investigadores a las escuelas merece una advertencia, pues condiciona la lectura de estas cifras y la propia delimitación del corpus.
+El portal científico no enlaza de forma sistemática a cada investigador con su escuela: de los 5\,998 investigadores del grafo, solo 1\,431 tienen una relación directa con un nodo de tipo escuela, mientras que 4\,567 carecen por completo de ella; en particular, 2\,216 están vinculados a un departamento pero no a la escuela correspondiente.
+Es una limitación de la fuente, no del modelo: ese enlace sencillamente no figura en muchas fichas.
+
+Esta carencia obliga a acotar el perímetro de forma indirecta.
+Como no puede filtrarse de manera fiable por escuela (la mayoría de los investigadores cuelgan del departamento y no de la escuela), el censo se delimita a través de los departamentos, lo que es determinista pero imperfecto debido a la peculiar organización interna de la \gls{upm}: algunos departamentos imparten en varias escuelas aunque \emph{oficialmente} pertenezcan a una sola (por ejemplo, el Departamento de Lingüística Aplicada a la Ciencia y la Tecnología, o el de Ingeniería de Organización, Administración de Empresas y Estadística, adscrito a la Escuela de Industriales pero con profesorado que ha impartido docencia en otras escuelas).
+En consecuencia, el criterio puede incorporar a algún investigador que enseña en otra escuela y omitir a otros que sí lo hacen en las del perímetro.
+Se asume como mal menor, destinado a diluirse cuando el corpus se extienda al conjunto de la universidad.
+
+Aplicando ese criterio determinista, el perímetro efectivo de las cuatro escuelas (sus cuatro nodos de escuela y catorce departamentos adscritos) reúne 996 investigadores distintos; los 5\,998 nodos \texttt{Pdi} del grafo incluyen, además, a coautores externos arrastrados por las relaciones de actividad.
+La Tabla~\ref{tab:corpus-escuelas} desglosa el perímetro por escuela, junto con la cobertura de temas declarados en el portal.
+Veinticuatro investigadores están adscritos a unidades de más de una escuela, por lo que la suma por escuela supera ligeramente el total de investigadores distintos.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Investigadores del perímetro por escuela y cobertura de temas declarados.}
+    \label{tab:corpus-escuelas}
+    \begin{tabularx}{\textwidth}{X r r}
+        \toprule
+        \rowcolor{upmblue!8} \colhead{Escuela} & \colhead{Investigadores} & \colhead{Con temas declarados} \\
+        \midrule
+        \gls{etsii}  & 315 & 188 (59,7\,\%) \\
+        \gls{etsit}  & 310 & 287 (92,6\,\%) \\
+        \gls{etsisi} & 237 & 125 (52,7\,\%) \\
+        \gls{etsist} & 158 & 132 (83,5\,\%) \\
+        \midrule
+        Total (investigadores distintos) & 996 & 709 (71,2\,\%) \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\pendiente{Completar, una vez disponible el índice definitivo: el número de perfiles enriquecidos e indexados en cada colección de Qdrant (\texttt{researcher\_summaries} y \texttt{researcher\_keywords}), la cobertura de biografía y de dominios por escuela, y los tiempos aproximados de cada fase del pipeline.}
+
+\section{El prototipo \proyecto}
+\label{sec:res-prototipo}
+
+El prototipo materializa la capa de presentación descrita en la Sección~\ref{sec:met-presentacion}: una aplicación web con un único campo de texto en el que el estudiante describe su idea en cualquier idioma, un selector de estrategia (con la híbrida por defecto) y una lista de resultados ordenada.
+
+Cada tarjeta de resultado muestra el nombre del investigador, \textcolor{red}{su puntuación normalizada respecto al primer resultado}, los temas de su perfil que coinciden con la consulta y, en las estrategias semánticas, su biografía investigadora.
+Cuando interviene el \gls{llm}, la interfaz muestra también la interpretación realizada (los términos extraídos o la reformulación enriquecida), de modo que el estudiante pueda auditar y, en su caso, reformular su consulta.
+La latencia percibida varía según la estrategia: las que incorporan el \gls{llm} añaden el coste de una generación local a la búsqueda vectorial, que es interactiva en todos los casos (\pendiente{incluir mediciones de latencia media por modo}).
+
+\pendiente{Incluir una o dos capturas de pantalla del prototipo (búsqueda y resultados, idealmente con la misma consulta en dos modos distintos) y un párrafo guiando su lectura.}
+
+\pendiente{Añadir la URL para poder consultar la web y poder introducir ideas}
+
+\section{Comparación de estrategias de recuperación}
+\label{sec:res-benchmark}
+
+La Tabla~\ref{tab:benchmark} resume los resultados del banco de pruebas descrito en el Capítulo~\ref{ch:evaluacion} para las cinco estrategias.
+
+\pendiente{Completar con los resultados tras ejecutar el banco de pruebas sobre el corpus completo; indicar también el número de consultas evaluadas y el tiempo medio por consulta.}
+
+\begin{table}[htbp]
+      \centering
+      \caption[Resultados del banco de pruebas sobre la verdad de referencia de supervisión histórica]{Resultados del banco de pruebas sobre la verdad de referencia de supervisión histórica. Las columnas son las métricas que reporta el arnés de evaluación; por haber un único relevante por consulta, $\mathrm{MAP}$ coincide con la $\mathrm{MRR}$ (Sección~\ref{sec:eval-metricas}).}
+      \label{tab:benchmark}
+      \footnotesize
+      \setlength{\tabcolsep}{4pt}
+      \begin{tabularx}{\textwidth}{X c c c c c c c c}
+            \toprule
+            \rowcolor{upmblue!8} \colhead{Estrategia} & \colhead{MRR} & \colhead{MAP} & \colhead{Hit@1} & \colhead{Hit@3} & \colhead{Hit@5} & \colhead{Hit@10} & \colhead{nDCG@5} & \colhead{nDCG@10} \\
+            \midrule
+            Léxica con \gls{llm}     & --- & --- & --- & --- & --- & --- & --- & --- \\
+            Léxica directa (control) & --- & --- & --- & --- & --- & --- & --- & --- \\
+            Semántica directa        & --- & --- & --- & --- & --- & --- & --- & --- \\
+            Semántica enriquecida    & --- & --- & --- & --- & --- & --- & --- & --- \\
+            Híbrida                  & --- & --- & --- & --- & --- & --- & --- & --- \\
+            \bottomrule
+      \end{tabularx}
+\end{table}
+
+\pendiente{Redactar el análisis de resultados: estrategia ganadora global y por métrica; aportación del \gls{llm} (comparar léxica con \gls{llm} frente a léxica directa, y semántica enriquecida frente a directa); aportación de la hibridación frente a la mejor señal individual; y comportamiento con consultas en español frente a inglés si se desagrega.}
+
+\section{Casos ilustrativos}
+\label{sec:res-casos}
+
+\pendiente{Incluir dos o tres casos cualitativos end-to-end: la consulta de ejemplo (una en español coloquial, otra técnica en inglés), los tres primeros investigadores devueltos por la estrategia híbrida con sus evidencias, y un breve comentario sobre la pertinencia de cada recomendación.
+Elegir casos que ilustren tanto un acierto claro como un fallo instructivo, en línea con la discusión del Capítulo~\ref{ch:discusion}.}

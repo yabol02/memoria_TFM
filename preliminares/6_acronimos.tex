@@ -1,17 +1,36 @@
-% called by main.tex
-%
-\section*{Abreviaturas y acrónimos}
-\addcontentsline{toc}{section}{Abreviaturas y acrónimos}
-\label{sec::acronyns}
+% Tabla de abreviaturas y acrónimos generada con el paquete glossaries.
+% El estilo de la tabla es long-booktabs
 
-\vspace{10 mm}
-%Institutions
-\begin{description}[align=right,labelwidth=2cm] 
-\item [UPM] Universidad Politécnica de Madrid
+% Definiciones de acrónimos (paquete glossaries).
+% - Añadir aquí cualquier sigla nueva; makeindex las ordena alfabéticamente.
+% - En el texto puede usarse \gls{clave} (primera vez: forma larga + sigla) o escribir la sigla literal
+% - \glsaddall en 6_acronimos.tex garantiza que todas aparezcan en la tabla aunque no se usen con \gls.
+
+\newacronym{api}{API}{\emph{Application Programming Interface}}
+\newacronym{bm25}{BM25}{\emph{Best Matching 25}}
+\newacronym{etsii}{ETSII}{Escuela Técnica Superior de Ingenieros Informáticos}
+\newacronym{etsisi}{ETSISI}{Escuela Técnica Superior de Ingeniería de Sistemas Informáticos}
+\newacronym{etsist}{ETSIST}{Escuela Técnica Superior de Ingeniería y Sistemas de Telecomunicación}
+\newacronym{etsit}{ETSIT}{Escuela Técnica Superior de Ingenieros de Telecomunicación}
+\newacronym{html}{HTML}{\emph{HyperText Markup Language}}
+\newacronym{ia}{IA}{Inteligencia Artificial}
+\newacronym{idf}{IDF}{\emph{Inverse Document Frequency}}
+\newacronym{json}{JSON}{\emph{JavaScript Object Notation}}
+\newacronym[longplural={Modelos de lenguaje de gran tamaño}]{llm}{LLM}{Modelo de lenguaje de gran tamaño}
+\newacronym{maadm}{MAADM}{Máster Oficial en Aprendizaje Automático y Datos Masivos}
+\newacronym{mrr}{MRR}{\emph{Mean Reciprocal Rank}}
+\newacronym{pdi}{PDI}{Personal Docente e Investigador}
+\newacronym{pie}{PIE}{Proyecto de Innovación Educativa}
+\newacronym{rag}{RAG}{\emph{Retrieval-Augmented Generation}}
+\newacronym{ri}{RI}{Recuperación de Información}
+\newacronym{rrf}{RRF}{\emph{Reciprocal Rank Fusion}}
+\newacronym{tfg}{TFG}{Trabajo de Fin de Grado}
+\newacronym{tfm}{TFM}{Trabajo de Fin de Máster}
+\newacronym{upm}{UPM}{\University}
 
 
+\glsaddall  % incluye todos los acrónimos definidos, se usen o no con \gls
 
-
-
-\end{description}
-
+\printglossary[type=\acronymtype, style=long-booktabs,
+               title={Abreviaturas y acrónimos},
+               toctitle={Abreviaturas y acrónimos}]

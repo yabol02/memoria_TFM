@@ -1,0 +1,157 @@
+\chapter[Aproximación metodológica]{Aproximación metodológica: del dato público al perfil semántico}
+\label{ch:metodologia}
+
+Este capítulo describe la aproximación propuesta en términos conceptuales, deliberadamente independientes de las tecnologías concretas empleadas (detallados en el Capítulo~\ref{ch:resultados}).
+El propósito es doble: que el diseño sea evaluable por sí mismo y que resulte replicable por cualquier institución con otras herramientas equivalentes.
+
+\section{Visión general}
+\label{sec:met-vision}
+
+El sistema se organiza en dos macrofases con ritmos distintos, ilustradas en la Figura~\ref{fig:flujo}:
+
+\begin{itemize}
+    \item \textbf{Preparación del corpus} (proceso periódico, fuera de línea): adquiere los datos públicos, los estructura, enriquece cada perfil y construye los índices semánticos.
+    Se ejecuta de forma programada para incorporar la actividad investigadora nueva.
+    \item \textbf{Atención de consultas} (en línea, tiempo real): recibe la idea libre del estudiante, la ``interpreta'', recupera los investigadores más afines y presenta una recomendación ordenada y justificada.
+\end{itemize}
+
+\begin{figure}[htbp]
+    \centering
+    \resizebox{\textwidth}{!}{
+    \begin{tikzpicture}[
+        font=\small,
+        node distance=8mm and 7mm,
+        etapa/.style={draw=upmblue!80!black, fill=upmblue!8, thick, rounded corners=3pt, align=center, minimum height=14mm, text width=31mm, inner sep=2mm},
+        online/.style={draw=black!60, fill=black!4, thick, rounded corners=3pt, align=center, minimum height=14mm, text width=31mm, inner sep=2mm},
+        flecha/.style={-{Stealth[length=2.8mm]}, semithick, draw=black!75}
+    ]
+    % Fase offline
+    \node[etapa] (adq) {\textbf{Adquisición}\\[1mm] \footnotesize Censo y descarga de la actividad pública};
+    \node[etapa, right=of adq] (est) {\textbf{Estructuración}\\[1mm] \footnotesize Grafo de investigadores y actividad};
+    \node[etapa, right=of est] (enr) {\textbf{Enriquecimiento}\\[1mm] \footnotesize Biografías y dominios de especialización};
+    \node[etapa, right=of enr] (ind) {\textbf{Indexación}\\[1mm] \footnotesize Representaciones dispersa y densa};
+
+    \draw[flecha] (adq) -- (est);
+    \draw[flecha] (est) -- (enr);
+    \draw[flecha] (enr) -- (ind);
+
+    % Fase online
+    \node[online, below=22mm of adq] (idea) {\textbf{Idea del estudiante}\\[1mm] \footnotesize Texto libre, cualquier idioma};
+    \node[online, below=22mm of est] (inter) {\textbf{Interpretación}\\[1mm] \footnotesize Extracción de términos o reformulación};
+    \node[online, below=22mm of enr] (rec) {\textbf{Recuperación}\\[1mm] \footnotesize Similitud y fusión de rankings};
+    \node[online, below=22mm of ind] (out) {\textbf{Recomendación}\\[1mm] \footnotesize Tutores ordenados, con evidencias};
+
+    \draw[flecha] (idea) -- (inter);
+    \draw[flecha] (inter) -- (rec);
+    \draw[flecha] (rec) -- (out);
+    \draw[flecha] (ind.south) -- node[right=-7mm, font=\footnotesize, align=left]{Espacio de\\representación\\compartido} (rec.north);
+
+    % Agrupaciones
+    \begin{scope}[on background layer]
+    \node[draw=upmblue!50, dashed, rounded corners=4pt, fill=upmblue!3, inner sep=4mm,
+        fit=(adq)(est)(enr)(ind),
+        label={[upmblue!80!black, font=\footnotesize\bfseries]90:Preparación del corpus (proceso periódico)}] {};
+    \node[draw=black!40, dashed, rounded corners=4pt, fill=black!2, inner sep=4mm,
+        fit=(idea)(inter)(rec)(out),
+        label={[black!70, font=\footnotesize\bfseries]270:Atención de consultas (tiempo real)}] {};
+    \end{scope}
+    \end{tikzpicture}
+    }
+    \caption{Flujo metodológico del sistema: preparación periódica del corpus (arriba) y atención de consultas en tiempo real (abajo).
+    Ambas fases comparten el mismo espacio de representación semántica.}
+    \label{fig:flujo}
+\end{figure}
+
+Tres principios de diseño atraviesan todo el flujo:
+
+\begin{mydescription}
+    \item[Etapas con artefactos persistentes.] Cada etapa consume el artefacto de la anterior y produce el suyo propio (páginas crudas, grafo, perfiles enriquecidos, índices).
+    Esto permite re-ejecutar cualquier etapa de forma aislada e incremental (solo lo nuevo o lo inválido) sin repetir el proceso completo (\ref{req:uno}).
+    \item[Trazabilidad.] Toda recomendación es reconducible hacia atrás: del investigador recomendado a su perfil, del perfil a las evidencias agregadas y de estas a las páginas públicas originales.
+    La fuente cruda se conserva inmutable precisamente para poder reprocesarla cuando el método mejora.
+    \item[Neutralidad tecnológica.] Las etapas se definen por contratos de entrada/salida, no por herramientas. Cada una admite implementaciones alternativas (otro almacén, otro modelo de embedding) sin alterar el diseño.
+\end{mydescription}
+
+\section{Adquisición}
+\label{sec:met-adquisicion}
+
+La primera etapa convierte el portal público en una colección local y versionada, comprende dos pasos.
+El primero es el \emph{censo}: descubrir los investigadores recorriendo las unidades organizativas del portal (escuelas y departamentos), dado que no existe un listado descargable.\duda{Esto es mentira, es justo lo que descargo, pongo otra cosa mejor?}
+El segundo es la \emph{descarga} de las dos vistas públicas de cada investigador, tanto el perfil (datos de filiación, posiciones, temas declarados), como su actividad (publicaciones, proyectos, trabajos supervisados).
+
+La descarga se realiza de forma concurrente pero acotada, con reintentos ante fallos transitorios y de manera incremental: las páginas ya adquiridas no se vuelven a solicitar salvo refresco programado.
+\duda{No sé si ser tran granular en la explicación}
+El resultado se conserva tal cual se recibió, sin transformación alguna, como capa inmutable del sistema.
+
+
+\section{Estructuración: el perfil como grafo}
+\label{sec:met-grafo}
+
+La segunda etapa transforma el marcado semiestructurado en un modelo de datos explícito.
+Se adopta un \emph{property graph} cuyos nodos representan las entidades del dominio (investigador, publicación, trabajo supervisado, posición en la universidad, asignatura impartida) y cuyas aristas capturan las relaciones entre ellas (autoría, supervisión, trabajo y enseñanza); el esquema completo de nodos y aristas se recoge en el Anexo~\ref{annex:modelo-datos}.
+
+La elección del grafo frente a un modelo tabular responde a la naturaleza del dominio: las preguntas relevantes son de vecindad y conexión («¿qué investigadores comparten temas?», «¿quién ha supervisado trabajos próximos a este proyecto?») y el modelo de grafo las hace naturales.
+\textcolor{red}{Además, deja preparado el terreno para la línea futura de detección de colaboraciones, que es esencialmente un problema de análisis de grafos (esto es lo que quiero hacer ahora, igual lo quito).}
+
+Durante esta etapa se aplica una limpieza \emph{conservadora} del texto: solo se transforma aquello que responde a patrones inequívocos de la fuente (por ejemplo, resúmenes con secciones etiquetadas concatenadas), prefiriéndose conservar una imperfección a introducir una corrupción silenciosa (requisito \ref{req:dos}).
+\pendiente{Creo que lo cambié ya esto, tengo que repasar el código}
+
+\section{Consolidación y enriquecimiento del perfil}
+\label{sec:met-enriquecimiento}
+
+La tercera etapa produce, para cada investigador, un \emph{documento de perfil} autocontenido que agrega su evidencia: posiciones ocupadas, temas normalizados (unificación de variantes y duplicados), publicaciones con sus resúmenes, proyectos recientes, trabajos supervisados en el último periodo y asignaturas impartidas.
+Este documento es la unidad de trabajo de todo lo que sigue.
+\pendiente{Un PDI es Personal Docente e Investigador. En general, tenemos que hacer más hincapié en estas dos vertientes (en el código también!!!)}
+
+Sobre él se aplica el enriquecimiento lingüístico, que genera dos artefactos complementarios mediante un modelo de lenguaje operado localmente:
+
+\begin{itemize}
+    \item Una \textbf{biografía investigadora}: una síntesis en prosa de la trayectoria completa.
+    Se construye de forma \emph{incremental y acumulativa}: la producción científica se agrupa cronológicamente y el modelo va refinando un resumen acumulado periodo a periodo.
+    Este procedimiento evita exceder la ventana de contexto del modelo con trayectorias largas, equilibra el peso de las distintas etapas de la carrera y produce descripciones homogéneas entre perfiles densos y dispersos.
+    El estado intermedio de cada periodo se conserva, lo que aporta trazabilidad sobre cómo se fue construyendo la biografía final.
+    \item Una lista acumulativa de \textbf{dominios de especialización}: áreas de conocimiento concisas extraídas de la misma evidencia, con una regla de estabilidad (los dominios ya establecidos se conservan y solo se añaden los genuinamente nuevos) que evita oscilaciones entre ejecuciones.
+\end{itemize}
+
+La generación es \emph{estructurada}: el modelo debe devolver objetos con campos tipados que se validan automáticamente y toda salida que no supere la validación se descarta y se reintenta.
+El enriquecimiento queda persistido junto al resto del perfil, de modo que las etapas posteriores no dependen de volver a invocar al modelo.
+
+\section{Representación e indexación semántica}
+\label{sec:met-indexacion}
+
+La cuarta etapa proyecta cada perfil a un espacio de representación buscable.
+Atendiendo al análisis del Capítulo~\ref{ch:sota}, se mantienen deliberadamente \emph{dos}\duda{CUIDADO, esto es ahora y no estoy seguro del todo que lo haya dejado así, que cambié cosas} representaciones complementarias por investigador:
+
+\begin{itemize}
+    \item Una \textbf{representación léxica dispersa} de sus vocabularios temáticos (temas declarados y dominios extraídos), en la que cada componente es un término ponderado por su importancia contextual.
+    Es eficiente e \emph{interpretable}: permite mostrar qué términos han producido cada coincidencia.
+    \item Una \textbf{representación semántica densa} de su biografía investigadora, que captura proximidad conceptual más allá de la superficie léxica y de la lengua en que se exprese la consulta.
+\end{itemize}
+
+Ambas se almacenan en índices de similitud que admiten búsqueda eficiente por vecindad y fusión nativa de resultados.
+La consulta del estudiante se proyectará a estos mismos espacios para realizar la recomendación.
+
+\section{Emparejamiento}
+\label{sec:met-emparejamiento}
+
+La fase en línea ofrece cuatro estrategias de emparejamiento\duda{CUIDADO, esto lo voy a cambiar}, que se corresponden con las familias revisadas en el estado del arte (Tabla~\ref{tab:posicionamiento}) y que el marco de evaluación comparará en igualdad de condiciones:
+
+\begin{enumerate}
+    \item \textbf{Léxica con interpretación.} Un modelo de lenguaje extrae de la idea del estudiante dos listas de términos en el registro de los perfiles (términos generales del área y términos específicos de método). Cada lista lanza una búsqueda dispersa y ambas se fusionan por RRF (Ecuación~\ref{eq:rrf}).
+    \item \textbf{Semántica directa.} La idea, tal cual fue escrita, se proyecta al espacio denso y se recuperan las biografías más próximas por similitud de coseno.
+    \item \textbf{Semántica enriquecida.} Antes de proyectar, un modelo de lenguaje reformula la idea: la traduce al registro técnico y la expande con terminología estrechamente relacionada, con la instrucción explícita de no introducir temas que el estudiante no haya pedido.
+    \item \textbf{Híbrida.} Se lanzan en paralelo una señal léxica (términos extraídos contra los dominios de especialización) y una semántica (idea enriquecida contra las biografías) y ambas listas se fusionan por RRF.
+\end{enumerate}
+
+En todas ellas el resultado es una lista ordenada de investigadores con su puntuación normalizada y sus evidencias asociadas.
+
+\section{Presentación y transparencia}
+\label{sec:met-presentacion}
+
+La última etapa fija los requisitos de la capa de presentación.
+El estudiante introduce su idea como texto libre, sin formularios ni vocabularios controlados y en su propio idioma.
+La respuesta se presenta como una lista ordenada en la que cada recomendación va acompañada de sus \emph{evidencias}: los temas del investigador que coinciden con la consulta, su biografía investigadora y, cuando procede, la interpretación que el sistema hizo de la idea (términos extraídos o reformulación), de modo que el estudiante pueda auditar por qué se le recomienda a cada \gls{pdi}.
+
+Este último punto es una decisión de diseño deliberada: el sistema se concibe como \emph{apoyo} a la decisión, nunca como sustituto.
+Mostrar la interpretación de la consulta permite al estudiante corregirla, mostrar las evidencias le permite descartar recomendaciones espurias.
+La evaluación de la calidad de estas recomendaciones, en términos objetivos, es el objeto del capítulo siguiente.

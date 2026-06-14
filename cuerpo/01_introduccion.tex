@@ -1,0 +1,89 @@
+\chapter[Introducción]{Introducción: la elección de tutor como problema de información}
+\label{ch:introduccion}
+
+Cada curso académico, miles de estudiantes de la \gls{upm} se enfrentan a una de las decisiones más determinantes de su formación: elegir el tema y el tutor de su \gls{tfg}, \gls{tfm} o tesis doctoral.
+Es una decisión que condiciona meses (a veces años) de trabajo y que, con frecuencia, marca la primera toma de contacto real del estudiante con la investigación.
+Y, sin embargo, se toma casi siempre con información incompleta: el boca a boca, la asignatura que impartió un profesor concreto o un listado estático de temas propuestos.
+\pendiente{Mejorar algo más la motivación aquí}
+
+\duda{Este párrafo me parece repetitivo con el abstract. Me gusta mucho la última oración.}
+La paradoja es que la información necesaria para tomar esa decisión de forma fundamentada \emph{ya existe y es pública}.
+El Portal Científico de la \gls{upm} recoge, para cada miembro del \gls{pdi}, sus publicaciones, proyectos, líneas de investigación y actividad de supervisión.
+El problema no es de disponibilidad, sino de \emph{accesibilidad efectiva}: esa información está pensada para ser consultada ficha a ficha, no para ser explorada, comparada o consultada en lenguaje natural.
+Este trabajo parte de esa observación y la convierte en su hipótesis de partida: la elección de tutor no es un problema de falta de datos, sino un problema de recuperación de información.
+
+\section{Motivación}
+\label{sec:motivacion}
+
+La motivación de este trabajo puede articularse desde tres perspectivas complementarias.
+
+\textbf{Desde el punto de vista del estudiante}, existe una asimetría de información difícil de salvar.
+Un estudiante de máster que quiere trabajar, por ejemplo, en detección de desinformación en redes sociales, no tiene forma razonable de saber qué investigadores de toda la universidad han publicado, dirigido proyectos o supervisado trabajos en ese ámbito.
+El coste de explorar manualmente cientos de perfiles es \emph{prohibitivo}, de modo que la búsqueda se restringe al círculo de profesores conocidos.
+El resultado son emparejamientos subóptimos: temas elegidos por cercanía en lugar de por afinidad y vocaciones investigadoras que no llegan a encontrarse con quien podría dirigirlas.
+
+\textbf{Desde el punto de vista del profesorado}, la situación es simétrica.
+Los investigadores reciben propuestas de trabajos alejadas de sus líneas reales de investigación, mientras que los estudiantes que sí encajarían con su actividad no llegan a contactarles.
+Además, la misma opacidad que dificulta el \emph{encuentro estudiante-tutor} dificulta también la detección de sinergias \emph{entre} investigadores: dos grupos que trabajan en problemas adyacentes pueden no llegar a saberlo nunca.\pendiente{Decir por qué}
+
+\textbf{Desde el punto de vista institucional}, la universidad invierte un esfuerzo considerable en mantener y publicar datos de actividad investigadora que apenas se explotan más allá de la consulta individual y la rendición de cuentas.
+Dotar a esos datos de una capa de inteligencia (que los haga consultables en lenguaje natural y útiles para la orientación académica) multiplica el retorno de esa inversión y constituye un caso de uso ejemplar de \gls{ia} aplicada a la \emph{toma de decisiones académicas}: acotado, medible y con beneficio directo para estudiantes y profesorado.
+
+De esta triple motivación nace \proyecto: un sistema de recomendación que, a partir de los datos públicos del Portal Científico, construye perfiles semánticos de los investigadores y permite a un estudiante describir libremente su idea de trabajo en cualquier idioma para recibir una lista ordenada y razonada de tutores potenciales.
+
+\section{Contexto del trabajo}
+\label{sec:contexto}
+
+Este \gls{tfm} se desarrolla en el seno del \gls{maadm} de la \gls{upm} y constituye el núcleo técnico del \gls{pie} \textbf{IE26.6102, «UPM Match: Sistema de Recomendación de Tutores y Colaboraciones»} (convocatoria 2025-2026) \citep{pie_upmmatch_2026}, coordinado desde la \gls{etsisi} por Carlos Badenes Olmedo, con la co-coordinación de Andrea Cimmino Arriaga y un equipo interdisciplinar que incluye profesorado de otras escuelas de la universidad.
+El proyecto se adscribe a la línea de innovación \emph{E1: Integración de la IA en las actividades docentes}, con la que la UPM promueve la incorporación de \gls{ia} a sus procesos formativos.
+
+Los objetivos institucionales del proyecto delimitan con precisión el problema que este trabajo aborda: facilitar la elección de tutores afines a partir del análisis de datos objetivos del Portal Científico; aumentar la visibilidad de la información académica del profesorado de forma estructurada; contribuir a equilibrar la distribución de tutorías atendiendo a la afinidad temática; fomentar colaboraciones interdepartamentales mediante el análisis de las redes de coautoría; y ofrecer al estudiante una experiencia personalizada y transparente.
+De los resultados comprometidos por el proyecto, este \gls{tfm} materializa el prototipo funcional del sistema de recomendación, la base de datos de perfiles del \gls{pdi} y la evaluación retrospectiva del sistema (el «retroanálisis» previsto en su plan de evaluación, que el Capítulo~\ref{ch:evaluacion} formaliza); la \textcolor{red}{prueba piloto con estudiantes} y las acciones de difusión corresponden al ámbito del proyecto y se recogen aquí como trabajo futuro.\duda{Mejor este párrado en un listado?}
+
+El perímetro inicial del sistema abarca el PDI de cuatro escuelas del ámbito de las Tecnologías de la Información y las Comunicaciones de la UPM: la \acrfull{etsisi}, la \gls{etsii}, la \gls{etsist} y la \gls{etsit}, lo que supone un total de \pendiente{indicar el número final de investigadores, publicaciones y proyectos del corpus}.
+La metodología, no obstante, se ha diseñado para ser extensible al conjunto de la universidad (y en general, a cualquier institución con un portal científico público) sin tener que realizar cambios conceptuales.
+
+\section{Objetivos}
+\label{sec:objetivos}
+
+El objetivo general de este trabajo es \textbf{diseñar, construir y evaluar un sistema de recomendación de tutores académicos a partir de los datos públicos de actividad investigadora de la UPM}, capaz de atender consultas en lenguaje natural y de justificar sus recomendaciones.
+
+Este objetivo general se descompone en los siguientes objetivos específicos:
+
+\begin{itemize}
+    \item \textbf{O1. Adquisición y estructuración.} Construir un proceso automatizado, repetible e incremental que adquiera los datos públicos del Portal Científico y los estructure en un modelo de datos explotable.
+    \item \textbf{O2. Perfilado semántico.} Generar, para cada investigador, un perfil enriquecido que sintetice su trayectoria: temas de investigación normalizados, dominios de especialización y una biografía investigadora redactada automáticamente.
+    \item \textbf{O3. Emparejamiento.} Implementar y contrastar varias estrategias de recuperación (léxica dispersa, semántica densa e híbrida) que emparejen la idea libre de un estudiante con los perfiles de los investigadores, de forma robusta frente a diferencias de idioma y vocabulario.
+    \item \textbf{O4. Evaluación objetiva.} Definir un marco de evaluación reproducible que no requiera etiquetado manual, utilizando la historia real de supervisión como verdad de referencia, y emplearlo para comparar las estrategias anteriores.
+    \item \textbf{O5. Prototipo.} Materializar el sistema en un prototipo web usable, transparente en sus explicaciones y desplegable íntegramente en infraestructura propia de la institución.
+\end{itemize}
+
+Como objetivo exploratorio adicional, el modelo de datos se ha diseñado de forma que soporte, en trabajo futuro, la \emph{detección de oportunidades de colaboración entre investigadores} a partir de la afinidad temática de sus perfiles (véase el Capítulo~\ref{ch:conclusiones}).
+
+\section{Alcance y contribuciones}
+\label{sec:contribuciones}
+
+Las contribuciones principales de este trabajo son cuatro:
+
+\begin{enumerate}
+    \item Un \textbf{corpus estructurado y enriquecido} de la actividad investigadora de toda la \gls{upm}, construido íntegramente a partir de fuentes públicas y reconstruible de forma automática.
+    \item Una \textbf{metodología de evaluación sin etiquetado manual} para sistemas de recomendación de tutores, basada en proyectos realmente supervisados como consultas y en su supervisor real como respuesta correcta.
+    \item Una \textbf{comparación empírica} de estrategias de recuperación representativas del estado del arte (dispersa, densa, con y sin intervención de modelos de lenguaje, e híbrida) sobre un mismo corpus institucional y bajo condiciones idénticas.
+    \duda{No sé si está bien mencionar ya todas, igual eso es para más adelante. Faltaría el tema de Knowledge Graphs y ontologías}
+    \item Un \textbf{prototipo funcional de código abierto}, desplegable \emph{on-premise} con modelos de lenguaje locales, que demuestra la viabilidad práctica del enfoque sin dependencia de servicios externos.
+\end{enumerate}
+
+Queda fuera del alcance de este trabajo la asignación administrativa de tutores (\textbf{el sistema recomienda; nunca decide}), la incorporación de datos no públicos y la evaluación con estudiantes reales, que se plantea como línea futura.
+
+\section{Estructura del documento}
+\label{sec:estructura}
+
+El resto de la memoria se organiza como sigue.
+El Capítulo~\ref{ch:problema} analiza por qué este problema, pese a su aparente sencillez, sigue abierto, y destila de ese análisis los requisitos que guían el diseño.
+El Capítulo~\ref{ch:sota} revisa el estado del arte en recuperación de información y búsqueda de expertos, desde los modelos léxicos clásicos hasta el uso de modelos de lenguaje, y posiciona este trabajo en ese espectro.
+El Capítulo~\ref{ch:metodologia} describe la aproximación metodológica (el flujo completo desde el dato público hasta la recomendación) en términos conceptuales e independientes de la tecnología.
+El Capítulo~\ref{ch:evaluacion} define el marco de evaluación: la construcción de la verdad de referencia, las métricas y el protocolo experimental.
+El Capítulo~\ref{ch:resultados} presenta la materialización del sistema (arquitectura tecnológica y prototipo) y los resultados de la comparación de estrategias.
+El Capítulo~\ref{ch:discusion} discute el alcance y las implicaciones de esos resultados, y el Capítulo~\ref{ch:lecciones} recoge los problemas encontrados durante el desarrollo y las lecciones aprendidas.
+Finalmente, el Capítulo~\ref{ch:conclusiones} sintetiza las conclusiones y propone líneas de trabajo futuro.
+Los anexos recogen el detalle del modelo de datos, los \emph{prompts} de los agentes y la guía de despliegue.

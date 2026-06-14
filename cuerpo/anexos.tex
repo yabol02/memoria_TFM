@@ -1,0 +1,141 @@
+\chapter{Modelo de datos del perfil enriquecido}
+\label{annex:modelo-datos}
+
+Este anexo detalla el documento de perfil que la fase de consolidación produce para cada investigador y que constituye la unidad de trabajo de la indexación y la evaluación.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Campos principales del documento de perfil enriquecido.}
+    \label{tab:perfil-campos}
+    \begin{tabularx}{\textwidth}{l X}
+        \toprule
+        \rowcolor{upmblue!8} \colhead{Campo} & \colhead{Contenido} \\
+        \midrule
+        Identificador & Identificador público del investigador en el portal. \\
+        Filiación & Posiciones ocupadas y unidades organizativas (escuela, departamento). \\
+        Temas & Lista normalizada de temas de investigación declarados (variantes y duplicados unificados). \\
+        Publicaciones & Producción científica con título, año y resumen depurado. \\
+        Proyectos supervisados & Trabajos dirigidos recientemente, con título, resumen y palabras clave (base de la verdad de referencia del Capítulo~\ref{ch:evaluacion}). \\
+        Dominios & Áreas de especialización extraídas automáticamente, acumulativas entre ejecuciones. \\
+        Biografía & Síntesis en prosa de la trayectoria, generada incrementalmente. \\
+        Metadatos & Fechas de actividad (primer y último año), recuentos y trazas de procesamiento. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+Antes de consolidarse en ese documento, la evidencia se modela como un \emph{property graph} (Sección~\ref{sec:met-grafo}).
+La Figura~\ref{fig:grafo-esquema} muestra su esquema: un nodo central \texttt{Pdi} (investigador) conectado con los cuatro tipos de entidad que describen su actividad, más una relación de coautoría entre investigadores.
+
+\begin{figure}[htbp]
+    \centering
+    \begin{tikzpicture}[
+        font=\small,
+        nodo/.style={circle, draw=upmblue!80!black, fill=upmblue!10, thick, minimum size=16mm, align=center, inner sep=1.5pt, font=\footnotesize\sffamily},
+        central/.style={circle, draw=upmblue!85!black, fill=upmgold!35, very thick, minimum size=18mm, align=center, font=\bfseries\sffamily},
+        rel/.style={-{Stealth[length=2.4mm]}, semithick, draw=upmblue!70!black},
+        rellab/.style={font=\scriptsize\sffamily, text=upmblue!85!black, fill=white, inner sep=1.5pt}
+    ]
+        \node[central] (pdi)  at ( 0, 0)    {Pdi};
+        \node[nodo]    (pub)  at (-4, 2.4)  {Publi-\\cation};
+        \node[nodo]    (tft)  at ( 4, 2.4)  {LastYear-\\Project};
+        \node[nodo]    (pos)  at (-4,-2.4)  {Position};
+        \node[nodo]    (subj) at ( 4,-2.4)  {Subject};
+
+        \draw[rel] (pdi) -- node[rellab,sloped]{AUTHORSHIP} (pub);
+        \draw[rel] (pdi) -- node[rellab,sloped]{TUTORING}   (tft);
+        \draw[rel] (pdi) -- node[rellab,sloped]{WORKS}      (pos);
+        \draw[rel] (pdi) -- node[rellab,sloped]{TEACHING}   (subj);
+        \draw[rel] (pdi) to[out=120,in=60,looseness=9] node[rellab,above]{COAUTHORED} (pdi);
+    \end{tikzpicture}
+    \caption{Esquema del grafo de propiedades: tipos de nodo y relaciones. Todas las relaciones del modelo parten del investigador (\texttt{Pdi}); \texttt{COAUTHORED} es una arista derivada que conecta investigadores entre sí.}
+    \label{fig:grafo-esquema}
+\end{figure}
+
+La Tabla~\ref{tab:grafo-nodos} detalla la información que guarda cada nodo y la Tabla~\ref{tab:grafo-aristas} la de cada relación, conforme a los esquemas Pydantic del proyecto.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Tipos de nodo del grafo y su contenido.}
+    \label{tab:grafo-nodos}
+    \begin{tabularx}{\textwidth}{l l X}
+        \toprule
+        \rowcolor{upmblue!8} \colhead{Nodo} & \colhead{Identificador} & \colhead{Campos principales} \\
+        \midrule
+        \texttt{Pdi} & \texttt{pdi\_NNNNNN} & Nombre completo (y nombre/apellidos), correo, identificadores externos (ORCID, Scopus\ldots) y temas de investigación declarados en el portal. \\
+        \texttt{Publication} & \texttt{pub\_N} & Título, descripción depurada, año, tipo (artículo, conferencia\ldots), fuente, agencia de validación, autores, palabras clave, e identificador y URL de acceso abierto. \\
+        \texttt{LastYearProject} & \texttt{tft\_N} & Título, descripción, año, tipo, autores, palabras clave e identificador de acceso abierto. \\
+        \texttt{Position} & \texttt{loc\_\ldots} & Nombre y tipo de entidad (escuela, departamento, grupo de investigación\ldots) e identificador de origen en el portal. \\
+        \texttt{Subject} & \texttt{subj\_\ldots} & Nombre de la asignatura y tipo de docencia. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\begin{table}[htbp]
+    \centering
+    \caption{Relaciones del grafo: extremos y propiedades. \texttt{COAUTHORED} es una arista derivada (no proviene de un esquema Pydantic).}
+    \label{tab:grafo-aristas}
+    \begin{tabularx}{\textwidth}{l l X}
+        \toprule
+        \rowcolor{upmblue!8} \colhead{Relación} & \colhead{Origen $\rightarrow$ Destino} & \colhead{Propiedades} \\
+        \midrule
+        \texttt{AUTHORSHIP} & \texttt{Pdi} $\rightarrow$ \texttt{Publication} & Autoría de una publicación (sin propiedades adicionales). \\
+        \texttt{TUTORING} & \texttt{Pdi} $\rightarrow$ \texttt{LastYearProject} & Supervisión de un TFG/TFM (sin propiedades adicionales). \\
+        \texttt{WORKS} & \texttt{Pdi} $\rightarrow$ \texttt{Position} & Pertenencia o rol en una unidad: \texttt{role} y \texttt{since}. \\
+        \texttt{TEACHING} & \texttt{Pdi} $\rightarrow$ \texttt{Subject} & Docencia de una asignatura: \texttt{start\_date} y \texttt{end\_date}. \\
+        \texttt{COAUTHORED} & \texttt{Pdi} $\rightarrow$ \texttt{Pdi} & Coautoría entre investigadores: \texttt{num} (número de publicaciones en común) y \texttt{first\_year}/\texttt{last\_year} (primer y último año de colaboración). \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\pendiente{Añadir un ejemplo real abreviado y anonimizado de un documento de perfil enriquecido (JSON validado por Pydantic).}
+
+\chapter{Prompts de los agentes}
+\label{annex:prompts}
+
+Este anexo recoge las instrucciones (\emph{prompts}) de los tres agentes basados en LLM que intervienen en el sistema, con su contrato de salida estructurada:
+
+\begin{itemize}
+    \item \textbf{Biógrafo incremental} (preparación del corpus): recibe los dominios establecidos y los resúmenes de un periodo, y devuelve la lista acumulativa de dominios y la biografía refinada.
+    \item \textbf{Extractor de términos} (consulta, estrategias léxica e híbrida): recibe la idea del estudiante y devuelve dos listas de términos en inglés (generales y específicos).
+    \item \textbf{Enriquecedor de consulta} (consulta, estrategias semántica enriquecida e híbrida): recibe la idea y devuelve una reformulación técnica en inglés, con la restricción de no introducir temas nuevos.
+\end{itemize}
+
+\pendiente{Volcar aquí el texto literal de los tres prompts (system + plantilla de usuario) y los esquemas Pydantic de sus salidas, una vez congelada la versión final. Incluir un ejemplo de entrada/salida por agente.}
+
+\chapter{Guía de despliegue reproducible}
+\label{annex:despliegue}
+
+El sistema completo se despliega con contenedores (Docker Compose) sobre una única máquina anfitriona, coordinados por un proxy inverso que expone todo bajo una única ruta base. La Tabla~\ref{tab:despliegue-servicios} resume los servicios.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Servicios del despliegue y su cometido.}
+    \label{tab:despliegue-servicios}
+    \begin{tabularx}{\textwidth}{l X}
+        \toprule
+        \rowcolor{upmblue!8} \colhead{Servicio} & \colhead{Cometido} \\
+        \midrule
+        Nginx & Proxy inverso; único punto de entrada externo (enrutado por subruta). \\
+        MinIO & Almacén de objetos (capa cruda inmutable y artefactos del pipeline). \\
+        Memgraph (+ Lab) & Base de datos de grafo y su interfaz gráfica de exploración. \\
+        Qdrant & Índice vectorial (colecciones dispersa BM42 y densa). \\
+        Ollama & Servidor de modelos local (LLM y embeddings); contenedor externo compartido. \\
+        Airflow (+ PostgreSQL) & Orquestación de las fases del pipeline y su base de metadatos. \\
+        Aplicación web (Flask) & Interfaz de consulta y recomendación. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+Los modelos empleados son \texttt{qwen2.5:7b-instruct} para la generación (biografías y agentes de consulta), \texttt{nomic-embed-text-v2-moe} para los \emph{embeddings} densos y \texttt{Qdrant/bm42-all-minilm-l6-v2-attentions} (BM42) para la representación dispersa.
+\pendiente{Completar al cierre del desarrollo: pasos de arranque desde cero (levantar servicios, ejecutar el pipeline por fases, verificar los índices) y los requisitos orientativos de hardware con los tiempos de ejecución observados.}
+
+El código fuente completo, incluida esta memoria, está disponible en el repositorio público del proyecto: \url{https://github.com/cbadenes/upm-match}.\pendiente{Si procede, añadir DOI o release etiquetada para la versión entregada.}
+
+\chapter{Resultados extendidos}
+\label{annex:resultados-extendidos}
+
+\pendiente{Incluir, tras la ejecución definitiva del banco de pruebas: la tabla completa de resultados con desviaciones o intervalos si se ejecutan varias semillas; el desglose por escuela y por idioma de la consulta; ejemplos adicionales de casos ilustrativos que no cupieron en el Capítulo~\ref{ch:resultados}; y cualquier experimento secundario (p.~ej., sensibilidad al límite de recuperación).}
+
+El código y esta memoria residen en el repositorio público \url{https://github.com/cbadenes/upm-match}.
+\pendiente{Añadir la URL de la web desplegada cuando esté disponible públicamente.}
+\pendiente{Añadir URL del repo (independiente) a la memoria}

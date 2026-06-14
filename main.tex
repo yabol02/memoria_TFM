@@ -1,60 +1,45 @@
-% --------------------------
 % CREDITS:
 % This template is based and basically an adaptation of UPM_thesis_template_en template:
 % https://www.overleaf.com/latex/templates/upm-thesis-template-en/nzjnspqsxfmm
-% All credits for the template to the author: MAría Blanco (UPM)
-% --------------------------
+% All credits for the template to the author: María Blanco (UPM)
 
-% --------------------------
 % Document class
-% --------------------------
 \documentclass[
-A4paper,                % Tamaño del papel A4
-twoside,                % A una columna o a dos
-openright,              % Los capítulos y secciones empiezan siempre a la derecha
-chapterprefix=true,     % Añade un prefijo a los títulos
-12pt,                   % Tamaño de fuente
-headings=normal,        % Tamaño de las cabeceras
-titlepage=on            % Separa las páginas con título
+    A4paper,             % Tamaño del papel A4
+    twoside,             % A una columna o a dos
+    openright,           % Los capítulos y secciones empiezan siempre a la derecha
+    chapterprefix=true,  % Añade un prefijo a los títulos
+    12pt,                % Tamaño de fuente
+    headings=normal,     % Tamaño de las cabeceras
+    titlepage=on         % Separa las páginas con título
 ]{book}
 
-% **************************************************
 % THESIS details
-% **************************************************
-
 \newcommand{\University}{\protect{Universidad Polit\'ecnica de Madrid}}
 \newcommand{\UNIVERSITY}{\protect{UNIVERSIDAD POLIT\'ECNICA DE MADRID}}
 
 \input{thesisDetails}
 
-% **************************************************
 % Settings
-% **************************************************
-
 \input{settings}
 
-% **************************************************
-% Begin document
-% **************************************************
 \begin{document}
 
-% --------------------------
 % Cover and front matter
-% --------------------------
 \frontmatter
-\pagestyle{empty}				    % no header nor footer
+\pagestyle{empty}  % no header nor footer
 \input{preliminares/1_cubierta}
 \newpage
 
 \input{preliminares/2_portada}
 \newpage
 
-\pagenumbering{roman}			    % roman page numbering 
-\pagestyle{plain}				    % empty header, just page number in footer
+\pagenumbering{roman}  % roman page numbering
+\pagestyle{plain}  % empty header, just page number in footer
 \input{preliminares/3_dedicatoria}
 \cleardoublepage
 
-\input{preliminares/4_agradecimientos_y_financiacion}   % dedication & cknowledgement (optional)
+\input{preliminares/4_agradecimientos_y_financiacion}
 \cleardoublepage
 
 \input{preliminares/5_resumen}  % abstract (in English and Spanish)
@@ -64,8 +49,8 @@ titlepage=on            % Separa las páginas con título
 
 \selectlanguage{spanish}
 
-\setcounter{tocdepth}{3}		% define depth of toc
-\tableofcontents				% display table of contents
+\setcounter{tocdepth}{3}  % define depth of toc
+\tableofcontents  % display table of contents
 
 
 \addcontentsline{toc}{section}{Índice de figuras}
@@ -79,9 +64,7 @@ titlepage=on            % Separa las páginas con título
 \input{preliminares/6_acronimos}
 \cleardoublepage
 
-% --------------------------
 % Main matter
-% --------------------------
 \mainmatter
 \pagenumbering{arabic}			% arabic page numbering
 \setcounter{page}{1}			% set page counter
@@ -89,31 +72,31 @@ titlepage=on            % Separa las páginas con título
 \parskip=7pt                    % space after each paragraph
 \parindent=0pt                  % suppress indentation of paragraphs
 
-
-\include{cuerpo/chapter2}
-\include{cuerpo/chapter3}
-\include{cuerpo/chapter4}
-\include{cuerpo/chapter5}
-\include{cuerpo/chapter6}
+% Cuerpo de la memoria (un fichero por capítulo, en orden de lectura)
+\include{cuerpo/01_introduccion}
+\include{cuerpo/02_problema}
+\include{cuerpo/03_estado_del_arte}
+\include{cuerpo/04_metodologia}
+\include{cuerpo/05_evaluacion}
+\include{cuerpo/06_resultados}
+\include{cuerpo/07_discusion}
+\include{cuerpo/08_lecciones}
+\include{cuerpo/09_conclusiones}
 
 \cleardoublepage
 
-% --------------------------
 % Back matter
-% --------------------------
-\backmatter
-
-\bibliographystyle{cas-model2-names}
+\phantomsection
+\addcontentsline{toc}{chapter}{Bibliografía}
+\bibliographystyle{elsarticle-num-names}
 \bibliography{references}
-% \printbibliography[title=Referencias, heading=bibintoc]
 
+% Anexos (numerados alfabéticamente: A, B, C...)
 \appendix
-\include{cuerpo/x-Anexos}
+\include{cuerpo/anexos}
 
 
 % **************************************************
 % End of document
 % **************************************************
 \end{document}
-
-About

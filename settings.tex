@@ -1,69 +1,58 @@
-% **************************************************
 % Settings
-% **************************************************
-% --------------------------
+
 % Packages
-% --------------------------
 \usepackage[spanish,english,es-tabla]{babel}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}     % Use a modern font (that is not pixelated)
 \usepackage[protrusion=true, expansion=true]{microtype}  % Use microtype to improve readability
-\usepackage{amsmath,amssymb} 
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+
+% Palette (defined early: used by titles, tables and figures)
+\definecolor{upmblue}{RGB}{0,82,147}  % institutional-ish blue, used across the document
+\definecolor{pendingorange}{RGB}{176,93,0}
+\definecolor{upmgold}{RGB}{174,155,109}  % Pantone 873 C
+\definecolor{umpred}{RGB}{230,25,49}  % Pantone Red 032 C
+\definecolor{upmgrey}{RGB}{227,227,227}  % Pantone 877 C (Gris claro)
+
+% Tables
 \usepackage{tabularx}    % tables spanning the full text width
 \usepackage{multicol}    % multi-columns in tables
 \usepackage{multirow}    % multi-rows in tables
 \usepackage{longtable}   % tables spanning more than one page
 \usepackage{booktabs}    % nicer horizontal rules in tables
 \usepackage{ltablex}
-\usepackage{setspace}
+\usepackage{colortbl}    % \rowcolor for table headers
+
+% Graphics
 \usepackage{tikz}                % drawing custom shapes
-\usepackage{graphicx,graphics}   % packages to manage images
-\usepackage{subfigure}           % display two figures next to each other
+\usetikzlibrary{positioning, arrows.meta, fit, backgrounds, calc}
+\usepackage{graphicx}            % manage images
 \usepackage[export]{adjustbox}
-\usepackage{ragged2e} 
-\usepackage{comment} 
-\usepackage{blindtext}
-\usepackage[acronym,nonumberlist,nomain]{glossaries}  % package for list of acronyms
-\usepackage{hyperref}
-\usepackage[a4paper]{geometry}
+
+% Text & layout helpers
+\usepackage{setspace}
+\usepackage{ragged2e}
+\usepackage{comment}
 \usepackage{parskip}     % paragraph spacing (suppress indentation)
-\usepackage{fancyhdr}    % personalizar encabezado
 \usepackage{enumitem}
-\usepackage{xcolor}
 \usepackage{emptypage}   % no headers in empty pages
+\usepackage{csquotes}
+\usepackage{fancyhdr}    % personalizar encabezado
 \usepackage[small,hang,bf]{caption}    % caption options
 \usepackage{subcaption}
-\usepackage{csquotes}
+\usepackage{titlesec}    % elegant chapter/section headings
 
 %%% Añadido para mejorar la elegancia del estilo de las referencias
 \usepackage[square,numbers]{natbib}
 
-%%% BIBLIOGRAPHY
-% The style used is APA. A list of available styles is available  at https://www.overleaf.com/learn/latex/Biblatex_bibliography_styles
+% Geometry
+\usepackage[a4paper]{geometry}
+\newgeometry {top=2.5cm, bottom=2.5cm, right=2.5cm, left=2.5cm, marginparwidth=2cm, marginparsep=3mm}
 
-% \usepackage[
-% backend=biber,
-% style=cas-model2-names,
-% sorting=nyt,
-% doi=true,
-% url=false,
-% isbn=false,
-% backref=false
-% ]{biblatex}
-
-% The .bib files in included here
-%\addbibresource{references.bib}
-
-% --------------------------
-% Customize document
-% --------------------------
-% Define the geometry of the document
-\newgeometry {top=2.5cm, bottom=2.5cm, right=2.5cm, left=2.5cm}
-
-\setlength{\parskip}{10pt}   % Change the default value
-
-% hiperlinks
+% Hyperlinks (load before glossaries)
+\usepackage{hyperref}
 \hypersetup{
     colorlinks=true,          % Enable colored links
     linkcolor=black,          % Color for internal links
@@ -71,12 +60,26 @@
     citecolor=blue
 }
 
+% Glossaries (acronyms)
+\usepackage[acronym,nonumberlist,nogroupskip,nopostdot,toc,nomain,section=section]{glossaries}
+\usepackage{glossary-longbooktabs}    % booktabs-styled glossary tables
+\setacronymstyle{long-short}
+\setlength{\glsdescwidth}{0.78\linewidth}
+\addto\captionsspanish{
+  \renewcommand*{\entryname}{\textcolor{upmblue!85!black}{Sigla}}%
+  \renewcommand*{\descriptionname}{\textcolor{upmblue!85!black}{Significado}}
+}
+\makeglossaries
+
+% Customize document
+\setlength{\parskip}{10pt}
+
 % Header and footer
-\fancyhf{}   % Clear the default header and footer
+\fancyhf{}  % Clear the default header and footer
 \renewcommand{\headrulewidth}{0.2pt}
- 
+
 \fancyhead[RO]{\nouppercase \leftmark}  % Define the header for odd and even pages
-\fancyhead[LE]{\thesisAuthor}           % Define the header for odd and even pages
+\fancyhead[LE]{\thesisAuthor}  % Define the header for odd and even pages
 \fancyfoot[C]{\thepage}
 
 \addto\captionsenglish{\renewcommand{\contentsname}{Table of Contents}}
@@ -84,3 +87,58 @@
 % Increase indentation in lists
 \newlist{mydescription}{description}{1}
 \setlist[mydescription,1]{labelindent=2em, leftmargin=2em}
+
+% Heading style: small-caps blue chapter label, bold title, blue rule
+\titleformat{\chapter}[display]
+  {\normalfont}
+  {\color{upmblue!85!black}\scshape\Large\chaptertitlename~\thechapter}
+  {1.5ex}
+  {\bfseries\huge}
+  [{\vspace{1.5ex}{\color{upmblue!85!black}\titlerule[1.2pt]}}]
+\titlespacing*{\chapter}{0pt}{-20pt}{30pt}
+
+\titleformat{\section}
+  {\normalfont\Large\bfseries\color{upmblue!60!black}}
+  {\thesection}{1em}{}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{upmblue!40!black}}
+  {\thesubsection}{1em}{}
+
+% Table & caption style
+% Captions: bold blue label ("Tabla 2.1"), small text
+\captionsetup{labelfont={bf,color=upmblue!85!black}}
+
+% Slightly taller table rows
+\renewcommand{\arraystretch}{1.2}
+
+% Column header style: use in the header row of every table, e.g. \rowcolor{upmblue!8} \colhead{Etapa} & \colhead{Cometido} \\
+\newcommand{\colhead}[1]{\textcolor{upmblue!85!black}{\textbf{#1}}}
+
+% Project-specific helpers
+
+% Requisitos: contador propio con formato R1, R2... para poder referenciarlos
+% con \ref sin que arrastre el número de capítulo/tabla.
+\newcounter{requisito}
+\renewcommand{\therequisito}{R\arabic{requisito}}
+% \reqid{etiqueta} imprime «R1» en la celda y fija la etiqueta para \ref.
+\newcommand{\reqid}[1]{\refstepcounter{requisito}\therequisito\label{#1}}
+
+% Project name
+\usepackage{xspace}
+\newcommand{\proyecto}{\textsf{\textbf{\textcolor{upmblue}{UPM Match}}}\xspace}
+% Placeholder marker for content that cannot be written yet (results, figures, final numbers...). Search for \pendiente before submitting: the document must compile to zero occurrences in the final version.
+\newcommand{\pendiente}[1]{\textcolor{pendingorange}{\textbf{[Pendiente:} #1\textbf{]}}}
+
+
+\usepackage[textwidth=2cm]{todonotes} 
+\newcommand{\duda}[1]{%
+  \textsuperscript{\textcolor{pendingorange}{$\star$}}
+  \todo[
+    color=green!15,      
+    bordercolor=green,   
+    textcolor=black,             
+    size=scriptsize,             
+    linecolor=green,     
+    noline=false                 
+  ]{#1}\xspace
+}
