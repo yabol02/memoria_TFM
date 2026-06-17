@@ -1,10 +1,16 @@
 % Settings
 
 % Packages
+
+% Filters a harmless warning of glossaries/tracklang. It must be loaded before glossaries.
+\usepackage{silence}
+\WarningFilter{tracklang}{No}
+
+% Style
 \usepackage[spanish,english,es-tabla]{babel}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage{lmodern}     % Use a modern font (that is not pixelated)
+\usepackage{lmodern}  % Use a modern font (that is not pixelated)
 \usepackage[protrusion=true, expansion=true]{microtype}  % Use microtype to improve readability
 \usepackage{amsmath,amssymb}
 \usepackage{xcolor}
@@ -17,52 +23,55 @@
 \definecolor{upmgrey}{RGB}{227,227,227}  % Pantone 877 C (Gris claro)
 
 % Tables
-\usepackage{tabularx}    % tables spanning the full text width
-\usepackage{multicol}    % multi-columns in tables
-\usepackage{multirow}    % multi-rows in tables
-\usepackage{longtable}   % tables spanning more than one page
-\usepackage{booktabs}    % nicer horizontal rules in tables
+\usepackage{tabularx}  % tables spanning the full text width
+\usepackage{multicol}  % multi-columns in tables
+\usepackage{multirow}  % multi-rows in tables
+\usepackage{longtable}  % tables spanning more than one page
+\usepackage{booktabs}  % nicer horizontal rules in tables
 \usepackage{ltablex}
-\usepackage{colortbl}    % \rowcolor for table headers
+\usepackage{colortbl}  % \rowcolor for table headers
 
 % Graphics
-\usepackage{tikz}                % drawing custom shapes
+\usepackage{tikz}  % drawing custom shapes
 \usetikzlibrary{positioning, arrows.meta, fit, backgrounds, calc}
-\usepackage{graphicx}            % manage images
+\usepackage{graphicx}  % manage images
 \usepackage[export]{adjustbox}
 
 % Text & layout helpers
 \usepackage{setspace}
 \usepackage{ragged2e}
 \usepackage{comment}
-\usepackage{parskip}     % paragraph spacing (suppress indentation)
+\usepackage{parskip}  % paragraph spacing (suppress indentation)
 \usepackage{enumitem}
-\usepackage{emptypage}   % no headers in empty pages
+\usepackage{emptypage}  % no headers in empty pages
 \usepackage{csquotes}
-\usepackage{fancyhdr}    % personalizar encabezado
-\usepackage[small,hang,bf]{caption}    % caption options
+\usepackage{fancyhdr}  % personalizar encabezado
+\usepackage[small,hang,bf]{caption}  % caption options
 \usepackage{subcaption}
-\usepackage{titlesec}    % elegant chapter/section headings
+\usepackage{titlesec}  % elegant chapter/section headings
+\usepackage[bottom]{footmisc}
 
-%%% Añadido para mejorar la elegancia del estilo de las referencias
+% Improve the elegance of the style of the references
 \usepackage[square,numbers]{natbib}
 
 % Geometry
 \usepackage[a4paper]{geometry}
-\newgeometry {top=2.5cm, bottom=2.5cm, right=2.5cm, left=2.5cm, marginparwidth=2cm, marginparsep=3mm}
+\newgeometry {top=2.5cm, bottom=2.5cm, right=2.5cm, left=2.5cm, marginparwidth=2cm, marginparsep=3mm, headheight=15pt}
 
 % Hyperlinks (load before glossaries)
 \usepackage{hyperref}
 \hypersetup{
-    colorlinks=true,          % Enable colored links
-    linkcolor=black,          % Color for internal links
+    plainpages=false,  % anclajes de página por \thepage...
+    hypertexnames=false,
+    colorlinks=true,  % Enable colored links
+    linkcolor=black,  % Color for internal links
     urlcolor=blue,
     citecolor=blue
 }
 
 % Glossaries (acronyms)
 \usepackage[acronym,nonumberlist,nogroupskip,nopostdot,toc,nomain,section=section]{glossaries}
-\usepackage{glossary-longbooktabs}    % booktabs-styled glossary tables
+\usepackage{glossary-longbooktabs}  % booktabs-styled glossary tables
 \setacronymstyle{long-short}
 \setlength{\glsdescwidth}{0.78\linewidth}
 \addto\captionsspanish{
@@ -73,6 +82,7 @@
 
 % Customize document
 \setlength{\parskip}{10pt}
+\raggedbottom  % With paragraph spacing, it does not force vertical padding on the page
 
 % Header and footer
 \fancyhf{}  % Clear the default header and footer
@@ -111,22 +121,31 @@
 % Slightly taller table rows
 \renewcommand{\arraystretch}{1.2}
 
+% X columns from tabularx left alligned (ragged righ)
+\renewcommand{\tabularxcolumn}[1]{>{\raggedright\arraybackslash}p{#1}}
+
 % Column header style: use in the header row of every table, e.g. \rowcolor{upmblue!8} \colhead{Etapa} & \colhead{Cometido} \\
 \newcommand{\colhead}[1]{\textcolor{upmblue!85!black}{\textbf{#1}}}
 
 % Project-specific helpers
 
-% Requisitos: contador propio con formato R1, R2... para poder referenciarlos
-% con \ref sin que arrastre el número de capítulo/tabla.
+% Requirements: own counter with format R1, R2... to reference them with \ref without the number of the chapter/table.
 \newcounter{requisito}
 \renewcommand{\therequisito}{R\arabic{requisito}}
-% \reqid{etiqueta} imprime «R1» en la celda y fija la etiqueta para \ref.
+% \reqid{etiqueta} prints «R1» in the cell and attaches the tag for \ref.
 \newcommand{\reqid}[1]{\refstepcounter{requisito}\therequisito\label{#1}}
+
+% Objectives: same mechanics, O1, O2... format to refernce with \ref.
+\newcounter{objetivo}
+\renewcommand{\theobjetivo}{O\arabic{objetivo}}
+% \objid{etiqueta} prints «O1» and attaches the tag with \ref.
+\newcommand{\objid}[1]{\refstepcounter{objetivo}\theobjetivo\label{#1}}
 
 % Project name
 \usepackage{xspace}
 \newcommand{\proyecto}{\textsf{\textbf{\textcolor{upmblue}{UPM Match}}}\xspace}
-% Placeholder marker for content that cannot be written yet (results, figures, final numbers...). Search for \pendiente before submitting: the document must compile to zero occurrences in the final version.
+% Placeholder marker for content that cannot be written yet (results, figures, final numbers...).
+% Search for \pendiente before submitting: the document must compile to zero occurrences in the final version.
 \newcommand{\pendiente}[1]{\textcolor{pendingorange}{\textbf{[Pendiente:} #1\textbf{]}}}
 
 
