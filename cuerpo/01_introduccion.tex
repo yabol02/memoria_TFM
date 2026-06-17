@@ -8,8 +8,8 @@ Y, sin embargo, se toma casi siempre con información incompleta: el boca a boca
 
 \duda{Este párrafo me parece repetitivo con el abstract. Me gusta mucho la última oración.}
 La paradoja es que la información necesaria para tomar esa decisión de forma fundamentada \emph{ya existe y es pública}.
-El Portal Científico de la \gls{upm} recoge, para cada miembro del \gls{pdi}, sus publicaciones, proyectos, líneas de investigación y actividad de supervisión.
-El problema no es de disponibilidad, sino de \emph{accesibilidad efectiva}: esa información está pensada para ser consultada ficha a ficha, no para ser explorada, comparada o consultada en lenguaje natural.
+El Portal Científico de la \gls{upm}\footnote{Accesible públicamente en \url{https://portalcientifico.upm.es/es/}.} recoge, para cada miembro del \gls{pdi}, sus publicaciones, proyectos, líneas de investigación y actividad de supervisión.
+El problema no es de disponibilidad, sino de \emph{accesibilidad efectiva}: esa información está pensada para ser consultada ficha a ficha, no para ser explorada, comparada ni consultada en lenguaje natural.
 Este trabajo parte de esa observación y la convierte en su hipótesis de partida: la elección de tutor no es un problema de falta de datos, sino un problema de recuperación de información.
 
 \section{Motivación}
@@ -24,21 +24,23 @@ El resultado son emparejamientos subóptimos: temas elegidos por cercanía en lu
 
 \textbf{Desde el punto de vista del profesorado}, la situación es simétrica.
 Los investigadores reciben propuestas de trabajos alejadas de sus líneas reales de investigación, mientras que los estudiantes que sí encajarían con su actividad no llegan a contactarles.
-Además, la misma opacidad que dificulta el \emph{encuentro estudiante-tutor} dificulta también la detección de sinergias \emph{entre} investigadores: dos grupos que trabajan en problemas adyacentes pueden no llegar a saberlo nunca.\pendiente{Decir por qué}
+Además, la misma opacidad que dificulta el \emph{encuentro estudiante-tutor} dificulta también la detección de sinergias \emph{entre} investigadores: dos grupos que trabajan en problemas adyacentes pueden no llegar a saberlo nunca, sencillamente porque ningún canal pone en relación lo que cada uno publica: descubrir la afinidad exigiría que un investigador rastreara manualmente la producción del resto, un esfuerzo que nadie asume de forma sistemática.
 
 \textbf{Desde el punto de vista institucional}, la universidad invierte un esfuerzo considerable en mantener y publicar datos de actividad investigadora que apenas se explotan más allá de la consulta individual y la rendición de cuentas.
 Dotar a esos datos de una capa de inteligencia (que los haga consultables en lenguaje natural y útiles para la orientación académica) multiplica el retorno de esa inversión y constituye un caso de uso ejemplar de \gls{ia} aplicada a la \emph{toma de decisiones académicas}: acotado, medible y con beneficio directo para estudiantes y profesorado.
+En una perspectiva más amplia, el sistema desarrollado constituye un primer paso hacia la construcción de bases de conocimiento semánticas sobre la experiencia investigadora y la actividad académica de la institución, susceptibles de ser explotadas por sistemas de \gls{ia} generativa en escenarios conversacionales.
 
 De esta triple motivación nace \proyecto: un sistema de recomendación que, a partir de los datos públicos del Portal Científico, construye perfiles semánticos de los investigadores y permite a un estudiante describir libremente su idea de trabajo en cualquier idioma para recibir una lista ordenada y razonada de tutores potenciales.
 
 \section{Contexto del trabajo}
 \label{sec:contexto}
 
-Este \gls{tfm} se desarrolla en el seno del \gls{maadm} de la \gls{upm} y constituye el núcleo técnico del \gls{pie} \textbf{IE26.6102, «UPM Match: Sistema de Recomendación de Tutores y Colaboraciones»} (convocatoria 2025-2026) \citep{pie_upmmatch_2026}, coordinado desde la \gls{etsisi} por Carlos Badenes Olmedo, con la co-coordinación de Andrea Cimmino Arriaga y un equipo interdisciplinar que incluye profesorado de otras escuelas de la universidad.
-El proyecto se adscribe a la línea de innovación \emph{E1: Integración de la IA en las actividades docentes}, con la que la UPM promueve la incorporación de \gls{ia} a sus procesos formativos.
+Este \gls{tfm} se desarrolla en el seno del \gls{maadm} de la \gls{upm}.
+El trabajo se alinea con las iniciativas de innovación educativa impulsadas por la \gls{upm}, particularmente aquellas orientadas a mejorar los procesos de orientación académica y asignación de tutores mediante herramientas basadas en datos.
 
-Los objetivos institucionales del proyecto delimitan con precisión el problema que este trabajo aborda: facilitar la elección de tutores afines a partir del análisis de datos objetivos del Portal Científico; aumentar la visibilidad de la información académica del profesorado de forma estructurada; contribuir a equilibrar la distribución de tutorías atendiendo a la afinidad temática; fomentar colaboraciones interdepartamentales mediante el análisis de las redes de coautoría; y ofrecer al estudiante una experiencia personalizada y transparente.
-De los resultados comprometidos por el proyecto, este \gls{tfm} materializa el prototipo funcional del sistema de recomendación, la base de datos de perfiles del \gls{pdi} y la evaluación retrospectiva del sistema (el «retroanálisis» previsto en su plan de evaluación, que el Capítulo~\ref{ch:evaluacion} formaliza); la \textcolor{red}{prueba piloto con estudiantes} y las acciones de difusión corresponden al ámbito del proyecto y se recogen aquí como trabajo futuro.\duda{Mejor este párrado en un listado?}
+En esa línea, el problema que este trabajo aborda queda delimitado con precisión por un conjunto de objetivos: facilitar la elección de tutores afines a partir del análisis de datos objetivos del Portal Científico, aumentar la visibilidad de la información académica del profesorado de forma estructurada, contribuir a equilibrar la distribución de tutorías atendiendo a la afinidad temática, fomentar colaboraciones interdepartamentales mediante el análisis de las redes de coautoría y ofrecer al estudiante una experiencia personalizada y transparente.
+De entre ellos, este \gls{tfm} materializa el prototipo funcional del sistema de recomendación, la base de datos de perfiles del \gls{pdi} y la evaluación retrospectiva del sistema (el «retroanálisis» que el Capítulo~\ref{ch:evaluacion} formaliza).
+La \textcolor{red}{prueba piloto con estudiantes} y las acciones de difusión se recogen aquí como trabajo futuro.\duda{Mejor este párrado en un listado?}
 
 El perímetro inicial del sistema abarca el PDI de cuatro escuelas del ámbito de las Tecnologías de la Información y las Comunicaciones de la UPM: la \acrfull{etsisi}, la \gls{etsii}, la \gls{etsist} y la \gls{etsit}, lo que supone un total de \pendiente{indicar el número final de investigadores, publicaciones y proyectos del corpus}.
 La metodología, no obstante, se ha diseñado para ser extensible al conjunto de la universidad (y en general, a cualquier institución con un portal científico público) sin tener que realizar cambios conceptuales.
@@ -51,11 +53,11 @@ El objetivo general de este trabajo es \textbf{diseñar, construir y evaluar un 
 Este objetivo general se descompone en los siguientes objetivos específicos:
 
 \begin{itemize}
-    \item \textbf{O1. Adquisición y estructuración.} Construir un proceso automatizado, repetible e incremental que adquiera los datos públicos del Portal Científico y los estructure en un modelo de datos explotable.
-    \item \textbf{O2. Perfilado semántico.} Generar, para cada investigador, un perfil enriquecido que sintetice su trayectoria: temas de investigación normalizados, dominios de especialización y una biografía investigadora redactada automáticamente.
-    \item \textbf{O3. Emparejamiento.} Implementar y contrastar varias estrategias de recuperación (léxica dispersa, semántica densa e híbrida) que emparejen la idea libre de un estudiante con los perfiles de los investigadores, de forma robusta frente a diferencias de idioma y vocabulario.
-    \item \textbf{O4. Evaluación objetiva.} Definir un marco de evaluación reproducible que no requiera etiquetado manual, utilizando la historia real de supervisión como verdad de referencia, y emplearlo para comparar las estrategias anteriores.
-    \item \textbf{O5. Prototipo.} Materializar el sistema en un prototipo web usable, transparente en sus explicaciones y desplegable íntegramente en infraestructura propia de la institución.
+    \item \textbf{\objid{obj:adquisicion}. Adquisición y estructuración.} Construir un proceso automatizado, repetible e incremental que adquiera los datos públicos del Portal Científico y los estructure en un modelo de datos explotable.
+    \item \textbf{\objid{obj:perfilado}. Perfilado semántico.} Generar, para cada investigador, un perfil enriquecido que sintetice su trayectoria: temas de investigación normalizados, dominios de especialización y una biografía investigadora redactada automáticamente.
+    \item \textbf{\objid{obj:emparejamiento}. Emparejamiento.} Implementar y contrastar varias estrategias de recuperación (léxica dispersa, semántica densa e híbrida) que emparejen la idea libre de un estudiante con los perfiles de los investigadores, de forma robusta frente a diferencias de idioma y vocabulario.
+    \item \textbf{\objid{obj:evaluacion}. Evaluación objetiva.} Definir un marco de evaluación reproducible que no requiera etiquetado manual, utilizando la historia real de supervisión como verdad de referencia, y emplearlo para comparar las estrategias anteriores.
+    \item \textbf{\objid{obj:prototipo}. Prototipo.} Materializar el sistema en un prototipo web usable, transparente en sus explicaciones y desplegable íntegramente en infraestructura propia de la institución.
 \end{itemize}
 
 Como objetivo exploratorio adicional, el modelo de datos se ha diseñado de forma que soporte, en trabajo futuro, la \emph{detección de oportunidades de colaboración entre investigadores} a partir de la afinidad temática de sus perfiles (véase el Capítulo~\ref{ch:conclusiones}).
@@ -63,17 +65,18 @@ Como objetivo exploratorio adicional, el modelo de datos se ha diseñado de form
 \section{Alcance y contribuciones}
 \label{sec:contribuciones}
 
-Las contribuciones principales de este trabajo son cuatro:
+Las contribuciones principales de este trabajo son cinco:
 
 \begin{enumerate}
-    \item Un \textbf{corpus estructurado y enriquecido} de la actividad investigadora de toda la \gls{upm}, construido íntegramente a partir de fuentes públicas y reconstruible de forma automática.
+    \item Un \textbf{corpus institucional estructurado y enriquecido} de la actividad investigadora de toda la \gls{upm}, construido íntegramente a partir de fuentes públicas y reconstruible de forma automática.
+    \item Un \textbf{modelo de perfil semántico del investigador}, basado en un grafo de conocimiento, que sintetiza temas de investigación normalizados, dominios de especialización y una biografía investigadora generada automáticamente.
     \item Una \textbf{metodología de evaluación sin etiquetado manual} para sistemas de recomendación de tutores, basada en proyectos realmente supervisados como consultas y en su supervisor real como respuesta correcta.
     \item Una \textbf{comparación empírica} de estrategias de recuperación representativas del estado del arte (dispersa, densa, con y sin intervención de modelos de lenguaje, e híbrida) sobre un mismo corpus institucional y bajo condiciones idénticas.
     \duda{No sé si está bien mencionar ya todas, igual eso es para más adelante. Faltaría el tema de Knowledge Graphs y ontologías}
     \item Un \textbf{prototipo funcional de código abierto}, desplegable \emph{on-premise} con modelos de lenguaje locales, que demuestra la viabilidad práctica del enfoque sin dependencia de servicios externos.
 \end{enumerate}
 
-Queda fuera del alcance de este trabajo la asignación administrativa de tutores (\textbf{el sistema recomienda; nunca decide}), la incorporación de datos no públicos y la evaluación con estudiantes reales, que se plantea como línea futura.
+Queda fuera del alcance de este trabajo la asignación administrativa de tutores (\textbf{el sistema recomienda, nunca decide}), la incorporación de datos no públicos y la evaluación con estudiantes reales, que se plantea como línea futura.
 
 \section{Estructura del documento}
 \label{sec:estructura}
