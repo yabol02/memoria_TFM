@@ -66,7 +66,7 @@ Tres principios de diseño atraviesan todo el flujo:
 
 \begin{mydescription}
     \item[Etapas con artefactos persistentes.] Cada etapa consume el artefacto de la anterior y produce el suyo propio (páginas crudas, grafo, perfiles enriquecidos, índices).
-    Esto permite re-ejecutar cualquier etapa de forma aislada e incremental (solo lo nuevo o lo inválido) sin repetir el proceso completo (\ref{req:uno}).
+    Esto permite re-ejecutar cualquier etapa de forma aislada e incremental (solo lo nuevo o lo inválido) sin repetir el proceso completo (\ref{req:adquisicion}).
     \item[Trazabilidad.] Toda recomendación es reconducible hacia atrás: del investigador recomendado a su perfil, del perfil a las evidencias agregadas y de estas a las páginas públicas originales.
     La fuente cruda se conserva inmutable precisamente para poder reprocesarla cuando el método mejora.
     \item[Neutralidad tecnológica.] Las etapas se definen por contratos de entrada/salida, no por herramientas. Cada una admite implementaciones alternativas (otro almacén, otro modelo de embedding) sin alterar el diseño.
@@ -93,8 +93,7 @@ Se adopta un \emph{property graph} cuyos nodos representan las entidades del dom
 La elección del grafo frente a un modelo tabular responde a la naturaleza del dominio: las preguntas relevantes son de vecindad y conexión («¿qué investigadores comparten temas?», «¿quién ha supervisado trabajos próximos a este proyecto?») y el modelo de grafo las hace naturales.
 \textcolor{red}{Además, deja preparado el terreno para la línea futura de detección de colaboraciones, que es esencialmente un problema de análisis de grafos (esto es lo que quiero hacer ahora, igual lo quito).}
 
-Durante esta etapa se aplica una limpieza \emph{conservadora} del texto: solo se transforma aquello que responde a patrones inequívocos de la fuente (por ejemplo, resúmenes con secciones etiquetadas concatenadas), prefiriéndose conservar una imperfección a introducir una corrupción silenciosa (requisito \ref{req:dos}).
-\pendiente{Creo que lo cambié ya esto, tengo que repasar el código}
+Durante esta etapa se aplica una limpieza \emph{conservadora} del texto: solo se transforma aquello que responde a patrones inequívocos de la fuente (por ejemplo, resúmenes con secciones etiquetadas concatenadas), prefiriéndose conservar una imperfección a introducir una corrupción silenciosa (requisito \ref{req:normalizacion}).
 
 \section{Consolidación y enriquecimiento del perfil}
 \label{sec:met-enriquecimiento}
@@ -143,6 +142,7 @@ La fase en línea ofrece cuatro estrategias de emparejamiento\duda{CUIDADO, esto
     \item \textbf{Híbrida.} Se lanzan en paralelo una señal léxica (términos extraídos contra los dominios de especialización) y una semántica (idea enriquecida contra las biografías) y ambas listas se fusionan por RRF.
 \end{enumerate}
 
+En conjunto, el sistema emplea la \gls{rrf} (Ecuación~\ref{eq:rrf}) en dos puntos: para fusionar las dos listas de términos de la consulta en el modo léxico y para fusionar las señales léxica y semántica en el modo híbrido.
 En todas ellas el resultado es una lista ordenada de investigadores con su puntuación normalizada y sus evidencias asociadas.
 
 \section{Presentación y transparencia}
