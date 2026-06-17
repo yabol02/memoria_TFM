@@ -10,7 +10,8 @@ De esta forma, concluye posicionando este trabajo: qué toma de cada familia y q
 \label{sec:sota-expertos}
 
 La búsqueda de expertos estudia cómo identificar, dentro de una organización, a las personas con conocimiento sobre un tema dado a partir de la evidencia documental que generan.
-El área quedó consolidada a partir de las campañas de evaluación empresarial de TREC y está sistematizada en la revisión de referencia \pendiente{Me sabe a poco, debería poner algo más} de \citet{balog2012expertise}, que distingue dos familias de modelos: los \emph{centrados en el candidato}, que construyen una representación agregada de cada persona a partir de sus documentos y la comparan con la consulta, y los \emph{centrados en el documento}, que recuperan primero documentos relevantes y trasladan después esa relevancia a las personas asociadas.
+El área quedó consolidada a partir de las campañas de evaluación empresarial de \gls{trec} y está sistematizada en la revisión de referencia de \citet{balog2012expertise}, que distingue dos familias de modelos: los \emph{centrados en el candidato}, que construyen una representación agregada de cada persona a partir de sus documentos y la comparan con la consulta, y los \emph{centrados en el documento}, que recuperan primero documentos relevantes y trasladan después esa relevancia a las personas asociadas.
+Esta monografía sintetiza más de una década de trabajo nacido de dichas campañas y fija la terminología y la taxonomía de modelos que siguen vigentes hoy, lo que la convierte en el anclaje natural para situar nuestra tarea dentro del campo.
 
 La recomendación de tutores académicos es una instanciación natural de este marco: la evidencia son publicaciones, proyectos y trabajos supervisados, donde el «experto» buscado es el tutor cuya trayectoria mejor cubre la idea del estudiante.
 Este trabajo adopta la aproximación centrada en el candidato (cada investigador se representa mediante perfiles agregados de su actividad) por dos razones: produce un índice compacto sobre el que la búsqueda es inmediata y genera representaciones interpretables (temas, dominios, biografía) que pueden mostrarse al estudiante como justificación de la recomendación.
@@ -18,9 +19,9 @@ Este trabajo adopta la aproximación centrada en el candidato (cada investigador
 \section{Recuperación léxica: del modelo vectorial a BM25}
 \label{sec:sota-lexica}
 
-La tradición léxica representa consultas y documentos como conjuntos de términos ponderados. 
-\pendiente{Poner algo más que una sola oración.}
-Sobre el modelo de espacio vectorial de \citet{salton1975vector} y los esquemas de pesado TF-IDF \pendiente{Añadir algo más, aunque sea un pie de página} se construyó la función de ordenación \gls{bm25} \citep{robertson2009bm25}, que pondera la frecuencia del término saturándola y normalizando por longitud del documento, y que sigue siendo (décadas después) una línea base extraordinariamente difícil de batir.
+La tradición léxica representa consultas y documentos como vectores de términos ponderados y estima la relevancia a partir del solapamiento de esos términos: cuantos más términos importantes comparten una consulta y un documento, más afines se consideran.
+Toda la familia descansa, por tanto, en la coincidencia de superficie de las palabras, una premisa tan eficaz cuando consulta y documento comparten vocabulario como frágil cuando no lo hacen.
+Sobre el modelo de espacio vectorial de \citet{salton1975vector} y los esquemas de pesado \gls{tfidf}\footnote{La ponderación \gls{tfidf} combina la frecuencia de un término en el documento (\emph{term frequency}) con su rareza en la colección (\emph{inverse document frequency}): pesan más los términos abundantes en un documento pero infrecuentes en el resto, que son los más discriminativos.} se construyó la función de ordenación \gls{bm25} \citep{robertson2009bm25}, que pondera la frecuencia del término saturándola y normalizando por longitud del documento y que sigue siendo (décadas después) una línea base extraordinariamente difícil de batir.
 
 Las fortalezas de esta familia son precisamente las que un sistema institucional agradece: eficiencia mediante índices invertidos, ausencia de entrenamiento y, sobre todo, \emph{interpretabilidad} (es posible mostrar qué términos del perfil han producido la coincidencia).
 Su debilidad estructural es el desajuste de vocabulario descrito en la Sección~\ref{sec:problema-vocabulario}: si estudiante e investigador no comparten términos, no hay coincidencia posible, por muy afines que sean los conceptos.
@@ -33,10 +34,9 @@ La hipótesis distribucional (el significado de una palabra se deduce de sus con
 Los \emph{bi-encoders} como Sentence-BERT \citep{reimers2019sbert} proyectan textos a un \emph{espacio vectorial} en el que la proximidad geométrica aproxima la afinidad semántica, y trabajos como \emph{Dense Passage Retrieval} \citep{karpukhin2020dpr} demostraron que esta recuperación densa puede superar a \gls{bm25} en tareas de respuesta a preguntas.
 
 Para este trabajo, dos propiedades de los \emph{embeddings} densos modernos resultan decisivas.
-La primera es su carácter \emph{multilingüe}: modelos abiertos de embedding entrenados sobre corpus en múltiples idiomas \citep{nussbaum2024nomic} proyectan «detección de bulos en redes sociales» y \emph{misinformation detection} a regiones cercanas del espacio, lo que ataca de raíz la doble brecha de idioma y vocabulario (requisito \ref{req:tres}).
-La segunda es su disponibilidad como modelos abiertos ejecutables en local, compatible con el requisito \ref{req:cinco}.
-Su contrapartida es la opacidad: la similitud de coseno no explica por sí misma \emph{por qué} dos textos se parecen, lo que penaliza la transparencia exigible a una herramienta de orientación.
-\pendiente{Igual tengo que explicar la similitud coseno en algún lado, no dar por supuesto que todo el mundo sabe de qué va}
+La primera es su carácter \emph{multilingüe}: modelos abiertos de \emph{embeddings} entrenados sobre corpus en múltiples idiomas \citep{nussbaum2025nomic} proyectan «detección de bulos en redes sociales» y \emph{misinformation detection} a regiones cercanas del espacio, lo que ataca de raíz la doble brecha de idioma y vocabulario (requisito \ref{req:emparejamiento}).
+La segunda es su disponibilidad como modelos abiertos ejecutables en local, compatible con el requisito \ref{req:soberania}.
+Su contrapartida es la opacidad: la similitud de coseno\footnote{Mide la afinidad entre dos vectores como el coseno del ángulo que forman. Vale 1 cuando apuntan en la misma dirección y es independiente de su magnitud, lo que la convierte en la medida estándar para comparar \emph{embeddings} densos.} no explica por sí misma \emph{por qué} dos textos se parecen, lo que penaliza la transparencia exigible a una herramienta de orientación.
 
 \section{Recuperación dispersa neuronal: lo mejor de ambos mundos}
 \label{sec:sota-dispersa}
@@ -58,8 +58,6 @@ Entre las técnicas de fusión, la \gls{rrf} \citep{cormack2009rrf} destaca por 
 \end{equation}
 donde $R$ es el conjunto de rankings a fusionar, $\mathrm{rank}_r(d)$ la posición del documento $d$ en el ranking $r$, y $k$ una constante de suavizado (típicamente $k=60$).
 Su independencia de las escalas de puntuación la hace especialmente adecuada para fusionar una búsqueda dispersa (puntuaciones BM42) con una densa (similitudes de coseno), que viven en rangos no comparables.
-El sistema presentado utiliza RRF en dos puntos: para fusionar las dos listas de términos de la consulta en el modo léxico y para fusionar las señales léxica y semántica en el modo híbrido.
-\pendiente{No sé si la última oración va aquí}
 
 \section{Modelos de lenguaje en el bucle de recuperación}
 \label{sec:sota-llm}
@@ -67,14 +65,17 @@ El sistema presentado utiliza RRF en dos puntos: para fusionar las dos listas de
 La irrupción de los \glspl{llm} \citep{brown2020gpt3} ha abierto una tercera vía: utilizarlos no como buscadores, sino como \emph{transformadores de la consulta} o \emph{sintetizadores del corpus} alrededor de un motor de recuperación clásico.
 En la dirección $consulta\Rightarrow corpus$, técnicas como Query2doc \citep{wang2023query2doc} e HyDE \citep{gao2023hyde} expanden o reescriben la consulta (incluso generando un documento hipotético) para acercarla al registro del corpus antes de buscar. Trasladado a nuestro problema, un \gls{llm} puede traducir la idea coloquial del estudiante al inglés técnico de los perfiles y enriquecerla con terminología afín, sin que el estudiante deba conocerla.
 En la dirección $\Rightarrow consulta$, el patrón de \gls{rag} \citep{lewis2020rag} consolidó la arquitectura $recuperador+generador$. Aquí lo relevante es el uso inverso: emplear el \gls{llm} para \emph{sintetizar} cada trayectoria investigadora en una biografía homogénea y densa en información, que se convierte en la unidad de indexación semántica.
+Esta estrategia de resumir historiales ricos en texto para alimentar un recomendador, ponderando la actividad más reciente, se ha explorado en recomendación secuencial \citep{zheng2024harnessing}.
+En este trabajo se adopta para construir la biografía de cada investigador de forma incremental, dando más peso a sus años recientes.
 
-Dos avances recientes hacen viable todo lo anterior bajo el requisito de despliegue local (\ref{req:cinco}): la disponibilidad de modelos abiertos de tamaño medio con capacidad multilingüe e instruccional suficiente, como la familia Qwen2.5\pendiente{Añadir algún caso de uso parecido a lo que propongo aquí} \citep{qwen2025qwen25} y los marcos de \emph{salida estructurada} que permiten obtener de un \gls{llm} objetos validables (listas de términos, campos tipados) en lugar de texto libre, condición necesaria para integrarlo de forma fiable en un pipeline automatizado.
+Dos avances recientes hacen viable todo lo anterior bajo el requisito de despliegue local (\ref{req:soberania}): la disponibilidad de modelos abiertos de tamaño medio con capacidad multilingüe e instruccional suficiente, como la familia Qwen2.5 \citep{qwen2025qwen25} (modelos abiertos con los que ya se han abordado tareas afines a la nuestra, como la síntesis de historiales ricos en texto para alimentar sistemas de recomendación \citep{zheng2024harnessing}\pendiente{Tengo que buscar un ejemplo mejor, no mencionar de nuevo esto}
+) y los marcos de \emph{salida estructurada} que permiten obtener de un \gls{llm} objetos validables (listas de términos, campos tipados) en lugar de texto libre, condición necesaria para integrarlo de forma fiable en un pipeline automatizado.
 \duda{Solo Qwen o pongo más modelos?}
 
 \section{Posicionamiento de este trabajo}
 \label{sec:sota-posicionamiento}
 
-El sistema propuesto no introduce un nuevo modelo de recuperación; su contribución es de \emph{integración y medida}: materializa, sobre un mismo corpus institucional real y bajo restricciones de despliegue local, una estrategia representativa de cada familia del estado del arte, y las somete a una comparación controlada con una verdad de referencia objetiva.
+El sistema propuesto no introduce un nuevo modelo de recuperación, su contribución es de \emph{integración y medida}: materializa, sobre un mismo corpus institucional real y bajo restricciones de despliegue local una estrategia representativa de cada familia del estado del arte y las somete a una comparación controlada con una verdad de referencia objetiva.
 La Tabla~\ref{tab:posicionamiento} resume esa correspondencia.
 
 \begin{table}[htbp]
@@ -94,6 +95,11 @@ La Tabla~\ref{tab:posicionamiento} resume esa correspondencia.
     \end{tabularx}
 \end{table}
 
-Frente a los trabajos de búsqueda de expertos clásicos, se aporta la incorporación sistemática de \gls{llm} locales en la construcción del perfil y en la transformación de la consulta.
-Frente a las demostraciones recientes basadas en \gls{llm}, se aporta un marco de evaluación sin etiquetado manual (Capítulo~\ref{ch:evaluacion}) que permite afirmar (y no solo ilustrar) qué estrategia funciona mejor en este dominio.
+Frente a los trabajos de búsqueda de expertos clásicos, se aporta la incorporación sistemática de \glspl{llm} locales en la construcción del perfil y en la transformación de la consulta.
+Frente a las demostraciones recientes basadas en \glspl{llm}, se aporta un marco de evaluación sin etiquetado manual (Capítulo~\ref{ch:evaluacion}) que permite afirmar (y no solo ilustrar) qué estrategia funciona mejor en este dominio.
+
+Conviene, por último, situar el valor de fondo de esta aproximación.
+Mientras que los enfoques clásicos de búsqueda de expertos representan a cada investigador mediante listas de palabras clave o vectores derivados exclusivamente de sus publicaciones, este trabajo explora una vía híbrida en la que los modelos generativos contribuyen a construir representaciones semánticas más ricas, interpretables y cercanas al lenguaje humano.
+El esfuerzo principal se dirige así a transformar una información académica dispersa y heterogénea en perfiles semánticos estructurados que resultan legibles \emph{tanto} por los algoritmos de recuperación \emph{como} por sistemas de \gls{ia} generativa.
+En esa doble legibilidad reside una proyección natural del trabajo más allá del recomendador: estos perfiles sientan los cimientos para, en el futuro, exponer la actividad investigadora de la institución a través de un servidor \gls{mcp} que habilite conversaciones con \glspl{llm} y la integración con agentes en el dominio académico (Capítulo~\ref{ch:conclusiones}).
 \pendiente{Si se identifican sistemas análogos de recomendación de tutores en otras universidades (trabajos publicados o herramientas en producción), añadir aquí una breve revisión comparativa.}
