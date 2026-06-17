@@ -14,6 +14,7 @@ No ofrece una interfaz programática de acceso a los datos, los identificadores 
 Convertir esa fuente en un activo operativo exige, por tanto, un esfuerzo previo considerable: descubrir el censo de investigadores, descargar de forma respetuosa y reproducible las miles de páginas y transformar un marcado pensado para presentación visual en datos estructurados.
 Es un trabajo de ingeniería poco vistoso, pero es la condición de posibilidad de todo lo demás.
 Su ausencia explica que muchos intentos similares no pasen de la idea.
+Esta barrera motiva el requisito~\ref{req:adquisicion} y se aborda en el objetivo~\ref{obj:adquisicion}.
 
 \section{Heterogeneidad y ruido}
 \label{sec:problema-heterogeneidad}
@@ -24,6 +25,7 @@ Los temas de investigación se expresan en vocabularios no controlados, con dupl
 Los resúmenes de las publicaciones presentan formatos idiosincrásicos que requieren una limpieza cuidadosa para no introducir ruido en las representaciones semánticas posteriores.
 
 Esta heterogeneidad tiene una consecuencia metodológica importante\pendiente{simplificar esta oración}: cualquier representación de los investigadores debe ser robusta frente a perfiles incompletos y debe agregar la evidencia disponible (publicaciones, proyectos, temas declarados) en lugar de depender de un único campo bien cumplimentado.
+Esta barrera motiva el requisito~\ref{req:normalizacion} y se aborda en los objetivos~\ref{obj:adquisicion} y~\ref{obj:perfilado}.
 
 \section{La brecha de vocabulario entre estudiante e investigador}
 \label{sec:problema-vocabulario}
@@ -33,8 +35,9 @@ Un estudiante describe su interés en lenguaje coloquial, habitualmente en espa�
 La actividad de un investigador, en cambio, queda registrada en el lenguaje de las publicaciones: técnico, mayoritariamente en inglés y orientado al método (\emph{misinformation detection}, \emph{transformer-based fact verification}).
 Entre ambos registros media una doble brecha (tanto de idioma como de vocabulario) que hace fracasar la coincidencia léxica directa: los términos del estudiante, literalmente, no aparecen en el perfil del tutor idóneo.
 
-Este fenómeno, conocido en recuperación de información como \emph{desajuste de vocabulario} \pendiente{Añadir referencia?}, es aquí especialmente severo por su carácter multilingüe, lo que constituye la razón técnica por la que una solución ingenua basada en búsqueda de palabras clave resulta insuficiente.\duda{Podemos ya afirmar esto?}
-Abordarlo exige representaciones que capturen proximidad semántica más allá de la superficie léxica, o bien mecanismos que traduzcan y expandan la consulta del estudiante hacia el registro de los perfiles, idealmente, ambas cosas (se abordan en el Capítulo~\ref{ch:sota}).
+Este fenómeno, identificado desde los orígenes de la recuperación de información como el \emph{problema del vocabulario} \citep{furnas1987vocabulary} (la constatación empírica de que dos personas eligen el mismo término para referirse a un mismo objeto con una probabilidad inferior al 20\%), es aquí especialmente severo por su carácter multilingüe, lo que constituye la razón técnica por la que una solución ingenua basada en búsqueda de palabras clave resulta insuficiente\duda{No me gusta esta afirmación, no deberíamos poder afirmar esto tan pronto}.
+Abordarlo exige representaciones que capturen proximidad semántica más allá de la superficie léxica, o mecanismos que traduzcan y expandan la consulta del estudiante hacia el registro de los perfiles, idealmente, ambas cosas (se abordan en el Capítulo~\ref{ch:sota}).
+Esta barrera motiva el requisito~\ref{req:emparejamiento} y se aborda en los objetivos~\ref{obj:perfilado} y~\ref{obj:emparejamiento}.
 
 \section{La ausencia de verdad de referencia}
 \label{sec:problema-groundtruth}
@@ -43,6 +46,7 @@ Supongamos construido el sistema: ¿cómo saber si recomienda bien? Evaluar un r
 
 Esta carencia de verdad de referencia es, a nuestro juicio,\duda{Puedo poner valoraciones personales?} una de las razones de fondo por las que las herramientas de este tipo rara vez superan la fase de demostración: sin evaluación objetiva no hay forma de comparar alternativas ni de justificar mejoras y el desarrollo se estanca en la anécdota.
 Este trabajo propone una salida: explotar la \emph{historia real de supervisión} (los trabajos que cada investigador ha dirigido efectivamente) como fuente automática de \emph{pares consulta-respuesta} (Capítulo~\ref{ch:evaluacion}).
+Esta barrera motiva el requisito~\ref{req:evaluacion} y se aborda en el objetivo~\ref{obj:evaluacion}.
 
 \section{Restricciones institucionales: soberanía del dato y coste}
 \label{sec:problema-institucional}
@@ -54,6 +58,7 @@ A ello se suma la exigencia práctica de que el sistema completo sea operable po
 Hasta hace muy poco, esta restricción era casi eliminatoria: la calidad necesaria para interpretar consultas y sintetizar perfiles solo la ofrecían modelos propietarios accesibles por \gls{api}.
 La reciente madurez de los modelos de lenguaje abiertos ejecutables en local (y de los ecosistemas para servirlos) cambia ese panorama y abre, por primera vez, la posibilidad de un sistema de esta naturaleza íntegramente \emph{on-premise}.
 Este trabajo adopta esa vía y la somete a prueba.
+Esta barrera motiva el requisito~\ref{req:soberania} y se aborda en el objetivo~\ref{obj:prototipo}.
 
 \section{Síntesis: requisitos de la solución}
 \label{sec:problema-requisitos}
@@ -63,18 +68,17 @@ La Tabla~\ref{tab:requisitos} resume esta correspondencia entre problemas y requ
 
 \begin{table}[htbp]
     \centering
-    \caption{Correspondencia entre las barreras identificadas y los requisitos de diseño del sistema.}
+    \caption{Correspondencia entre las barreras identificadas, los requisitos de diseño del sistema y los objetivos que los abordan.}
     \label{tab:requisitos}
-    \begin{tabularx}{\textwidth}{l X X}
+    \begin{tabularx}{\textwidth}{l X X c}
         \toprule
-        \rowcolor{upmblue!8} \colhead{Id.} & \colhead{Barrera} & \colhead{Requisito derivado} \\
+        \rowcolor{upmblue!8} \colhead{Id.} & \colhead{Barrera} & \colhead{Requisito derivado} & \colhead{Objetivo} \\
         \midrule
-        \reqid{req:uno}    & Fuente pública no operativa (\ref{sec:problema-datos}) & Adquisición automatizada, incremental y reproducible de los datos del portal.\\
-        \reqid{req:dos}    & Heterogeneidad y ruido (\ref{sec:problema-heterogeneidad}) & Perfiles normalizados que agreguen toda la evidencia disponible y toleren datos incompletos.\\
-        \reqid{req:tres}   & Brecha de vocabulario e idioma (\ref{sec:problema-vocabulario}) & Emparejamiento robusto al desajuste léxico y translingüe entre consulta y perfil.\\
-        \reqid{req:cuatro} & Ausencia de verdad de referencia (\ref{sec:problema-groundtruth}) & Evaluación objetiva y reproducible sin etiquetado manual.\\
-        \reqid{req:cinco}  & Soberanía del dato y coste (\ref{sec:problema-institucional}) & Despliegue íntegro en infraestructura propia, con modelos abiertos y coste marginal nulo por consulta.\\
+        \reqid{req:adquisicion} & Fuente pública no operativa (\ref{sec:problema-datos}) & Adquisición automatizada, incremental y reproducible de los datos del portal. & \ref{obj:adquisicion}\\
+        \reqid{req:normalizacion} & Heterogeneidad y ruido (\ref{sec:problema-heterogeneidad}) & Perfiles normalizados que agreguen toda la evidencia disponible y toleren datos incompletos. & \ref{obj:adquisicion}, \ref{obj:perfilado}\\
+        \reqid{req:emparejamiento} & Brecha de vocabulario e idioma (\ref{sec:problema-vocabulario}) & Emparejamiento robusto al desajuste léxico y translingüe entre consulta y perfil. & \ref{obj:perfilado}, \ref{obj:emparejamiento}\\
+        \reqid{req:evaluacion} & Ausencia de verdad de referencia (\ref{sec:problema-groundtruth}) & Evaluación objetiva y reproducible sin etiquetado manual. & \ref{obj:evaluacion}\\
+        \reqid{req:soberania} & Soberanía del dato y coste (\ref{sec:problema-institucional}) & Despliegue íntegro en infraestructura propia, con modelos abiertos y coste marginal nulo por consulta. & \ref{obj:prototipo}\\
         \bottomrule
     \end{tabularx}
 \end{table}
-\pendiente{Tengo que intentar que se quede en la página anterior, que parece que cabe}
