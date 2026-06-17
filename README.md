@@ -1,4 +1,4 @@
-# UPM Match - Memoria del Trabajo de Fin de Máster
+# UPM Match - Memoria del TFM
 
 Memoria (en $\LaTeX$) del Trabajo de Fin de Máster **UPM Match: Sistema de Recomendación de Tutores y Colaboraciones**, desarrollado en el marco del Máster Universitario en Aprendizaje Automático y Datos Masivos (MAADM) de la Universidad Politécnica de Madrid.
 
@@ -16,9 +16,15 @@ El trabajo incluye, además, un marco de evaluación reproducible que usa la sup
 Este repositorio contiene únicamente el código fuente $\LaTeX$ de la memoria.
 El código del sistema vive en el repositorio del proyecto: <https://github.com/cbadenes/upm-match>.
 
+---
+
 ## Compilación
 
-La memoria usa $\LaTeX$ clásico con BibTeX (estilo `elsarticle-num-names`) y `makeglossaries` para la tabla de acrónimos. Desde la raíz del repositorio:
+El documento usa **LaTeX clásico + BibTeX** (estilo `elsarticle-num-names`, citas numéricas con `natbib`) y **glossaries** para la tabla de acrónimos (`makeglossaries`).
+
+### Compilación completa
+
+Genera bibliografía, glosario y resuelve todas las referencias cruzadas:
 
 ```bash
 pdflatex main.tex
@@ -28,20 +34,33 @@ pdflatex main.tex
 pdflatex main.tex
 ```
 
-El resultado es `main.pdf`. También compila sin cambios en **Overleaf**.
-
-> Si tras compilar aparecen referencias `??` o citas `[?]`, ejecuta una pasada adicional de `pdflatex main.tex` (suele ocurrir en la primera compilación, cuando aún no existen los ficheros auxiliares).
-
-### Con Docker (sin LaTeX local)
+Tras tocar references.bib o añadir citas/referencias cruzadas pdflatex reutiliza la bibliografía ya generada (main.bbl); para incorporar referencias nuevas o resolver [?] / ?? hay que volver a pasar BibTeX y recompilar dos veces:
 
 ```bash
-docker run --rm -v "$PWD:/work" -w /work texlive/texlive:latest \
+bibtex main
+pdflatex main.tex
+pdflatex main.tex
+```
+
+### Sin LaTeX instalado (Docker)
+Imagen oficial texlive/texlive. El comando monta el directorio actual, así que funciona en cualquier proyecto sin editar rutas. Ejecútalo desde la carpeta de la memoria:
+
+```shell
+# PowerShell (Windows)
+docker run --rm -v "${PWD}:/work" -w /work texlive/texlive:latest `
   sh -c 'pdflatex -interaction=nonstopmode main.tex; bibtex main; makeglossaries main; pdflatex -interaction=nonstopmode main.tex; pdflatex -interaction=nonstopmode main.tex'
 ```
 
-## Estructura del repositorio
-
+```bash
+# Bash (Linux/macOS)
+docker run --rm -v "$(pwd):/work" -w /work texlive/texlive:latest \
+sh -c 'pdflatex -interaction=nonstopmode main.tex && bibtex main && makeglossaries main && pdflatex -interaction=nonstopmode main.tex && pdflatex -interaction=nonstopmode main.tex'
 ```
+
+> En Overleaf compila directamente (pdfLaTeX; ejecuta BibTeX y makeglossaries automáticamente), sin necesidad de estos comandos.
+
+## Estructura del proyecto
+```bash
 .
 ├── main.tex            # Documento principal (orden de capítulos)
 ├── settings.tex        # Paquetes, estilos y comandos propios
@@ -51,6 +70,21 @@ docker run --rm -v "$PWD:/work" -w /work texlive/texlive:latest \
 ├── cuerpo/             # Un fichero por capítulo
 └── figures/            # Figuras e imágenes
 ```
+El contenido se escribe en cuerpo/ y preliminares/; main.tex solo ordena los capítulos y no debe contener texto.
+
+## Estructura de la memoria
+\# | Capítulo | De qué trata
+:----------:|:-------------|:-----------
+1 | Introducción: la elección de tutor como problema de información | ¿Por qué es necesario este trabajo?
+2 | Un problema abierto: por qué la orientación académica sigue artesanal | ¿Por qué no se ha resuelto antes?
+3 | Estado del arte: de la recuperación léxica a los modelos de lenguaje | ¿Qué se ha hecho y cómo nos posicionamos?
+4 | Aproximación metodológica: del dato público al perfil semántico | ¿Cuál es el flujo? (sin tecnologías)
+5 | Marco de evaluación: la supervisión histórica como verdad de referencia | ¿Cómo se mide el rendimiento?
+6 | Resultados: arquitectura, prototipo y comparación de estrategias | Tecnologías + demostración + comparación
+7 | Discusión: alcance e implicaciones | ¿Qué significan los resultados?
+8 | Problemas encontrados y lecciones aprendidas | ¿Qué dificultades surgieron y qué se aprendió?
+9 | Conclusiones y líneas futuras | ¿Qué queda demostrado y qué continúa?
+A–D | Anexos | Material complementario
 
 ## Descargar el PDF
 
