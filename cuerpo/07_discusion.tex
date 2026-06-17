@@ -20,7 +20,7 @@ En una herramienta institucional de orientación, donde la confianza del usuario
 La posición adoptada aquí (fusionar ambas señales y mostrar siempre las evidencias léxicas junto a la biografía) es un equilibrio pragmático: la semántica aporta cobertura y la léxica aporta justificación.
 \pendiente{Matizar esta sección con lo observado en los casos ilustrativos.}
 
-\section{El coste de poner un \gls{llm} en el bucle}
+\section{El coste de poner un LLM en el bucle}
 \label{sec:disc-coste-llm}
 
 Incorporar un modelo de lenguaje a la consulta (extracción de términos, enriquecimiento) y al corpus (biografías, dominios) tiene costes de naturaleza distinta.
@@ -29,8 +29,8 @@ En el corpus, el coste es masivo pero amortizado: se paga una vez por actualizac
 En la consulta, el coste es por interacción y se traduce en latencia percibida y su justificación depende de que la mejora de calidad sea significativa.
 \pendiente{Completar con los números de latencia y la diferencia de métricas entre los modos con y sin \gls{llm}.}
 
-Conviene subrayar el resultado de viabilidad en sí mismo: todo el sistema (incluida la generación de miles de biografías y la atención interactiva de consultas) opera con un modelo abierto de 7000 millones de parámetros (Qwen2.5-7B-Instruct) en hardware propio, sin enviar un solo dato a servicios externos y con coste marginal nulo por consulta (requisito \ref{req:cinco}).
-\duda{Cuidado con esto, he trabajado tanto en local como en el server, habrá que mirar qué modelo usé en el server}
+Conviene subrayar el resultado de viabilidad en sí mismo: todo el sistema (incluida la generación de miles de biografías y la atención interactiva de consultas) opera con un modelo abierto de 7000 millones de parámetros (Qwen2.5-7B-Instruct) en hardware propio, sin enviar un solo dato a servicios externos y con coste marginal nulo por consulta (requisito \ref{req:soberania}).
+\duda{Cuidado con esto, he trabajado tanto en local como en el server, hay que dejarlo claro en algún punto, no sé si aquí o en otro lado.}
 Hace dos años, esta afirmación habría sido difícilmente sostenible.
 
 \section{Validez externa y generalización}

@@ -8,7 +8,7 @@ Se organiza en cuatro partes: la arquitectura tecnológica que implementa la met
 \section{De la metodología a la implementación}
 \label{sec:res-arquitectura}
 
-Todas las decisiones tecnológicas comparten dos criterios heredados de los requisitos: componentes de código abierto desplegables en infraestructura propia (requisito \ref{req:cinco}) y herramientas maduras con las que el coste de operación sea asumible por una institución.
+Todas las decisiones tecnológicas comparten dos criterios heredados de los requisitos: componentes de código abierto desplegables en infraestructura propia (requisito \ref{req:soberania}) y herramientas maduras con las que el coste de operación sea asumible por una institución.
 La Figura~\ref{fig:arquitectura} muestra la arquitectura completa y la Tabla~\ref{tab:stack} su correspondencia con las etapas metodológicas del Capítulo~\ref{ch:metodologia}.
 
 \begin{figure}[htbp]
@@ -37,27 +37,27 @@ La Figura~\ref{fig:arquitectura} muestra la arquitectura completa y la Tabla~\re
             \draw[flecha] (parsing) -- (memgraph);
 
             % Fila 2 (sentido inverso): enriquecimiento e indexación
-            \node[proc, below=16mm of memgraph] (consol) {\textbf{Consolidación y biografías}\\[0.5mm] \footnotesize Ollama + Agno};
-            \node[store, below=16mm of parsing] (minio2) {\textbf{MinIO}\\[0.5mm] \footnotesize Bucket con los perfiles enriquecidos};
+            \node[proc, below=14mm of memgraph] (consol) {\textbf{Consolidación y biografías}\\[0.5mm] \footnotesize Ollama + Agno};
+            \node[store, below=8mm of parsing] (minio2) {\textbf{MinIO}\\[0.5mm] \footnotesize Bucket con los perfiles enriquecidos};
             \node[proc, below=16mm of minio1] (indexa) {\textbf{Indexación}\\[0.5mm] \footnotesize Dispersa y densa};
-            \node[store, below=16mm of descarga] (qdrant) {\textbf{Qdrant}\\[0.5mm] \footnotesize Índices disperso y denso};
+            \node[store, below=14mm of descarga] (qdrant) {\textbf{Qdrant}\\[0.5mm] \footnotesize Índices disperso y denso};
 
             \draw[flecha] (memgraph) -- (consol);
             \draw[flecha] (consol) -- (minio2);
-            \draw[flecha] (minio2) -- (indexa);
+            \draw[flechad] (minio2) -- (indexa);
             \draw[flecha] (indexa) -- (qdrant);
 
             % Fila 3: servicio en línea
-            \node[ext, below=16mm of qdrant] (estudiante) {\textbf{Estudiante}\\[0.5mm] \footnotesize navegador web};
-            \node[proc, below=16mm of indexa] (flask) {\textbf{UPM Match}\\[0.5mm] \footnotesize Flask + Gunicorn};
-            \node[proc, below=16mm of minio2] (agentes) {\textbf{Agentes \gls{llm}}\\[0.5mm] \footnotesize Ollama (Qwen2.5)};
+            \node[ext, below=18mm of qdrant] (estudiante) {\textbf{Estudiante}\\[0.5mm] \footnotesize navegador web};
+            \node[proc, below=18mm of indexa] (flask) {\textbf{\proyecto}\\[0.5mm] \footnotesize Flask + Gunicorn};
+            \node[proc, below=14mm of minio2] (agentes) {\textbf{Agentes \gls{llm}}\\[0.5mm] \footnotesize Ollama (Qwen2.5)};
 
             \draw[flechad] (estudiante) -- (flask);
             \draw[flechad] (flask) -- (agentes);
             \draw[flechad] (flask) -- (qdrant);
 
             % Infraestructura transversal
-            \node[infra, below=14mm of flask, text width=120mm] (infra) {\textbf{Orquestación y despliegue:} Airflow (ejecución periódica del pipeline) · Docker Compose (todos los servicios) · Traefik (proxy inverso) — íntegramente \emph{on-premise}};  % TODO: Bajar algo más este cuadro, está muy pegado a "Servicio"
+            \node[infra, below=12mm of flask, text width=120mm] (infra) {\textbf{Orquestación y despliegue:} Airflow (ejecución periódica del pipeline) · Docker Compose (todos los servicios) · Traefik (proxy inverso) íntegramente \emph{on-premise}};
 
             \begin{scope}[on background layer]
             \node[draw=black!30, dashed, rounded corners=4pt, fill=black!1, inner sep=4mm,
@@ -100,7 +100,8 @@ La Figura~\ref{fig:arquitectura} muestra la arquitectura completa y la Tabla~\re
 
 Tres decisiones merecen justificación expresa.
 \duda{Creo que habría que justificar algo más cada tecnología}
-Primera, el \textbf{\gls{llm} local} (Qwen2.5 7B instruccional servido por Ollama): es el punto donde el requisito \ref{req:cinco} se juega su viabilidad, pues sustituye a las API propietarias tanto en el enriquecimiento masivo del corpus como en la interpretación de consultas en línea; el marco Agno aporta la capa de agentes con salida estructurada validada por Pydantic.
+Primera, el \textbf{\gls{llm} local} (Qwen2.5 7B instruccional servido por Ollama): es el punto donde el requisito \ref{req:soberania} se juega su viabilidad, pues sustituye a las \gls{api} propietarias tanto en el enriquecimiento masivo del corpus como en la interpretación de consultas en línea.
+Por otro lado, Agno aporta la capa de agentes con salida estructurada validada por Pydantic.
 Segunda, \textbf{Qdrant} como índice vectorial único para ambas representaciones: soporta vectores densos y dispersos en la misma colección y ofrece fusión \gls{rrf} nativa, lo que simplifica la estrategia híbrida a una sola consulta.
 Además, el algoritmo BM42 fue inventado por los desarrolladores de esta tecnología, de modo que está integrado de forma nativa.
 Tercera, \textbf{Airflow} como orquestador: las \textcolor{red}{seis} fases del pipeline son tareas idempotentes con reanudación (\emph{skip-existing}), de modo que la actualización periódica del corpus es un proceso desatendido.
@@ -122,18 +123,18 @@ La Tabla~\ref{tab:corpus-grafo} desglosa su composición por tipo (el esquema de
         \rowcolor{upmblue!8} \colhead{Elemento} & \colhead{Cantidad} & \colhead{Descripción} \\
         \midrule
         \multicolumn{3}{l}{\textit{Nodos (172\,621)}} \\
-        \texttt{Publication}     & 109\,296 & Publicaciones (artículos, conferencias, etc.) \\
+        \texttt{Publication} & 109\,296 & Publicaciones (artículos, conferencias, etc.) \\
         \texttt{LastYearProject} & 44\,297  & Trabajos supervisados (TFG/TFM). \\
-        \texttt{Subject}         & 12\,602  & Asignaturas. \\
-        \texttt{Pdi}             & 5\,998   & Investigadores censados. \\
-        \texttt{Position}        & 428      & Unidades organizativas y cargos. \\
+        \texttt{Subject} & 12\,602 & Asignaturas. \\
+        \texttt{Pdi} & 5\,998 & Investigadores censados. \\
+        \texttt{Position} & 428 & Unidades organizativas y cargos. \\
         \midrule
         \multicolumn{3}{l}{\textit{Aristas (268\,886)}} \\
         \texttt{AUTHORSHIP} & 157\,556 & Autorías ($\mathrm{Pdi}\rightarrow\mathrm{Publication}$). \\
-        \texttt{TUTORING}   & 48\,916  & Supervisiones ($\mathrm{Pdi}\rightarrow\mathrm{LastYearProject}$). \\
-        \texttt{TEACHING}   & 32\,567  & Docencia ($\mathrm{Pdi}\rightarrow\mathrm{Subject}$). \\
+        \texttt{TUTORING} & 48\,916 & Supervisiones ($\mathrm{Pdi}\rightarrow\mathrm{LastYearProject}$). \\
+        \texttt{TEACHING} & 32\,567 & Docencia ($\mathrm{Pdi}\rightarrow\mathrm{Subject}$). \\
         \texttt{COAUTHORED} & 19\,125  & Coautorías entre investigadores ($\mathrm{Pdi}\rightarrow\mathrm{Pdi}$). \\
-        \texttt{WORKS}      & 10\,722  & Pertenencia a unidades ($\mathrm{Pdi}\rightarrow\mathrm{Position}$). \\
+        \texttt{WORKS} & 10\,722 & Pertenencia a unidades ($\mathrm{Pdi}\rightarrow\mathrm{Position}$). \\
         \bottomrule
     \end{tabularx}
 \end{table}
@@ -171,7 +172,7 @@ Veinticuatro investigadores están adscritos a unidades de más de una escuela, 
     \end{tabularx}
 \end{table}
 
-\pendiente{Completar, una vez disponible el índice definitivo: el número de perfiles enriquecidos e indexados en cada colección de Qdrant (\texttt{researcher\_summaries} y \texttt{researcher\_keywords}), la cobertura de biografía y de dominios por escuela, y los tiempos aproximados de cada fase del pipeline.}
+\pendiente{Completar, una vez disponible el índice definitivo: el número de perfiles enriquecidos e indexados en cada colección de Qdrant (\texttt{researcher\_\allowbreak summaries} y \texttt{researcher\_\allowbreak keywords}), la cobertura de biografía y de dominios por escuela, y los tiempos aproximados de cada fase del pipeline.}
 
 \section{El prototipo \proyecto}
 \label{sec:res-prototipo}
@@ -184,7 +185,7 @@ La latencia percibida varía según la estrategia: las que incorporan el \gls{ll
 
 \pendiente{Incluir una o dos capturas de pantalla del prototipo (búsqueda y resultados, idealmente con la misma consulta en dos modos distintos) y un párrafo guiando su lectura.}
 
-\pendiente{Añadir la URL para poder consultar la web y poder introducir ideas}
+El prototipo está desplegado y es accesible públicamente en \url{https://wiig.dia.fi.upm.es/upm-match/}, donde cualquier usuario puede introducir una idea de trabajo y obtener recomendaciones en tiempo real.
 
 \section{Comparación de estrategias de recuperación}
 \label{sec:res-benchmark}
