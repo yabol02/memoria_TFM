@@ -25,23 +25,59 @@ La posición adoptada aquí (fusionar ambas señales y mostrar siempre las evide
 
 Incorporar un modelo de lenguaje a la consulta (extracción de términos, enriquecimiento) y al corpus (biografías, dominios) tiene costes de naturaleza distinta.
 En el corpus, el coste es masivo pero amortizado: se paga una vez por actualización, fuera de línea y habilita la representación densa homogénea sobre la que descansan las estrategias semánticas.
-\pendiente{Hablar del tiempo que le llevó al script generar todos los resúmenes de tan solo 4 escuelas}
+La magnitud de ese coste no es anecdótica, la generación de los resúmenes (fase 6) llevó cerca de un día y cinco horas (Tabla~\ref{tab:tiempos-fases}) para un perímetro de tan solo cuatro escuelas y algo más de 700 \glspl{pdi} con contenido aprovechable.
+Es un dato a tener muy presente de cara a las fases posteriores del proyecto, cuando el corpus se extienda al conjunto de la \gls{upm}, el censo completo es varias veces mayor y el coste de la generación escala con él.
+La amortización ayuda, en régimen permanente solo se reprocesa lo nuevo o lo inválido (\emph{skip-existing}), de modo que las actualizaciones son mucho más baratas que la construcción inicial en frío, pero no elimina el problema de esa primera carga a gran escala.
+
+Cabría acelerar la generación aumentando el número de modelos resumiendo en paralelo, pero el despliegue se realiza sobre un \emph{servidor compartido}: esa concurrencia compite por unos recursos limitados, lo que en la práctica acota cuánto puede paralelizarse.
+Aún sobre una infraestructura bien dotada, este factor marca un suelo de recursos: una institución con menos capacidad de cómputo difícilmente podría abordar un procesamiento de este tipo, tanto por el tiempo como por el hardware necesarios.
+
+Conviene además recordar que estas cifras se obtuvieron con un modelo deliberadamente pequeño (y cuantizado) y sin modo de razonamiento explícito, escogido para acelerar al máximo la generación.
+De todos modos, aunque este modelo requiera de unos recursos relativamente reducidos, es importante tener en cuenta que son necesarios, por lo que es un punto a tener en cuenta para la adopción en cualquier otra institución. 
+En las pruebas exploratorias realizadas durante el desarrollo, varios modelos abiertos de tamaño comparable (ninguno superior a los 11\,000 millones de parámetros, 11B en inglés) en local y algún modelo algo mayor en el servidor, produjeron resúmenes sin diferencias apreciables entre sí.
+La validez estructural de la salida no es el factor en juego: el formato tipado se impone mediante generación restringida al esquema y validación con reintentos (Sección~\ref{sec:met-enriquecimiento}), de modo que ningún modelo, por pequeño que sea, devuelve un objeto malformado.
+El riesgo de los modelos más reducidos se sitúa, más bien, en el \emph{contenido}, como una mayor propensión a desatender matices de las instrucciones o a pasar por alto alguna temática especialmente relevante para el contexto del \gls{pdi}.
+
+Su ventana de contexto, más estrecha, es también la razón de procesar cada año por lotes (Sección~\ref{sec:lec-rolling}).
+Un modelo mayor podría abarcar más publicaciones por lote y reducir el número de lotes por año a cambio de un mayor tiempo de inferencia por llamada.
+Como los resúmenes observados apenas variaron entre modelos, la ganancia de uno más capaz no está clara y cabe esperar más recorrido del ajuste de los \emph{prompts} que del tamaño del modelo, contrastarlo de forma sistemática queda como línea de trabajo futuro.
+
+A los costes temporal y material se añade uno ambiental: una generación que se prolonga durante días sobre aceleradores gráficos conlleva un consumo energético no despreciable, una dimensión que un balance completo de sostenibilidad del sistema debería contemplar.
+\pendiente{Ampliar con una estimación del consumo energético y, en lo posible, de la huella de carbono asociada a una ejecución completa del pipeline. Mencionar explícitamente \textit{green computing}}
+
 En la consulta, el coste es por interacción y se traduce en latencia percibida y su justificación depende de que la mejora de calidad sea significativa.
 \pendiente{Completar con los números de latencia y la diferencia de métricas entre los modos con y sin \gls{llm}.}
 
 Conviene subrayar el resultado de viabilidad en sí mismo: todo el sistema (incluida la generación de miles de biografías y la atención interactiva de consultas) opera con un modelo abierto de 7000 millones de parámetros (Qwen2.5-7B-Instruct) en hardware propio, sin enviar un solo dato a servicios externos y con coste marginal nulo por consulta (requisito \ref{req:soberania}).
-\duda{Cuidado con esto, he trabajado tanto en local como en el server, hay que dejarlo claro en algún punto, no sé si aquí o en otro lado.}
-Hace dos años, esta afirmación habría sido difícilmente sostenible.
+Esa viabilidad merece, no obstante, un matiz honesto.
+El desarrollo se realizó en una estación de trabajo local, pero la construcción completa del corpus solo resultó tratable en el servidor de despliegue y sus dos \glspl{gpu}: en local, el mismo proceso tardaba sensiblemente más.
+«Hardware propio» no equivale aquí a «cualquier hardware», sino a una infraestructura con cómputo suficiente.
+La soberanía sobre los datos se preserva, pero a cambio de un requisito material que no toda institución puede dar por descontado.
+Hace dos años, aún con esa salvedad, esta afirmación habría sido difícilmente sostenible.
 
 \section{Validez externa y generalización}
 \label{sec:disc-generalizacion}
 
 ¿Hasta dónde viajan estos resultados?
 Tres elementos del trabajo son específicos del caso \gls{upm}: la estructura del portal científico, el perímetro de cuatro escuelas (ampliable a toda la universidad) y el sesgo lingüístico español-inglés del corpus.
-Nada de ello afecta, sin embargo, a la arquitectura conceptual: cualquier institución con un repositorio público de actividad investigadora puede instanciar el mismo flujo (adquisición, grafo, enriquecimiento, doble indexación, fusión), y la metodología de evaluación por supervisión histórica es aplicable allí donde existan registros de trabajos dirigidos, es decir, en prácticamente toda universidad.
+Nada de ello afecta, sin embargo, a la arquitectura conceptual: cualquier institución con un repositorio público de actividad investigadora puede instanciar el mismo flujo (adquisición, grafo, enriquecimiento, doble indexación, fusión) y la metodología de evaluación por supervisión histórica es aplicable allí donde existan registros de trabajos dirigidos, es decir, en prácticamente toda universidad.
 
 La principal amenaza a la validez externa es temática: las cuatro escuelas del perímetro comparten vocabulario tecnológico y el comportamiento de las estrategias podría variar en áreas con registros lingüísticos distintos (otras ingenierías o incluso a humanidades).
 Extender el corpus al conjunto de la \gls{upm} permitiría medirlo directamente.
+
+\section{Límites impuestos por la fuente de datos}
+\label{sec:disc-fuente}
+
+El sistema es, por diseño, un consumidor pasivo del Portal Científico, no edita ni corrige la fuente sino que la estructura y la enriquece tal como la recibe (Sección~\ref{sec:met-adquisicion}).
+Esta decisión preserva la trazabilidad y la reproducibilidad, pero traslada al sistema cualquier error u omisión presente en origen: si un dato llega incompleto o incorrecto del portal, no hay forma automática de detectarlo ni subsanarlo sin verificación manual.
+
+El caso más delicado es el de las relaciones de autoría, porque son las que sostienen la evidencia de cada perfil.
+Se ha observado, por ejemplo, una publicación en coautoría entre un investigador en formación (doctorando), que figura como autor principal, y su director de tesis, consignado como segundo autor, que el portal vincula únicamente al director y no al primero.
+Una omisión así empobrece el perfil del investigador afectado: la actividad existe, pero no se le atribuye y, por tanto, no puede pesar en las recomendaciones que le conciernen.
+Si el patrón se repite (y nada garantiza que sea un caso aislado), el efecto agregado es un sesgo sistemático contra los perfiles peor consignados en la fuente, con frecuencia los más noveles, que se suma al sesgo de visibilidad analizado más adelante (Sección~\ref{sec:disc-etica}).
+
+La consecuencia metodológica es nítida: la calidad de las recomendaciones está acotada superiormente por la calidad y la completitud del registro público y ninguna mejora del modelo de recuperación puede recuperar evidencia que la fuente no expone.
+Mitigarlo exigiría contrastar con fuentes adicionales o habilitar mecanismos de corrección supervisada, lo que excede el perímetro de este trabajo.
 
 \section{Consideraciones éticas}
 \label{sec:disc-etica}

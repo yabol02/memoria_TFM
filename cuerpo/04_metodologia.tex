@@ -102,29 +102,36 @@ La tercera etapa produce, para cada investigador, un \emph{documento de perfil} 
 Este documento es la unidad de trabajo de todo lo que sigue.
 \pendiente{Un PDI es Personal Docente e Investigador. En general, tenemos que hacer más hincapié en estas dos vertientes (en el código también!!!)}
 
-Sobre él se aplica el enriquecimiento lingüístico, que genera dos artefactos complementarios mediante un modelo de lenguaje operado localmente:
+Sobre él se aplica el enriquecimiento lingüístico mediante un modelo de lenguaje operado localmente.
+La producción científica se agrupa cronológicamente y cada año se sintetiza \emph{de forma autónoma}, sin arrastre de unos periodos a otros, en un par de artefactos complementarios:
 
 \begin{itemize}
-    \item Una \textbf{biografía investigadora}: una síntesis en prosa de la trayectoria completa.
-    Se construye de forma \emph{incremental y acumulativa}: la producción científica se agrupa cronológicamente y el modelo va refinando un resumen acumulado periodo a periodo.
-    Este procedimiento evita exceder la ventana de contexto del modelo con trayectorias largas, equilibra el peso de las distintas etapas de la carrera y produce descripciones homogéneas entre perfiles densos y dispersos.
-    El estado intermedio de cada periodo se conserva, lo que aporta trazabilidad sobre cómo se fue construyendo la biografía final.
-    \item Una lista acumulativa de \textbf{dominios de especialización}: áreas de conocimiento concisas extraídas de la misma evidencia, con una regla de estabilidad (los dominios ya establecidos se conservan y solo se añaden los genuinamente nuevos) que evita oscilaciones entre ejecuciones.
+    \item Un \textbf{resumen anual} en prosa: una síntesis de aquello en lo que el investigador es experto a la luz de la producción de ese año.
+    \item Una lista de \textbf{dominios de especialización} de ese año: áreas de conocimiento concisas extraídas de la misma evidencia.
+    Dentro de un mismo año los dominios se acumulan con una regla de estabilidad (los ya establecidos se conservan y solo se añaden los genuinamente nuevos) que evita oscilaciones entre ejecuciones.
 \end{itemize}
 
+Trocear la trayectoria por años cumple un doble propósito: evita exceder la ventana de contexto del modelo en las carreras largas y produce una granularidad homogénea entre perfiles densos y dispersos.
+Cada resumen anual se conserva como artefacto propio, lo que aporta trazabilidad sobre la evolución del investigador y deja la serie temporal preparada para que la etapa de indexación construya a partir de ella la biografía vigente (Sección~\ref{sec:met-indexacion}).
+
 La generación es \emph{estructurada}: el modelo debe devolver objetos con campos tipados que se validan automáticamente y toda salida que no supere la validación se descarta y se reintenta.
-El enriquecimiento queda persistido junto al resto del perfil, de modo que las etapas posteriores no dependen de volver a invocar al modelo.
+El enriquecimiento queda persistido junto al resto del perfil, las etapas posteriores parten de estos resúmenes ya generados en lugar de reprocesar los textos originales.
 
 \section{Representación e indexación semántica}
 \label{sec:met-indexacion}
 
-La cuarta etapa proyecta cada perfil a un espacio de representación buscable.
+La cuarta etapa parte de la serie de resúmenes anuales y, para cada investigador, los condensa primero en una única \textbf{biografía vigente}.
+La condensación es \emph{recurrente}: sobre una ventana temporal reciente se toma el año más antiguo como base y se pliega cada año posterior sobre el acumulado dando \emph{más peso al trabajo reciente}, de modo que la biografía refleje las líneas en las que el investigador trabaja hoy sin descartar la experiencia anterior que siga siendo pertinente.
+Este esquema de resumen recurrente ponderado por recencia sigue la práctica revisada en el estado del arte para historiales ricos en texto (Sección~\ref{sec:sota-llm}).
+La biografía vigente y sus dominios resultantes se persisten junto al perfil.
+
+Sobre ellos se proyecta cada investigador a un espacio de representación buscable.
 Atendiendo al análisis del Capítulo~\ref{ch:sota}, se mantienen deliberadamente \emph{dos}\duda{CUIDADO, esto es ahora y no estoy seguro del todo que lo haya dejado así, que cambié cosas} representaciones complementarias por investigador:
 
 \begin{itemize}
     \item Una \textbf{representación léxica dispersa} de sus vocabularios temáticos (temas declarados y dominios extraídos), en la que cada componente es un término ponderado por su importancia contextual.
-    Es eficiente e \emph{interpretable}: permite mostrar qué términos han producido cada coincidencia.
-    \item Una \textbf{representación semántica densa} de su biografía investigadora, que captura proximidad conceptual más allá de la superficie léxica y de la lengua en que se exprese la consulta.
+    Es eficiente e \emph{interpretable}, permite mostrar qué términos han producido cada coincidencia.
+    \item Una \textbf{representación semántica densa} de su biografía vigente, que captura proximidad conceptual más allá de la superficie léxica y de la lengua en que se exprese la consulta.
 \end{itemize}
 
 Ambas se almacenan en índices de similitud que admiten búsqueda eficiente por vecindad y fusión nativa de resultados.
@@ -144,6 +151,9 @@ La fase en línea ofrece cuatro estrategias de emparejamiento\duda{CUIDADO, esto
 
 En conjunto, el sistema emplea la \gls{rrf} (Ecuación~\ref{eq:rrf}) en dos puntos: para fusionar las dos listas de términos de la consulta en el modo léxico y para fusionar las señales léxica y semántica en el modo híbrido.
 En todas ellas el resultado es una lista ordenada de investigadores con su puntuación normalizada y sus evidencias asociadas.
+
+En todos los modos que invocan al modelo de lenguaje (la extracción de términos y la reformulación de la consulta) la generación se realiza con una \emph{temperatura de muestreo baja} ($t=0'1$).
+Interpretar la idea es una tarea de transcripción fiel (traducir y acotar lo que el estudiante pide), no de redacción creativa: una temperatura baja favorece salidas estables y reproducibles ante la misma consulta y refuerza la prohibición de introducir temas que el estudiante no haya planteado.
 
 \section{Presentación y transparencia}
 \label{sec:met-presentacion}

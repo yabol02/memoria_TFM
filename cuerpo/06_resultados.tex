@@ -37,9 +37,9 @@ La Figura~\ref{fig:arquitectura} muestra la arquitectura completa y la Tabla~\re
             \draw[flecha] (parsing) -- (memgraph);
 
             % Fila 2 (sentido inverso): enriquecimiento e indexación
-            \node[proc, below=14mm of memgraph] (consol) {\textbf{Consolidación y biografías}\\[0.5mm] \footnotesize Ollama + Agno};
+            \node[proc, below=14mm of memgraph] (consol) {\textbf{Resúmenes anuales}\\[0.5mm] \footnotesize Ollama + Agno};
             \node[store, below=8mm of parsing] (minio2) {\textbf{MinIO}\\[0.5mm] \footnotesize Bucket con los perfiles enriquecidos};
-            \node[proc, below=16mm of minio1] (indexa) {\textbf{Indexación}\\[0.5mm] \footnotesize Dispersa y densa};
+            \node[proc, below=10mm of minio1] (indexa) {\textbf{Fusión e indexación}\\[0.5mm] \footnotesize Biografía vigente, dispersa y densa};
             \node[store, below=14mm of descarga] (qdrant) {\textbf{Qdrant}\\[0.5mm] \footnotesize Índices disperso y denso};
 
             \draw[flecha] (memgraph) -- (consol);
@@ -49,8 +49,8 @@ La Figura~\ref{fig:arquitectura} muestra la arquitectura completa y la Tabla~\re
 
             % Fila 3: servicio en línea
             \node[ext, below=18mm of qdrant] (estudiante) {\textbf{Estudiante}\\[0.5mm] \footnotesize navegador web};
-            \node[proc, below=18mm of indexa] (flask) {\textbf{\proyecto}\\[0.5mm] \footnotesize Flask + Gunicorn};
-            \node[proc, below=14mm of minio2] (agentes) {\textbf{Agentes \gls{llm}}\\[0.5mm] \footnotesize Ollama (Qwen2.5)};
+            \node[proc, below=16mm of indexa] (flask) {\textbf{\proyecto}\\[0.5mm] \footnotesize Flask + Gunicorn};
+            \node[proc, below=15mm of minio2] (agentes) {\textbf{Agentes \gls{llm}}\\[0.5mm] \footnotesize Ollama (Qwen2.5)};
 
             \draw[flechad] (estudiante) -- (flask);
             \draw[flechad] (flask) -- (agentes);
@@ -62,7 +62,7 @@ La Figura~\ref{fig:arquitectura} muestra la arquitectura completa y la Tabla~\re
             \begin{scope}[on background layer]
             \node[draw=black!30, dashed, rounded corners=4pt, fill=black!1, inner sep=4mm,
                   fit=(portal)(memgraph)(qdrant)(consol),
-                  label={[black!60, font=\footnotesize\bfseries]90:Preparación del corpus (fases 1--6)}] {};
+                  label={[black!60, font=\footnotesize\bfseries]90:Preparación del corpus (fases 1--7)}] {};
             \node[draw=black!30, dashed, rounded corners=4pt, fill=black!1, inner sep=4mm,
                   fit=(estudiante)(flask)(agentes),
                   label={[black!60, font=\footnotesize\bfseries]180:Servicio}] {};
@@ -87,8 +87,9 @@ La Figura~\ref{fig:arquitectura} muestra la arquitectura completa y la Tabla~\re
             Capa cruda & Conservación inmutable del HTML y artefactos intermedios & MinIO \\
             Estructuración & Extracción de entidades y carga del grafo de actividad & Scrapy (selectores), Memgraph (Cypher) \\
             Validación & Esquemas tipados de perfiles y documentos & Pydantic \\
-            Enriquecimiento & Biografías incrementales y dominios con \gls{llm} local y salida estructurada & Ollama + Agno (Qwen2.5 7B) \\
-            Embeddings densos & Representación semántica de las biografías & nomic-embed-text-v2-moe (Ollama) \\
+            Resúmenes anuales & Síntesis autónoma por año (resumen y dominios) con \gls{llm} local y salida estructurada & Ollama + Agno (Qwen2.5 7B) \\
+            Biografía vigente & Fusión recurrente de los resúmenes anuales, ponderando el trabajo reciente & Ollama + Agno (Qwen2.5 7B) \\
+            Embeddings densos & Representación semántica de la biografía vigente & nomic-embed-text-v2-moe (Ollama) \\
             Vectores dispersos & Términos ponderados por atención (temas y dominios) & BM42 (fastembed) \\
             Índice y búsqueda & Almacenamiento vectorial, similitud y fusión RRF nativa & Qdrant \\
             Aplicación web & Interfaz de búsqueda y API & Flask + Gunicorn \\
@@ -100,11 +101,11 @@ La Figura~\ref{fig:arquitectura} muestra la arquitectura completa y la Tabla~\re
 
 Tres decisiones merecen justificación expresa.
 \duda{Creo que habría que justificar algo más cada tecnología}
-Primera, el \textbf{\gls{llm} local} (Qwen2.5 7B instruccional servido por Ollama): es el punto donde el requisito \ref{req:soberania} se juega su viabilidad, pues sustituye a las \gls{api} propietarias tanto en el enriquecimiento masivo del corpus como en la interpretación de consultas en línea.
+Primera, el \textbf{\gls{llm} local} (Qwen2.5 7B instruccional servido por Ollama) es el punto donde el requisito \ref{req:soberania} se juega su viabilidad, pues sustituye a las \gls{api} propietarias tanto en el enriquecimiento masivo del corpus como en la interpretación de consultas en línea.
 Por otro lado, Agno aporta la capa de agentes con salida estructurada validada por Pydantic.
 Segunda, \textbf{Qdrant} como índice vectorial único para ambas representaciones: soporta vectores densos y dispersos en la misma colección y ofrece fusión \gls{rrf} nativa, lo que simplifica la estrategia híbrida a una sola consulta.
 Además, el algoritmo BM42 fue inventado por los desarrolladores de esta tecnología, de modo que está integrado de forma nativa.
-Tercera, \textbf{Airflow} como orquestador: las \textcolor{red}{seis} fases del pipeline son tareas idempotentes con reanudación (\emph{skip-existing}), de modo que la actualización periódica del corpus es un proceso desatendido.
+Tercera, \textbf{Airflow} como orquestador, las siete fases del pipeline son tareas idempotentes con reanudación (\emph{skip-existing}), de modo que la actualización periódica del corpus es un proceso desatendido.
 Completan el cuadro \textbf{MinIO}, como capa de objetos que materializa el principio de fuente cruda inmutable y reprocesable y \textbf{Memgraph}, como base de grafo elegida por la naturaleza de vecindad del dominio (Sección~\ref{sec:met-grafo}) y porque deja preparada la línea futura de detección de colaboraciones.
 El modelo de datos se mantuvo agnóstico del motor de grafo, de modo que podría migrarse a otro motor sin reescribir la lógica de carga.
 
@@ -142,7 +143,7 @@ La Tabla~\ref{tab:corpus-grafo} desglosa su composición por tipo (el esquema de
 Las 428 unidades organizativas (\texttt{Position}) heredan las categorías del portal: 226 grupos de investigación, 88 áreas de conocimiento, 62 departamentos universitarios, 22 institutos o centros de investigación, 20 escuelas y un puñado de unidades de otro tipo.
 
 La afiliación de los investigadores a las escuelas merece una advertencia, pues condiciona la lectura de estas cifras y la propia delimitación del corpus.
-El portal científico no enlaza de forma sistemática a cada investigador con su escuela: de los 5\,998 investigadores del grafo, solo 1\,431 tienen una relación directa con un nodo de tipo escuela, mientras que 4\,567 carecen por completo de ella; en particular, 2\,216 están vinculados a un departamento pero no a la escuela correspondiente.
+El portal científico no enlaza de forma sistemática a cada investigador con su escuela: de los 5\,998 investigadores del grafo, solo 1\,431 tienen una relación directa con un nodo de tipo escuela, mientras que 4\,567 carecen por completo de ella. En particular, 2\,216 están vinculados a un departamento pero no a la escuela correspondiente.
 Es una limitación de la fuente, no del modelo: ese enlace sencillamente no figura en muchas fichas.
 
 Esta carencia obliga a acotar el perímetro de forma indirecta.
@@ -172,7 +173,49 @@ Veinticuatro investigadores están adscritos a unidades de más de una escuela, 
     \end{tabularx}
 \end{table}
 
-\pendiente{Completar, una vez disponible el índice definitivo: el número de perfiles enriquecidos e indexados en cada colección de Qdrant (\texttt{researcher\_\allowbreak summaries} y \texttt{researcher\_\allowbreak keywords}), la cobertura de biografía y de dominios por escuela, y los tiempos aproximados de cada fase del pipeline.}
+De ese perímetro, los \textbf{709} \glspl{pdi} con contenido aprovechable (los mismos que declaran temas en la Tabla~\ref{tab:corpus-escuelas}) constituyen la población efectivamente indexada.
+La colección dispersa \texttt{researcher\_\allowbreak keywords} (fase 5) está completa con esos 709 puntos, uno por \gls{pdi}.
+La colección \texttt{researcher\_\allowbreak summaries} (fase 7) mantiene un punto por \gls{pdi} y, al concluir, contiene un total de 754.
+\pendiente{Esta colección al fina tiene 754 PDIs, tengo que mirar por qué y explicitarlo en algún lado}
+Conviene contrastar este perímetro con la dimensión total del censo: el grafo contiene 5\,998 nodos \texttt{Pdi}, de modo que la indexación actual cubre una fracción del profesorado de la universidad y deja margen para la extensión al conjunto de la \gls{upm}.
+
+\subsection{Tiempos del pipeline}
+\label{sec:res-tiempos}
+
+La Tabla~\ref{tab:tiempos-fases} recoge la duración aproximada de cada fase en una ejecución completa sobre el perímetro, realizada en el servidor de despliegue.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Duración aproximada de cada fase del pipeline en una ejecución completa sobre el perímetro (servidor de despliegue).}
+    \label{tab:tiempos-fases}
+    \begin{tabularx}{\textwidth}{l X r}
+        \toprule
+        \rowcolor{upmblue!8} \colhead{Fase} & \colhead{Cometido} & \colhead{Duración aprox.} \\
+        \midrule
+        1. Censo de identificadores & Descubrimiento de investigadores en el portal & $<$ 10 s \\
+        2. Descarga & Volcado del perfil y la actividad pública & $\sim$ 57 min \\
+        3. Estructuración & Parseo y carga del grafo en Memgraph & $>$ 4 h 30 min \\
+        4. Enriquecimiento & Consolidación del perfil & $>$ 11 min \\
+        5. Indexación de keywords & Colección dispersa \texttt{researcher\_keywords} & $\sim$ 25 min \\
+        6. Resúmenes anuales & Síntesis por año con \gls{llm} local & 29 h ($\approx$ 1 día y 5 h) \\
+        7. Fusión e indexación & Biografía vigente y \texttt{researcher\_summaries} & \ $\sim$ 7h 30 min \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+El reparto de costes es muy desigual y deja una lectura nítida.
+Las fases de ingesta y estructuración (1-4), más la indexación léxica (5), se completan en unas pocas horas, dominadas por el parseo y la carga del grafo (fase 3).
+El coste decisivo es la \emph{generación de los resúmenes con el modelo de lenguaje local}.
+Tan solo la fase 6 se prolonga alrededor de un día y cinco horas sobre los 995 \glspl{pdi} y la fase 7 (fusión recurrente e indexación) añade todavía más tiempo.
+Y ello pese a emplear un modelo deliberadamente ligero (Qwen2.5-7B-Instruct) y sin modo de razonamiento explícito, elegido precisamente para maximizar el rendimiento de generación.
+Como las fases 5 y 6 se ejecutan en paralelo (Sección~\ref{sec:res-arquitectura}), la indexación de keywords queda absorbida dentro de la ventana de los resúmenes.
+
+Que la preparación del corpus se mida en días, y no en minutos, no es un detalle de implementación sino una restricción de diseño: es lo que convierte el procesamiento por lotes periódico, desatendido e incremental (\emph{skip-existing}) en una necesidad y no en una comodidad (\ref{req:adquisicion}).
+Esto justifica que la orquestación con Airflow reanude solo lo nuevo o lo inválido en lugar de repetir el proceso completo.
+La corrida completa se ejecutó en el servidor de despliegue, no en una estación de trabajo local.
+Las implicaciones de esta dependencia del hardware para la escalabilidad del proyecto (y el coste de procesar en el futuro toda la \gls{upm}) se analizan en la Sección~\ref{sec:disc-coste-llm}.
+
+\pendiente{Completar al concluir la fase 7: su duración (Tabla~\ref{tab:tiempos-fases}) y la cobertura de biografía y de dominios por escuela.}
 
 \section{El prototipo \proyecto}
 \label{sec:res-prototipo}
