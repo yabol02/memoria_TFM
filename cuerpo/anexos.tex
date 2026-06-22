@@ -156,8 +156,69 @@ El código fuente completo, incluida esta memoria, está disponible en el reposi
 \chapter{Resultados extendidos}
 \label{annex:resultados-extendidos}
 
-\pendiente{Incluir, tras la ejecución definitiva del banco de pruebas: la tabla completa de resultados con desviaciones o intervalos si se ejecutan varias semillas; el desglose por escuela y por idioma de la consulta; ejemplos adicionales de casos ilustrativos que no cupieron en el Capítulo~\ref{ch:resultados}; y cualquier experimento secundario (p.~ej., sensibilidad al límite de recuperación).}
+Este anexo desglosa los resultados del banco de pruebas (Sección~\ref{sec:res-benchmark}) por las tres dimensiones que registra el arnés de evaluación: tipo de trabajo, escuela y curso académico.
+Para mantener la legibilidad, las tablas reportan la \gls{mrr} de cada estrategia (la métrica que resume la calidad del posicionamiento).
+El resto de métricas siguen las mismas tendencias.
+En cada fila se resalta en negrita la estrategia con mejor \gls{mrr}.
+
+\begin{table}[htbp]
+    \centering
+    \caption{\acrshort{mrr} por tipo de trabajo y estrategia.}
+    \label{tab:res-ext-tipo}
+    \begin{tabularx}{\textwidth}{X c c c c c}
+        \toprule
+        \rowcolor{upmblue!8} \colhead{Tipo} & \colhead{Léx. dir.} & \colhead{Léx.+LLM} & \colhead{Sem. dir.} & \colhead{Sem. enr.} & \colhead{Híbr.} \\
+        \midrule
+        \gls{tfg} (227) & 0,049 & 0,090 & 0,145 & \textbf{0,154} & \textbf{0,154} \\
+        \gls{tfm} (231) & 0,077 & 0,093 & 0,128 & 0,139 & \textbf{0,153} \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\begin{table}[htbp]
+    \centering
+    \caption{\acrshort{mrr} por escuela y estrategia.}
+    \label{tab:res-ext-escuela}
+    \begin{tabularx}{\textwidth}{X c c c c c}
+        \toprule
+        \rowcolor{upmblue!8} \colhead{Escuela} & \colhead{Léx. dir.} & \colhead{Léx.+LLM} & \colhead{Sem. dir.} & \colhead{Sem. enr.} & \colhead{Híbr.} \\
+        \midrule
+        \gls{etsii} (152) & 0,047 & 0,065 & 0,085 & 0,078 & \textbf{0,098} \\
+        \gls{etsisi} (97) & 0,046 & 0,075 & 0,147 & 0,153 & \textbf{0,172} \\
+        \gls{etsist} (73) & 0,067 & 0,107 & 0,139 & \textbf{0,194} & 0,161 \\
+        \gls{etsit} (136) & 0,090 & 0,123 & 0,186 & 0,192 & \textbf{0,198} \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\begin{table}[htbp]
+    \centering
+    \caption[\acrshort{mrr} por curso académico y estrategia]{\acrshort{mrr} por curso académico y estrategia. Se omiten los cursos anteriores a 2019 (8 consultas en total, con $n \le 2$ por curso), cuyos valores no son representativos.}
+    \label{tab:res-ext-anio}
+    \begin{tabularx}{\textwidth}{X c c c c c}
+        \toprule
+        \rowcolor{upmblue!8} \colhead{Curso} & \colhead{Léx. dir.} & \colhead{Léx.+LLM} & \colhead{Sem. dir.} & \colhead{Sem. enr.} & \colhead{Híbr.} \\
+        \midrule
+        2019 (14) & 0,005 & 0,149 & \textbf{0,185} & 0,182 & 0,131 \\
+        2020 (47) & 0,017 & 0,090 & 0,103 & 0,104 & \textbf{0,154} \\
+        2021 (39) & 0,050 & 0,073 & 0,154 & \textbf{0,201} & 0,190 \\
+        2022 (66) & 0,066 & 0,097 & 0,118 & 0,128 & \textbf{0,135} \\
+        2023 (51) & 0,099 & 0,104 & \textbf{0,174} & 0,167 & 0,159 \\
+        2024 (84) & 0,055 & 0,072 & 0,180 & \textbf{0,199} & 0,190 \\
+        2025 (122) & 0,092 & 0,105 & 0,108 & 0,111 & \textbf{0,134} \\
+        2026 (27) & 0,023 & 0,048 & 0,131 & 0,121 & \textbf{0,142} \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+Tres lecturas se desprenden del desglose.
+La ventaja de la señal semántica sobre la léxica es \emph{transversal}: en todos los segmentos la mejor estrategia es siempre una de las tres densas, casi siempre la híbrida o la enriquecida.
+Por escuela, la \gls{etsit} es la mejor recuperada y la \gls{etsii} la más difícil, una brecha que probablemente refleja la distinta cobertura de perfiles y la separabilidad temática de cada escuela.
+Por tipo, las diferencias entre \gls{tfg} y \gls{tfm} son pequeñas; la híbrida las iguala prácticamente (0,154 frente a 0,153).
+El desglose por curso, con tamaños de muestra reducidos en los años antiguos, no muestra una tendencia temporal clara más allá de la ya descrita ventaja de las estrategias densas.
+
+\pendiente{Si se ejecutan varias semillas, añadir desviaciones o intervalos. Considerar el desglose por idioma de la consulta y experimentos secundarios (p.~ej., sensibilidad al límite de recuperación). Añadir los casos ilustrativos que no quepan en el Capítulo~\ref{ch:resultados}.}
 
 El código y esta memoria residen en el repositorio público \url{https://github.com/cbadenes/upm-match}.
+
 La aplicación web está desplegada y es accesible públicamente en \url{https://wiig.dia.fi.upm.es/upm-match/}.
-\pendiente{Añadir URL del repo (independiente) a la memoria}

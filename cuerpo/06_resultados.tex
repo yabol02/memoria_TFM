@@ -196,9 +196,9 @@ La Tabla~\ref{tab:tiempos-fases} recoge la duración aproximada de cada fase en 
         2. Descarga & Volcado del perfil y la actividad pública & $\sim$ 57 min \\
         3. Estructuración & Parseo y carga del grafo en Memgraph & $>$ 4 h 30 min \\
         4. Enriquecimiento & Consolidación del perfil & $>$ 11 min \\
-        5. Indexación de keywords & Colección dispersa \texttt{researcher\_keywords} & $\sim$ 25 min \\
-        6. Resúmenes anuales & Síntesis por año con \gls{llm} local & 29 h ($\approx$ 1 día y 5 h) \\
-        7. Fusión e indexación & Biografía vigente y \texttt{researcher\_summaries} & \ $\sim$ 7h 30 min \\
+        5. Indexación de keywords & Colección dispersa \texttt{researcher\_keywords} (solo para los \glspl{pdi} seleccionados) & $\sim$ 25 min \\
+        6. Resúmenes anuales & Síntesis por año con \gls{llm} local (solo para los \glspl{pdi} seleccionados) & 29 h ($\approx$ 1 día y 5 h) \\
+        7. Fusión e indexación & Biografía vigente y \texttt{researcher\_summaries} (solo para los \glspl{pdi} seleccionados) & \ $\sim$ 7h 30 min \\
         \bottomrule
     \end{tabularx}
 \end{table}
@@ -224,7 +224,8 @@ El prototipo materializa la capa de presentación descrita en la Sección~\ref{s
 
 Cada tarjeta de resultado muestra el nombre del investigador, \textcolor{red}{su puntuación normalizada respecto al primer resultado}, los temas de su perfil que coinciden con la consulta y, en las estrategias semánticas, su biografía investigadora.
 Cuando interviene el \gls{llm}, la interfaz muestra también la interpretación realizada (los términos extraídos o la reformulación enriquecida), de modo que el estudiante pueda auditar y, en su caso, reformular su consulta.
-La latencia percibida varía según la estrategia: las que incorporan el \gls{llm} añaden el coste de una generación local a la búsqueda vectorial, que es interactiva en todos los casos (\pendiente{incluir mediciones de latencia media por modo}).
+La latencia percibida varía según la estrategia: las que incorporan el \gls{llm} añaden el coste de una generación local a la búsqueda vectorial.
+Las puramente vectoriales son inmediatas (la semántica directa resuelve en torno a dos décimas de segundo), mientras que las que invocan el modelo en consulta se sitúan entre los 7 y los 19 segundos de media (Tabla~\ref{tab:benchmark-tiempos}), un coste dominado por la generación local.
 
 \pendiente{Incluir una o dos capturas de pantalla del prototipo (búsqueda y resultados, idealmente con la misma consulta en dos modos distintos) y un párrafo guiando su lectura.}
 
@@ -234,12 +235,12 @@ El prototipo está desplegado y es accesible públicamente en \url{https://wiig.
 \label{sec:res-benchmark}
 
 La Tabla~\ref{tab:benchmark} resume los resultados del banco de pruebas descrito en el Capítulo~\ref{ch:evaluacion} para las cinco estrategias.
-
-\pendiente{Completar con los resultados tras ejecutar el banco de pruebas sobre el corpus completo; indicar también el número de consultas evaluadas y el tiempo medio por consulta.}
+Las consultas son las propuestas reformuladas en primera persona (estándar de plata, Sección~\ref{sec:eval-groundtruth}).
+De los 500 trabajos del conjunto de referencia, 458 quedan tras restringirlas al universo común de investigadores presentes en todos los índices (Sección~\ref{sec:eval-protocolo}) y sobre ese conjunto se calculan todas las métricas.
 
 \begin{table}[htbp]
       \centering
-      \caption[Resultados del banco de pruebas sobre la verdad de referencia de supervisión histórica]{Resultados del banco de pruebas sobre la verdad de referencia de supervisión histórica. Las columnas son las métricas que reporta el arnés de evaluación; por haber un único relevante por consulta, $\mathrm{MAP}$ coincide con la $\mathrm{MRR}$ (Sección~\ref{sec:eval-metricas}).}
+      \caption[Resultados del banco de pruebas sobre la verdad de referencia de supervisión histórica]{Resultados del banco de pruebas sobre la verdad de referencia de supervisión histórica. Las columnas son las métricas que reporta el arnés de evaluación, por haber un único relevante por consulta, $\mathrm{MAP}$ coincide con la $\mathrm{MRR}$ (Sección~\ref{sec:eval-metricas}).}
       \label{tab:benchmark}
       \footnotesize
       \setlength{\tabcolsep}{4pt}
@@ -247,16 +248,61 @@ La Tabla~\ref{tab:benchmark} resume los resultados del banco de pruebas descrito
             \toprule
             \rowcolor{upmblue!8} \colhead{Estrategia} & \colhead{MRR} & \colhead{MAP} & \colhead{Hit@1} & \colhead{Hit@3} & \colhead{Hit@5} & \colhead{Hit@10} & \colhead{nDCG@5} & \colhead{nDCG@10} \\
             \midrule
-            Léxica con \gls{llm}     & --- & --- & --- & --- & --- & --- & --- & --- \\
-            Léxica directa (control) & --- & --- & --- & --- & --- & --- & --- & --- \\
-            Semántica directa        & --- & --- & --- & --- & --- & --- & --- & --- \\
-            Semántica enriquecida    & --- & --- & --- & --- & --- & --- & --- & --- \\
-            Híbrida                  & --- & --- & --- & --- & --- & --- & --- & --- \\
+            Léxica con \gls{llm} & 0,091 & 0,091 & 0,041 & 0,094 & 0,146 & 0,218 & 0,093 & 0,116 \\
+            Léxica directa (control) & 0,063 & 0,063 & 0,033 & 0,066 & 0,098 & 0,135 & 0,065 & 0,077 \\
+            Semántica directa & 0,137 & 0,137 & 0,072 & 0,166 & 0,197 & 0,266 & 0,139 & 0,161 \\
+            Semántica enriquecida & 0,146 & 0,146 & 0,085 & 0,168 & 0,205 & 0,284 & 0,148 & 0,173 \\
+            Híbrida & \textbf{0,153} & \textbf{0,153} & \textbf{0,090} & \textbf{0,175} & \textbf{0,218} & \textbf{0,303} & \textbf{0,156} & \textbf{0,184} \\
             \bottomrule
       \end{tabularx}
 \end{table}
 
-\pendiente{Redactar el análisis de resultados: estrategia ganadora global y por métrica; aportación del \gls{llm} (comparar léxica con \gls{llm} frente a léxica directa, y semántica enriquecida frente a directa); aportación de la hibridación frente a la mejor señal individual; y comportamiento con consultas en español frente a inglés si se desagrega.}
+El tiempo medio por consulta (Tabla~\ref{tab:benchmark-tiempos}) cuantifica el coste de incorporar el \gls{llm} al bucle de consulta, separando el coste de generación (extracción o enriquecimiento) del de la búsqueda vectorial propiamente dicha.
+
+\begin{table}[htbp]
+      \centering
+      \caption[Tiempo medio por consulta de cada estrategia]{Tiempo por consulta de cada estrategia, en segundos, sobre la misma máquina e índices ($n=458$). La columna \textit{LLM} es la fracción del tiempo total dedicada a la generación (extracción de términos o enriquecimiento); \textit{búsqueda} es el resto (embebido y consulta a Qdrant).}
+      \label{tab:benchmark-tiempos}
+      \footnotesize
+      \begin{tabularx}{\textwidth}{X c c c c c}
+            \toprule
+            \rowcolor{upmblue!8} \colhead{Estrategia} & \colhead{Media} & \colhead{Mediana} & \colhead{p90} & \colhead{LLM} & \colhead{Búsqueda} \\
+            \midrule
+            Semántica directa & 0,23  & 0,21  & 0,22  & 0,00  & 0,23 \\
+            Léxica directa (control) & 2,57  & 2,50  & 3,30  & 0,00  & 2,57 \\
+            Léxica con \gls{llm} & 7,59  & 7,50  & 9,86  & 5,99  & 1,60 \\
+            Semántica enriquecida & 11,51 & 11,42 & 12,68 & 7,61  & 3,90 \\
+            Híbrida & 18,69 & 18,50 & 20,60 & 13,15 & 5,54 \\
+            \bottomrule
+      \end{tabularx}
+\end{table}
+
+De estas cifras se extraen cuatro lecturas, todas ellas a interpretar como \emph{comparación relativa} entre estrategias y no como medidas absolutas de utilidad (Sección~\ref{sec:eval-validez}).
+
+Primera, \textbf{la señal semántica domina con holgura a la léxica}.
+Las tres estrategias densas superan a las dos léxicas en todas las métricas y cortes: la peor de las semánticas (la directa, \gls{mrr} 0,137) aventaja con claridad a la mejor de las léxicas (la guiada por \gls{llm}, 0,091) y esta a su vez al control de coincidencia léxica pura (0,063).
+La afinidad temática entre la idea del estudiante y la trayectoria del investigador se captura, por tanto, mucho mejor en el espacio denso de los \emph{embeddings} que mediante la coincidencia de términos.
+
+Segunda, \textbf{el \gls{llm} en consulta aporta en ambos frentes}.
+En el léxico, extraer términos con el modelo (0,091) mejora en cerca de la mitad sobre el control directo (0,063): la reinterpretación rescata coincidencias que el texto crudo no producía.
+Y en el semántico, el enriquecimiento (0,146) supera ahora a la semántica directa (0,137) en \gls{mrr} y en todos los cortes, a diferencia de lo observado con el texto sin reformular.
+Al partir de una propuesta breve y en lenguaje natural, la traducción y expansión controlada del modelo añade señal recuperable que el embebido directo no alcanzaba.
+
+Tercera, \textbf{la hibridación es la mejor estrategia y justifica su diseño}.
+La híbrida encabeza \emph{todas} las métricas de la Tabla~\ref{tab:benchmark} (\gls{mrr} 0,153, \mbox{Hit@1} 0,090, \mbox{Hit@10} 0,303), por delante del enriquecimiento y de la semántica directa.
+Fusionar la señal dispersa explicable con la densa no solo amplía la cobertura en los cortes bajos, sino que mejora el acierto en cabeza, lo que respalda la decisión de adoptarla como estrategia por defecto del prototipo (Sección~\ref{sec:res-prototipo}).
+
+Cuarta, \textbf{la calidad se paga en latencia}.
+La estrategia ganadora es también la más cara: la híbrida resuelve en 18,7\,s de media (Tabla~\ref{tab:benchmark-tiempos}), dominados por la generación local, frente a los 0,23\,s de la semántica directa, que no invoca el \gls{llm} en consulta.
+Existe, pues, un compromiso real entre calidad y coste (Sección~\ref{sec:disc-coste-llm}): la semántica directa es una alternativa atractiva cuando la latencia sea crítica, a cambio de una pérdida moderada de acierto (\gls{mrr} 0,137 frente a 0,153).
+
+Conviene subrayar que esta jerarquía solo emerge con las propuestas reformuladas.
+En una corrida exploratoria previa, tomando el texto de referencia directamente como consulta, el orden se invertía: la semántica directa lideraba y ni el enriquecimiento ni la hibridación aportaban nada.
+El motivo es el solapamiento léxico entre el texto original del trabajo y el perfil de su propio tutor, que premia artificialmente a las estrategias más literales (la amenaza de optimismo por solapamiento de la Sección~\ref{sec:eval-validez}).
+La reformulación en primera persona reduce ese solapamiento y revela el valor real del \gls{llm} y de la fusión de señales, lo que constituye, además, una validación empírica de la conveniencia de construir las consultas mediante el estándar de plata.
+
+El desglose por tipo de trabajo, escuela y curso (Anexo~\ref{annex:resultados-extendidos}) matiza estas tendencias: el liderazgo de las estrategias enriquecida e híbrida es transversal, con la \gls{etsit} como la escuela mejor recuperada y la \gls{etsii} la más difícil.
+Entre \glspl{tfg} y \glspl{tfm} las diferencias son pequeñas.
 
 \section{Casos ilustrativos}
 \label{sec:res-casos}

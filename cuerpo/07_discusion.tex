@@ -6,8 +6,22 @@ Este capítulo interpreta los resultados del capítulo anterior a la luz de los 
 \section{Lectura de los resultados}
 \label{sec:disc-lectura}
 
-\pendiente{Redactar una vez disponibles los resultados del banco de pruebas.
-Guion previsto: (i) qué estrategia domina y en qué métricas; (ii) si la ventaja es consistente o depende del tipo de consulta; (iii) lectura de las métricas absolutas con la cautela del optimismo por solapamiento (Sección~\ref{sec:eval-validez}); (iv) si la estrategia híbrida justifica su coste adicional frente a la mejor señal individual.}
+Los resultados del Capítulo~\ref{ch:resultados} (Tabla~\ref{tab:benchmark}) admiten una lectura ordenada en torno a tres ejes.
+
+El primero es la \textbf{naturaleza de la señal}: la recuperación semántica domina a la léxica de forma transversal y consistente en todas las métricas y cortes, no solo en promedio.
+La afinidad temática entre la idea del estudiante y la trayectoria del investigador se captura mejor en el espacio denso de los \emph{embeddings} que mediante la coincidencia de términos, lo que confirma el acierto de la doble representación y, en particular, del eje semántico como motor principal del sistema.
+
+El segundo es la \textbf{aportación del modelo de lenguaje en la consulta}, que resulta beneficiosa en ambos frentes.
+Sobre la señal léxica, la extracción de términos mejora en cerca de la mitad la \gls{mrr} de la línea base directa, porque reinterpreta una consulta pobre en algo recuperable.
+Sobre la señal semántica, el enriquecimiento supera a la búsqueda directa en todas las métricas: al partir de una propuesta breve en lenguaje natural, la traducción y expansión controlada del modelo añade señal que el embebido directo no alcanzaba.
+Este resultado merece subrayarse porque solo aflora con las propuestas reformuladas: con el texto del trabajo tomado en crudo, el enriquecimiento no aportaba nada, lastrado por el solapamiento léxico con el perfil del propio tutor (Sección~\ref{sec:eval-validez}). La reformulación en primera persona neutraliza ese solapamiento y deja ver el valor real del modelo, lo que valida a posteriori la decisión de construir las consultas mediante el estándar de plata.
+
+El tercero es la \textbf{relación entre calidad y coste}, que dibuja un compromiso real.
+La estrategia más precisa (la híbrida, que encabeza todas las métricas) es también la más cara, al sumar la generación del \gls{llm} a la doble búsqueda.
+La semántica directa, en el extremo opuesto, es casi instantánea a cambio de una pérdida moderada de acierto.
+Que la híbrida gane en todos los cortes respalda con datos la decisión de ofrecerla por defecto en el prototipo, una elección que su valor de interpretabilidad ya recomendaba (Sección~\ref{sec:disc-interpretabilidad}) y la semántica directa quedaría como alternativa natural cuando la latencia sea crítica.
+
+Procede, no obstante, una cautela: las cifras absolutas son modestas (\mbox{Hit@1} en torno a 0,09) y deben leerse como cotas, no como medidas de utilidad real, por las amenazas a la validez ya declaradas (Sección~\ref{sec:eval-validez}). El valor de la comparación reside en su carácter relativo.
 
 \section{Interpretabilidad frente a potencia semántica}
 \label{sec:disc-interpretabilidad}
@@ -45,8 +59,10 @@ Como los resúmenes observados apenas variaron entre modelos, la ganancia de uno
 A los costes temporal y material se añade uno ambiental: una generación que se prolonga durante días sobre aceleradores gráficos conlleva un consumo energético no despreciable, una dimensión que un balance completo de sostenibilidad del sistema debería contemplar.
 \pendiente{Ampliar con una estimación del consumo energético y, en lo posible, de la huella de carbono asociada a una ejecución completa del pipeline. Mencionar explícitamente \textit{green computing}}
 
-En la consulta, el coste es por interacción y se traduce en latencia percibida y su justificación depende de que la mejora de calidad sea significativa.
-\pendiente{Completar con los números de latencia y la diferencia de métricas entre los modos con y sin \gls{llm}.}
+En la consulta, el coste es por interacción y se traduce en latencia percibida y su justificación depende de que la mejora de calidad lo compense.
+Aquí sí lo hace, aunque con matices: las estrategias que invocan el modelo (enriquecida e híbrida) son las más precisas (Tabla~\ref{tab:benchmark}), pero elevan la latencia media desde las dos décimas de segundo de la semántica directa hasta los 11,5 y los 18,7 segundos respectivamente (Tabla~\ref{tab:benchmark-tiempos}).
+Ese tiempo está dominado por la generación local, no por la búsqueda vectorial, que se mantiene por debajo de los seis segundos incluso en la estrategia más cara.
+La mejora de acierto de la híbrida sobre la semántica directa es real pero moderada (\gls{mrr} 0,153 frente a 0,137), de modo que la elección entre máxima calidad y mínima latencia es un compromiso legítimo que el sistema deja en manos del usuario al ofrecer ambas estrategias.
 
 Conviene subrayar el resultado de viabilidad en sí mismo: todo el sistema (incluida la generación de miles de biografías y la atención interactiva de consultas) opera con un modelo abierto de 7000 millones de parámetros (Qwen2.5-7B-Instruct) en hardware propio, sin enviar un solo dato a servicios externos y con coste marginal nulo por consulta (requisito \ref{req:soberania}).
 Esa viabilidad merece, no obstante, un matiz honesto.
