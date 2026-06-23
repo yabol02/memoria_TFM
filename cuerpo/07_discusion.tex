@@ -57,7 +57,14 @@ Un modelo mayor podría abarcar más publicaciones por lote y reducir el número
 Como los resúmenes observados apenas variaron entre modelos, la ganancia de uno más capaz no está clara y cabe esperar más recorrido del ajuste de los \emph{prompts} que del tamaño del modelo, contrastarlo de forma sistemática queda como línea de trabajo futuro.
 
 A los costes temporal y material se añade uno ambiental: una generación que se prolonga durante días sobre aceleradores gráficos conlleva un consumo energético no despreciable, una dimensión que un balance completo de sostenibilidad del sistema debería contemplar.
-\pendiente{Ampliar con una estimación del consumo energético y, en lo posible, de la huella de carbono asociada a una ejecución completa del pipeline. Mencionar explícitamente \textit{green computing}}
+Cabe acotarla con una estimación de orden de magnitud.
+Una medición sobre el propio servidor sitúa el consumo de una de sus \glspl{gpu} (NVIDIA L40, 300\,W de potencia máxima) en torno a 85\,W en reposo y cerca de 285\,W bajo carga de inferencia.
+Las fases dominadas por el modelo de lenguaje (la generación de resúmenes, su fusión y la campaña de evaluación) suman del orden de 51 horas de cómputo sobre una única \gls{gpu}, pues el sistema sirve un solo modelo a la vez.
+Tomando la potencia bajo carga como cota superior, construir y evaluar todo el sistema consume en torno a 15\,kWh que, con una intensidad media de la red eléctrica española del orden de 130\,gCO\textsubscript{2}/kWh (una de las más limpias de Europa, con más de un 56\,\% de generación renovable en 2025\footnote{Datos de Red Eléctrica de España para 2024-2025 (\url{https://www.ree.es}); el factor exacto varía con la hora y la estación.}) equivalen a una huella aproximada de 2\,kg de CO\textsubscript{2}.
+
+La cifra es deliberadamente conservadora (supone la \gls{gpu} a plena carga de forma continua, cuando en la práctica alterna con operaciones de entrada/salida) y aproximada (al ser el servidor compartido, las lecturas instantáneas de potencia incluyen otras cargas).
+Aun así, esta magnitud es ilustrativa: el coste ambiental de construir y evaluar el sistema completo con un modelo abierto pequeño en hardware propio equivale al consumo eléctrico de un hogar durante uno o dos días, y se paga una sola vez por actualización, no por consulta.
+Es un argumento más, en clave de \emph{green computing}, a favor del enfoque local: un modelo pequeño basta para la tarea (Sección~\ref{sec:disc-coste-llm}) y evita tanto la huella como la opacidad del coste energético de los grandes modelos propietarios servidos por \gls{api}.
 
 En la consulta, el coste es por interacción y se traduce en latencia percibida y su justificación depende de que la mejora de calidad lo compense.
 Aquí sí lo hace, aunque con matices: las estrategias que invocan el modelo (enriquecida e híbrida) son las más precisas (Tabla~\ref{tab:benchmark}), pero elevan la latencia media desde las dos décimas de segundo de la semántica directa hasta los 11,5 y los 18,7 segundos respectivamente (Tabla~\ref{tab:benchmark-tiempos}).
@@ -74,7 +81,7 @@ Hace dos años, aún con esa salvedad, esta afirmación habría sido difícilmen
 \section{Validez externa y generalización}
 \label{sec:disc-generalizacion}
 
-¿Hasta dónde viajan estos resultados?
+\emph{¿Hasta dónde viajan estos resultados?}
 Tres elementos del trabajo son específicos del caso \gls{upm}: la estructura del portal científico, el perímetro de cuatro escuelas (ampliable a toda la universidad) y el sesgo lingüístico español-inglés del corpus.
 Nada de ello afecta, sin embargo, a la arquitectura conceptual: cualquier institución con un repositorio público de actividad investigadora puede instanciar el mismo flujo (adquisición, grafo, enriquecimiento, doble indexación, fusión) y la metodología de evaluación por supervisión histórica es aplicable allí donde existan registros de trabajos dirigidos, es decir, en prácticamente toda universidad.
 

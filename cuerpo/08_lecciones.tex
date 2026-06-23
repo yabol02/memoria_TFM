@@ -1,50 +1,72 @@
 \chapter[Lecciones aprendidas]{Problemas encontrados y lecciones \texorpdfstring{\\}{ }aprendidas}
 \label{ch:lecciones}
-\pendiente{Capítulo completamente redactado por Claude a modo de placeholder temporal hasta que tengamos la evaluación hecha.}
 
-El camino entre el diseño del Capítulo~\ref{ch:metodologia} y el sistema operativo del Capítulo~\ref{ch:resultados} no fue lineal. Este capítulo documenta los problemas más instructivos encontrados durante el desarrollo —técnicos unos, metodológicos otros— junto con la solución adoptada y la lección que cabe extraer de cada uno. Se incluye con una doble intención: dejar constancia honesta del coste real de construir un sistema así, y ahorrar ese coste a quien lo replique.
+El camino entre el diseño del Capítulo~\ref{ch:metodologia} y el sistema operativo del Capítulo~\ref{ch:resultados} no fue lineal.
+Este capítulo documenta los problemas más instructivos encontrados durante el desarrollo (técnicos unos, metodológicos otros) junto con la solución adoptada y la lección que cabe extraer de cada uno.
+Se incluye con una doble intención: dejar constancia honesta del coste real de construir un sistema así y ahorrar ese coste a quien lo replique.
 
 \section{Un portal pensado para personas}
 \label{sec:lec-portal}
 
-\textbf{Problema.} El HTML del portal científico está pensado para presentación visual: estructuras inconsistentes entre perfiles, campos que aparecen solo a veces y resúmenes de publicaciones con secciones etiquetadas concatenadas sin separadores fiables. Los primeros analizadores producían perfiles plausibles pero sutilmente corruptos —el peor tipo de error, porque se propaga en silencio hasta las representaciones semánticas.
+\textbf{Problema.}
+El HTML del portal científico está pensado para presentación visual: estructuras inconsistentes entre perfiles, campos que aparecen solo a veces y resúmenes de publicaciones con secciones etiquetadas concatenadas sin separadores fiables.
+Los primeros analizadores producían perfiles plausibles pero sutilmente corruptos (el peor tipo de error, porque se propaga en silencio hasta las representaciones semánticas).
 
-\textbf{Solución y lección.} Se adoptó una política de \emph{limpieza conservadora}: solo se transforma el texto cuando el patrón es inequívoco; ante la duda, se conserva la imperfección original. Igual de importante fue conservar el HTML crudo como capa inmutable: cada mejora del analizador se reaplica a coste cero sobre lo ya descargado. La lección general es que, con fuentes no cooperativas, la calidad no se consigue en la primera pasada sino mediante reprocesado barato e iterativo.
+\textbf{Solución y lección.}
+Se adoptó una política de \emph{limpieza conservadora}: solo se transforma el texto cuando el patrón es inequívoco.
+Ante la duda, se conserva la imperfección original.
+Igual de importante fue conservar el HTML crudo como capa inmutable: cada mejora del analizador se reaplica a coste cero sobre lo ya descargado.
+La lección general es que, con fuentes no cooperativas, la calidad no se consigue en la primera pasada sino mediante reprocesado barato e iterativo.
 
 \section{Orquestar con memoria finita}
 \label{sec:lec-airflow}
 
-\textbf{Problema.} La ejecución orquestada del pipeline completo agotaba la memoria del entorno de despliegue: fases que procesan miles de perfiles, modelos de embedding cargados en el propio proceso y un orquestador con paralelismo por defecto componían picos de consumo que terminaban en errores por falta de memoria.
+\textbf{Problema.}
+La ejecución orquestada del pipeline completo agotaba la memoria del entorno de despliegue: fases que procesan miles de perfiles, modelos de embedding cargados en el propio proceso y un orquestador con paralelismo por defecto componían picos de consumo que terminaban en errores por falta de memoria.
 
-\textbf{Solución y lección.} Se reconfiguró la ejecución para acotar la concurrencia efectiva y se reforzó el diseño por lotes con reanudación: cada fase puede interrumpirse y relanzarse sin repetir trabajo (\emph{skip-existing}). La lección es que la idempotencia no es una elegancia arquitectónica sino un requisito operativo: en cuanto el pipeline es largo, \emph{algo} fallará a mitad, y la diferencia entre un incidente y una catástrofe es poder relanzar desde donde se quedó.
+\textbf{Solución y lección.}
+Se reconfiguró la ejecución para acotar la concurrencia efectiva y se reforzó el diseño por lotes con reanudación: cada fase puede interrumpirse y relanzarse sin repetir trabajo (\emph{skip-existing}).
+La lección es que la idempotencia no es una elegancia arquitectónica sino un requisito operativo: en cuanto el pipeline es largo, \emph{algo} fallará a mitad, y la diferencia entre un incidente y una catástrofe es poder relanzar desde donde se quedó.
 
 \section{Modelos locales: errores silenciosos y obediencia frágil}
 \label{sec:lec-llm}
 
-\textbf{Problema.} La integración del LLM local presentó dos modos de fallo característicos. El primero, de infraestructura: la capa de agentes devolvía los errores de conexión o de modelo como texto plano en el campo de respuesta, de modo que un fallo de servicio podía confundirse con una respuesta válida y colarse en el corpus. El segundo, de comportamiento: con un modelo de tamaño medio, las instrucciones complejas se degradan; las primeras versiones del resumen biográfico derivaban en listas de publicaciones o en narraciones cronológicas («en 2019 publicó...») inservibles como descripción de especialización.
+\textbf{Problema.}
+La integración del \gls{llm} local presentó dos modos de fallo característicos.
+El primero, de infraestructura: la capa de agentes devolvía los errores de conexión o de modelo como texto plano en el campo de respuesta, de modo que un fallo de servicio podía confundirse con una respuesta válida y colarse en el corpus.
+El segundo, de comportamiento: con un modelo de tamaño medio, las instrucciones complejas se degradan.
+Las primeras versiones del resumen biográfico derivaban en listas de publicaciones o en narraciones cronológicas («en 2019 publicó...») inservibles como descripción de especialización.
 
-\textbf{Solución y lección.} Para lo primero, validación defensiva en la frontera: toda respuesta se valida contra un esquema tipado y cualquier contenido anómalo se rechaza y reintenta. Para lo segundo, prompts muy pautados, con formato de salida explícito, reglas de estabilidad (los dominios establecidos se conservan literalmente) y prohibiciones concretas (no referirse al tiempo ni al cambio salvo novedad real). La lección: un LLM en un pipeline automatizado debe tratarse como una dependencia no fiable más —con contrato, validación y reintentos—, y con modelos pequeños el esfuerzo de ingeniería se desplaza del código al prompt.
+\textbf{Solución y lección.}
+Para lo primero, validación defensiva en la frontera: toda respuesta se valida contra un esquema tipado y cualquier contenido anómalo se rechaza y reintenta.
+Para lo segundo, prompts muy pautados, con formato de salida explícito, reglas de estabilidad (los dominios establecidos se conservan literalmente) y prohibiciones concretas (no referirse al tiempo ni al cambio salvo novedad real).
+La lección: un \gls{llm} en un pipeline automatizado debe tratarse como una dependencia no fiable más (con contrato, validación y reintentos) y con modelos pequeños el esfuerzo de ingeniería se desplaza del código al prompt.
 
 \section{Resumir trayectorias que no caben en el contexto}
 \label{sec:lec-rolling}
 
-\textbf{Problema.} Las trayectorias largas (cientos de publicaciones) no caben en la ventana de contexto del modelo, y truncarlas sesgaba la biografía hacia lo más reciente. Además, los resúmenes con abstracts duplicados o muy similares sobreponderaban artificialmente esos temas.
+\textbf{Problema.}
+Las trayectorias largas (cientos de publicaciones) no caben en la ventana de contexto del modelo y truncarlas sesgaba la biografía hacia lo más reciente.
+Además, los resúmenes con \emph{abstracts} duplicados o muy similares sobreponderaban artificialmente esos temas.
 
-\textbf{Solución y lección.} El resumen se construye en dos pasos. Primero, la producción se agrupa por años y cada año se resume de forma autónoma, con deduplicación previa de resúmenes casi idénticos; los años con muchas publicaciones se dividen a su vez en lotes para no rebasar la ventana de contexto del modelo. Esto acota el contexto por iteración y produce una granularidad homogénea entre perfiles muy distintos. Después, esos resúmenes anuales se condensan en una biografía vigente mediante fusión recurrente sobre una ventana reciente, ponderando el trabajo más reciente sin descartar la experiencia anterior que siga siendo pertinente. La lección trasciende el caso: cuando el objeto a representar excede el contexto, la agregación con estado explícito —y, si importa la recencia, su fusión ponderada— es preferible al truncado.
-
-\section{Infraestructura en un entorno heterogéneo}
-\label{sec:lec-infra}
-
-\textbf{Problema.} El despliegue de desarrollo sobre Windows introdujo fricciones específicas: el descubrimiento automático de servicios del proxy inverso no estaba disponible en esa plataforma, y aparecieron desajustes de codificación y rutas entre los entornos local y contenedorizado.
-
-\textbf{Solución y lección.} Se sustituyó el descubrimiento dinámico por configuración estática declarativa del proxy, y se canonizó todo intercambio de ficheros a UTF-8. La lección es modesta pero recurrente: las decisiones de infraestructura deben validarse en la plataforma real de despliegue desde el primer día, no al final.
+\textbf{Solución y lección.}
+El resumen se construye en dos pasos.
+Primero, la producción se agrupa por años y cada año se resume de forma autónoma, con deduplicación previa de resúmenes casi idénticos.
+Los años con muchas publicaciones se dividen a su vez en lotes para no rebasar la ventana de contexto del modelo.
+Esto acota el contexto por iteración y produce una granularidad homogénea entre perfiles muy distintos.
+Después, esos resúmenes anuales se condensan en una biografía vigente mediante fusión recurrente sobre una ventana reciente, ponderando el trabajo más reciente sin descartar la experiencia anterior que siga siendo pertinente.
+La lección trasciende el caso: cuando el objeto a representar excede el contexto, la agregación con estado explícito y, si importa la recencia, su fusión ponderada, es preferible al truncado.
 
 \section{Esquemas que evolucionan sobre índices ya poblados}
 \label{sec:lec-esquema}
 
-\textbf{Problema.} La estrategia híbrida exigió añadir una segunda representación (el vector disperso de dominios) a una colección vectorial ya poblada. El índice admite el nuevo campo, pero los puntos existentes no lo tienen: una búsqueda híbrida sobre datos antiguos degrada silenciosamente a búsqueda densa, sin error visible.
+\textbf{Problema.}
+La estrategia híbrida exigió añadir una segunda representación (el vector disperso de dominios) a una colección vectorial ya poblada. El índice admite el nuevo campo, pero los puntos existentes no lo tienen: una búsqueda híbrida sobre datos antiguos degrada silenciosamente a búsqueda densa, sin error visible.
 
-\textbf{Solución y lección.} La fase de indexación incorpora una reconstrucción explícita de la colección cuando cambia el esquema, y el banco de pruebas verifica la presencia de ambas representaciones antes de comparar estrategias. La lección: los esquemas de los índices vectoriales deben versionarse y los cambios deben forzar reindexación comprobable; la degradación silenciosa es especialmente peligrosa porque produce resultados \emph{plausibles}.
+\textbf{Solución y lección.}
+La fase de indexación incorpora una reconstrucción explícita de la colección cuando cambia el esquema, y el banco de pruebas verifica la presencia de ambas representaciones antes de comparar estrategias.
+La lección: los esquemas de los índices vectoriales deben versionarse y los cambios deben forzar reindexación comprobable.
+La degradación silenciosa es especialmente peligrosa porque produce resultados \emph{plausibles}.
 
 \section{Recapitulación}
 \label{sec:lec-recap}
