@@ -33,7 +33,10 @@ Tercera, la tarea evaluada es exactamente la tarea objetivo del sistema (de un t
 Para que la comparación entre estrategias sea justa, el conjunto de candidatos se restringe a los investigadores presentes en \emph{todos} los índices (disperso y denso): de lo contrario, una estrategia podría verse penalizada no por su calidad, sino por buscar sobre un universo distinto.
 
 En la implementación, la consulta no se toma literalmente del trabajo: para acercarla a lo que escribiría un estudiante y, sobre todo, para reducir el solapamiento léxico con el perfil del propio tutor, cada descripción se reformula automáticamente en una propuesta breve en primera persona.
-Tres \glspl{llm} distintos locales generan, cada uno, una propuesta candidata, y un panel formado por esos mismos modelos (esquema \emph{LLM como juez}) las puntúa y selecciona la mejor. El proceso es reproducible (semilla fija) y se aplica sobre un conjunto de referencia de 500 trabajos reales (250 \gls{tfg} y 250 \gls{tfm}).
+Distinguimos así dos fuentes de consulta sobre la misma verdad de referencia: el \emph{estándar de oro}, formado por los textos originales de los trabajos, y el \emph{estándar de plata}, formado por las propuestas reformuladas que de ellos se derivan y que constituyen la entrada por defecto de la evaluación.
+La reformulación sigue un esquema de \emph{\gls{llm} como juez}: tres \glspl{llm} locales distintos generan, cada uno, una propuesta candidata, y un panel formado por esos mismos modelos las puntúa de $1$ a $5$ y selecciona la de mayor nota media, deshaciendo los empates al azar.
+El proceso es reproducible (semilla fija) y se aplica sobre un conjunto de referencia de 500 trabajos reales (250 \glspl{tfg} y 250 \glspl{tfm}).
+El Anexo~\ref{annex:ejemplo-eval} ilustra este proceso paso a paso sobre un trabajo concreto.
 
 Este diseño formaliza, además, el \emph{retroanálisis} previsto en el plan de evaluación del proyecto de innovación educativa en que se enmarca el trabajo (Sección~\ref{sec:contexto}), que contempla la «precisión de las recomendaciones en retroanálisis» como métrica de éxito del sistema: las cifras de este capítulo son, por tanto, directamente reportables al proyecto.
 
@@ -56,7 +59,7 @@ El acierto en los $k$ primeros puestos se mide con $\mathrm{Hit@}k$ y, para un �
 \end{equation}
 
 donde $\mathbb{I}[\cdot]$ vale $1$ si la condición se cumple y $0$ en caso contrario. La media armónica de $\mathrm{P@}k$ y $\mathrm{R@}k$ da la $\mathrm{F1@}k$.
-La calidad del posicionamiento se resume con el rango recíproco medio (MRR) que, al haber un solo relevante, coincide con la precisión media (MAP) y con la ganancia acumulada descontada normalizada:
+La calidad del posicionamiento se resume con \gls{mrr} que, al haber un solo relevante, coincide con \gls{map} y con la ganancia acumulada descontada normalizada:
 
 \begin{equation}
 \mathrm{MRR} = \mathrm{MAP} = \frac{1}{|Q|} \sum_{q \in Q} \frac{1}{r_q},
@@ -68,14 +71,14 @@ La calidad del posicionamiento se resume con el rango recíproco medio (MRR) que
 con el convenio $1/r_q = 0$ cuando $r_q = \infty$, y donde la ganancia ideal de la nDCG vale $1$ por existir un único relevante.
 
 Cada familia responde a una pregunta distinta.
-$\mathrm{Hit@1}$ mide la precisión estricta («¿acierta a la primera?»); $\mathrm{Hit@}5$ y $\mathrm{Hit@}10$ reflejan el uso real del sistema, en el que el estudiante inspecciona la primera pantalla de resultados y decide entre varios candidatos; la MRR resume en un único número la calidad del posicionamiento, premiando los primeros puestos; y la nDCG aporta una lectura graduada de esa misma calidad.
+$\mathrm{Hit@1}$ mide la precisión estricta («¿acierta a la primera?»); $\mathrm{Hit@}5$ y $\mathrm{Hit@}10$ reflejan el uso real del sistema, en el que el estudiante inspecciona la primera pantalla de resultados y decide entre varios candidatos; la \gls{mrr} resume en un único número la calidad del posicionamiento, premiando los primeros puestos; y la nDCG aporta una lectura graduada de esa misma calidad.
 Todas ellas se desglosan, además, por tipo de trabajo (\gls{tfg}/\gls{tfm}), escuela y curso académico.
 
 \section{Estrategias comparadas}
 \label{sec:eval-estrategias}
 
 Se evalúan las cuatro estrategias del sistema más una quinta de control, resumidas en la Tabla~\ref{tab:modos}.
-La estrategia de control (léxica directa) lanza la búsqueda dispersa usando las palabras clave originales del propio trabajo supervisado, sin intervención del modelo de lenguaje: actúa como una \emph{extracción} que aísla la contribución del \gls{llm} en la interpretación de la consulta y como línea base clásica de coincidencia léxica.
+La estrategia de control (léxica directa) lanza la búsqueda dispersa con el texto de la consulta tal cual, enviándolo directamente al índice de términos sin que el modelo de lenguaje extraiga ni reformule nada: aísla así la contribución del \gls{llm} en la interpretación de la consulta y actúa como línea base clásica de coincidencia léxica.
 
 \begin{table}[htbp]
     \centering
@@ -86,7 +89,7 @@ La estrategia de control (léxica directa) lanza la búsqueda dispersa usando la
         \rowcolor{upmblue!8} \colhead{Estrategia} & \colhead{Procesamiento de la consulta} & \colhead{\gls{llm}} & \colhead{Índice} \\
         \midrule
         Léxica con \gls{llm} & Extracción de términos generales y específicos; fusión RRF de ambas búsquedas & Sí & Disperso \\
-        Léxica directa (control) & Palabras clave originales del trabajo, sin transformación & No & Disperso \\
+        Léxica directa (control) & Texto de la consulta directo al índice disperso, sin extracción de términos & No & Disperso \\
         Semántica directa & Embedding del texto tal cual & No & Denso \\
         Semántica enriquecida & Traducción y expansión controlada; embedding del texto reformulado & Sí & Denso \\
         Híbrida & Términos extraídos (señal dispersa) + texto enriquecido (señal densa); fusión RRF & Sí & Ambos \\
