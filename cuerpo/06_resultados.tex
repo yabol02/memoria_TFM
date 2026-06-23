@@ -12,67 +12,67 @@ Todas las decisiones tecnológicas comparten dos criterios heredados de los requ
 La Figura~\ref{fig:arquitectura} muestra la arquitectura completa y la Tabla~\ref{tab:stack} su correspondencia con las etapas metodológicas del Capítulo~\ref{ch:metodologia}.
 
 \begin{figure}[htbp]
-      \centering
-      \resizebox{\textwidth}{!}{
-            \begin{tikzpicture}[
-                  font=\small,
-                  node distance=7mm and 7mm,
-                  proc/.style={draw=upmblue!80!black, fill=upmblue!8, thick, rounded corners=3pt, align=center, minimum height=13mm, text width=27mm, inner sep=2mm},
-                  store/.style={draw=teal!60!black, fill=teal!9, thick, rounded corners=3pt, align=center, minimum height=13mm, text width=27mm, inner sep=2mm},
-                  ext/.style={draw=black!60, fill=black!4, thick, rounded corners=3pt, align=center, minimum height=13mm, text width=27mm, inner sep=2mm},
-                  infra/.style={draw=black!50, fill=orange!8, thick, rounded corners=3pt, align=center, minimum height=10mm, inner sep=2mm},
-                  flecha/.style={-{Stealth[length=2.6mm]}, semithick, draw=black!75},
-                  flechad/.style={{Stealth[length=2.6mm]}-{Stealth[length=2.6mm]}, semithick, draw=black!75}
-            ]
-            % Fila 1: ingesta y estructuración
-            \node[ext] (portal) {\textbf{Portal Científico UPM}\\[0.5mm] \footnotesize Fuente pública};
-            \node[proc, right=of portal] (descarga) {\textbf{Descarga asíncrona}\\[0.5mm] \footnotesize httpx + tenacity};
-            \node[store, right=of descarga] (minio1) {\textbf{MinIO}\\[0.5mm] \footnotesize Bucket con los datos crudos};
-            \node[proc, right=of minio1] (parsing) {\textbf{Parseo y modelado}\\[0.5mm] \footnotesize Scrapy + Pydantic};
-            \node[store, right=of parsing] (memgraph) {\textbf{Memgraph}\\[0.5mm] \footnotesize Grafo de actividad};
+  \centering
+  \resizebox{\textwidth}{!}{
+    \begin{tikzpicture}[
+      font=\small,
+      node distance=7mm and 7mm,
+      proc/.style={draw=upmblue!80!black, fill=upmblue!8, thick, rounded corners=3pt, align=center, minimum height=13mm, text width=27mm, inner sep=2mm},
+      store/.style={draw=teal!60!black, fill=teal!9, thick, rounded corners=3pt, align=center, minimum height=13mm, text width=27mm, inner sep=2mm},
+      ext/.style={draw=black!60, fill=black!4, thick, rounded corners=3pt, align=center, minimum height=13mm, text width=27mm, inner sep=2mm},
+      infra/.style={draw=black!50, fill=orange!8, thick, rounded corners=3pt, align=center, minimum height=10mm, inner sep=2mm},
+      flecha/.style={-{Stealth[length=2.6mm]}, semithick, draw=black!75},
+      flechad/.style={{Stealth[length=2.6mm]}-{Stealth[length=2.6mm]}, semithick, draw=black!75}
+    ]
+    % Fila 1: ingesta y estructuración
+    \node[ext] (portal) {\textbf{Portal Científico UPM}\\[0.5mm] \footnotesize Fuente pública};
+    \node[proc, right=of portal] (descarga) {\textbf{Descarga asíncrona}\\[0.5mm] \footnotesize httpx + tenacity};
+    \node[store, right=of descarga] (minio1) {\textbf{MinIO}\\[0.5mm] \footnotesize Bucket con los datos crudos};
+    \node[proc, right=of minio1] (parsing) {\textbf{Parseo y modelado}\\[0.5mm] \footnotesize Scrapy + Pydantic};
+    \node[store, right=of parsing] (memgraph) {\textbf{Memgraph}\\[0.5mm] \footnotesize Grafo de actividad};
 
-            \draw[flecha] (portal) -- (descarga);
-            \draw[flecha] (descarga) -- (minio1);
-            \draw[flecha] (minio1) -- (parsing);
-            \draw[flecha] (parsing) -- (memgraph);
+    \draw[flecha] (portal) -- (descarga);
+    \draw[flecha] (descarga) -- (minio1);
+    \draw[flecha] (minio1) -- (parsing);
+    \draw[flecha] (parsing) -- (memgraph);
 
-            % Fila 2 (sentido inverso): enriquecimiento e indexación
-            \node[proc, below=14mm of memgraph] (consol) {\textbf{Resúmenes anuales}\\[0.5mm] \footnotesize Ollama + Agno};
-            \node[store, below=8mm of parsing] (minio2) {\textbf{MinIO}\\[0.5mm] \footnotesize Bucket con los perfiles enriquecidos};
-            \node[proc, below=10mm of minio1] (indexa) {\textbf{Fusión e indexación}\\[0.5mm] \footnotesize Biografía vigente, dispersa y densa};
-            \node[store, below=14mm of descarga] (qdrant) {\textbf{Qdrant}\\[0.5mm] \footnotesize Índices disperso y denso};
+    % Fila 2 (sentido inverso): enriquecimiento e indexación
+    \node[proc, below=14mm of memgraph] (consol) {\textbf{Resúmenes anuales}\\[0.5mm] \footnotesize Ollama + Agno};
+    \node[store, below=8mm of parsing] (minio2) {\textbf{MinIO}\\[0.5mm] \footnotesize Bucket con los perfiles enriquecidos};
+    \node[proc, below=10mm of minio1] (indexa) {\textbf{Fusión e indexación}\\[0.5mm] \footnotesize Biografía vigente, dispersa y densa};
+    \node[store, below=14mm of descarga] (qdrant) {\textbf{Qdrant}\\[0.5mm] \footnotesize Índices disperso y denso};
 
-            \draw[flecha] (memgraph) -- (consol);
-            \draw[flecha] (consol) -- (minio2);
-            \draw[flechad] (minio2) -- (indexa);
-            \draw[flecha] (indexa) -- (qdrant);
+    \draw[flecha] (memgraph) -- (consol);
+    \draw[flecha] (consol) -- (minio2);
+    \draw[flechad] (minio2) -- (indexa);
+    \draw[flecha] (indexa) -- (qdrant);
 
-            % Fila 3: servicio en línea
-            \node[ext, below=18mm of qdrant] (estudiante) {\textbf{Estudiante}\\[0.5mm] \footnotesize navegador web};
-            \node[proc, below=16mm of indexa] (flask) {\textbf{\proyecto}\\[0.5mm] \footnotesize Flask + Gunicorn};
-            \node[proc, below=15mm of minio2] (agentes) {\textbf{Agentes \gls{llm}}\\[0.5mm] \footnotesize Ollama (Qwen2.5)};
+    % Fila 3: servicio en línea
+    \node[ext, below=18mm of qdrant] (estudiante) {\textbf{Estudiante}\\[0.5mm] \footnotesize navegador web};
+    \node[proc, below=16mm of indexa] (flask) {\textbf{\proyecto}\\[0.5mm] \footnotesize Flask + Gunicorn};
+    \node[proc, below=15mm of minio2] (agentes) {\textbf{Agentes \gls{llm}}\\[0.5mm] \footnotesize Ollama (Qwen2.5)};
 
-            \draw[flechad] (estudiante) -- (flask);
-            \draw[flechad] (flask) -- (agentes);
-            \draw[flechad] (flask) -- (qdrant);
+    \draw[flechad] (estudiante) -- (flask);
+    \draw[flechad] (flask) -- (agentes);
+    \draw[flechad] (flask) -- (qdrant);
 
-            % Infraestructura transversal
-            \node[infra, below=12mm of flask, text width=120mm] (infra) {\textbf{Orquestación y despliegue:} Airflow (ejecución periódica del pipeline) · Docker Compose (todos los servicios) · Traefik (proxy inverso) íntegramente \emph{on-premise}};
+    % Infraestructura transversal
+    \node[infra, below=12mm of flask, text width=120mm] (infra) {\textbf{Orquestación y despliegue:} Airflow (ejecución periódica del pipeline) · Docker Compose (todos los servicios) · Nginx (proxy inverso) íntegramente \emph{on-premise}};
 
-            \begin{scope}[on background layer]
-            \node[draw=black!30, dashed, rounded corners=4pt, fill=black!1, inner sep=4mm,
-                  fit=(portal)(memgraph)(qdrant)(consol),
-                  label={[black!60, font=\footnotesize\bfseries]90:Preparación del corpus (fases 1--7)}] {};
-            \node[draw=black!30, dashed, rounded corners=4pt, fill=black!1, inner sep=4mm,
-                  fit=(estudiante)(flask)(agentes),
-                  label={[black!60, font=\footnotesize\bfseries]180:Servicio}] {};
-            \end{scope}
-            \end{tikzpicture}
-      }
-      \caption{Arquitectura tecnológica del sistema.
-      Las filas superiores implementan la preparación del corpus (Figura~\ref{fig:flujo}); la inferior, la atención de consultas.
-      Los almacenes (MinIO, Memgraph, Qdrant) materializan los artefactos persistentes entre etapas.}
-      \label{fig:arquitectura}
+    \begin{scope}[on background layer]
+    \node[draw=black!30, dashed, rounded corners=4pt, fill=black!1, inner sep=4mm,
+          fit=(portal)(memgraph)(qdrant)(consol),
+          label={[black!60, font=\footnotesize\bfseries]90:Preparación del corpus (fases 1--7)}] {};
+    \node[draw=black!30, dashed, rounded corners=4pt, fill=black!1, inner sep=4mm,
+          fit=(estudiante)(flask)(agentes),
+          label={[black!60, font=\footnotesize\bfseries]180:Servicio}] {};
+    \end{scope}
+    \end{tikzpicture}
+  }
+  \caption{Arquitectura tecnológica del sistema.
+  Las filas superiores implementan la preparación del corpus (Figura~\ref{fig:flujo}); la inferior, la atención de consultas.
+  Los almacenes (MinIO, Memgraph, Qdrant) materializan los artefactos persistentes entre etapas.}
+  \label{fig:arquitectura}
 \end{figure}
 
 \begin{table}[htbp]
@@ -103,6 +103,7 @@ Tres decisiones merecen justificación expresa.
 \duda{Creo que habría que justificar algo más cada tecnología}
 Primera, el \textbf{\gls{llm} local} (Qwen2.5 7B instruccional servido por Ollama) es el punto donde el requisito \ref{req:soberania} se juega su viabilidad, pues sustituye a las \gls{api} propietarias tanto en el enriquecimiento masivo del corpus como en la interpretación de consultas en línea.
 Por otro lado, Agno aporta la capa de agentes con salida estructurada validada por Pydantic.
+El texto íntegro de los \emph{prompts} de todos los agentes (preparación del corpus, consulta y evaluación) se recoge en el Anexo~\ref{annex:prompts}.
 Segunda, \textbf{Qdrant} como índice vectorial único para ambas representaciones: soporta vectores densos y dispersos en la misma colección y ofrece fusión \gls{rrf} nativa, lo que simplifica la estrategia híbrida a una sola consulta.
 Además, el algoritmo BM42 fue inventado por los desarrolladores de esta tecnología, de modo que está integrado de forma nativa.
 Tercera, \textbf{Airflow} como orquestador, las siete fases del pipeline son tareas idempotentes con reanudación (\emph{skip-existing}), de modo que la actualización periódica del corpus es un proceso desatendido.
@@ -116,28 +117,28 @@ La ejecución del pipeline sobre el perímetro de las cuatro escuelas del ámbit
 La Tabla~\ref{tab:corpus-grafo} desglosa su composición por tipo (el esquema del grafo se detalla en el Anexo~\ref{annex:modelo-datos}).
 
 \begin{table}[htbp]
-    \centering
-    \caption{Composición del grafo de conocimiento: nodos y relaciones por tipo.}
-    \label{tab:corpus-grafo}
-    \begin{tabularx}{\textwidth}{l r X}
-        \toprule
-        \rowcolor{upmblue!8} \colhead{Elemento} & \colhead{Cantidad} & \colhead{Descripción} \\
-        \midrule
-        \multicolumn{3}{l}{\textit{Nodos (172\,621)}} \\
-        \texttt{Publication} & 109\,296 & Publicaciones (artículos, conferencias, etc.) \\
-        \texttt{LastYearProject} & 44\,297  & Trabajos supervisados (TFG/TFM). \\
-        \texttt{Subject} & 12\,602 & Asignaturas. \\
-        \texttt{Pdi} & 5\,998 & Investigadores censados. \\
-        \texttt{Position} & 428 & Unidades organizativas y cargos. \\
-        \midrule
-        \multicolumn{3}{l}{\textit{Aristas (268\,886)}} \\
-        \texttt{AUTHORSHIP} & 157\,556 & Autorías ($\mathrm{Pdi}\rightarrow\mathrm{Publication}$). \\
-        \texttt{TUTORING} & 48\,916 & Supervisiones ($\mathrm{Pdi}\rightarrow\mathrm{LastYearProject}$). \\
-        \texttt{TEACHING} & 32\,567 & Docencia ($\mathrm{Pdi}\rightarrow\mathrm{Subject}$). \\
-        \texttt{COAUTHORED} & 19\,125  & Coautorías entre investigadores ($\mathrm{Pdi}\rightarrow\mathrm{Pdi}$). \\
-        \texttt{WORKS} & 10\,722 & Pertenencia a unidades ($\mathrm{Pdi}\rightarrow\mathrm{Position}$). \\
-        \bottomrule
-    \end{tabularx}
+  \centering
+  \caption{Composición del grafo de conocimiento: nodos y relaciones por tipo.}
+  \label{tab:corpus-grafo}
+  \begin{tabularx}{\textwidth}{l r X}
+    \toprule
+    \rowcolor{upmblue!8} \colhead{Elemento} & \colhead{Cantidad} & \colhead{Descripción} \\
+    \midrule
+    \multicolumn{3}{l}{\textit{Nodos (172\,621)}} \\
+    \texttt{Publication} & 109\,296 & Publicaciones (artículos, conferencias, etc.) \\
+    \texttt{LastYearProject} & 44\,297  & Trabajos supervisados (TFG/TFM). \\
+    \texttt{Subject} & 12\,602 & Asignaturas. \\
+    \texttt{Pdi} & 5\,998 & Investigadores censados. \\
+    \texttt{Position} & 428 & Unidades organizativas y cargos. \\
+    \midrule
+    \multicolumn{3}{l}{\textit{Aristas (268\,886)}} \\
+    \texttt{AUTHORSHIP} & 157\,556 & Autorías ($\mathrm{Pdi}\rightarrow\mathrm{Publication}$). \\
+    \texttt{TUTORING} & 48\,916 & Supervisiones ($\mathrm{Pdi}\rightarrow\mathrm{LastYearProject}$). \\
+    \texttt{TEACHING} & 32\,567 & Docencia ($\mathrm{Pdi}\rightarrow\mathrm{Subject}$). \\
+    \texttt{COAUTHORED} & 19\,125  & Coautorías entre investigadores ($\mathrm{Pdi}\rightarrow\mathrm{Pdi}$). \\
+    \texttt{WORKS} & 10\,722 & Pertenencia a unidades ($\mathrm{Pdi}\rightarrow\mathrm{Position}$). \\
+    \bottomrule
+  \end{tabularx}
 \end{table}
 
 Las 428 unidades organizativas (\texttt{Position}) heredan las categorías del portal: 226 grupos de investigación, 88 áreas de conocimiento, 62 departamentos universitarios, 22 institutos o centros de investigación, 20 escuelas y un puñado de unidades de otro tipo.
@@ -156,54 +157,132 @@ La Tabla~\ref{tab:corpus-escuelas} desglosa el perímetro por escuela, junto con
 Veinticuatro investigadores están adscritos a unidades de más de una escuela, por lo que la suma por escuela supera ligeramente el total de investigadores distintos.
 
 \begin{table}[htbp]
-    \centering
-    \caption{Investigadores del perímetro por escuela y cobertura de temas declarados.}
-    \label{tab:corpus-escuelas}
-    \begin{tabularx}{\textwidth}{X r r}
-        \toprule
-        \rowcolor{upmblue!8} \colhead{Escuela} & \colhead{Investigadores} & \colhead{Con temas declarados} \\
-        \midrule
-        \gls{etsii}  & 315 & 188 (59,7\,\%) \\
-        \gls{etsit}  & 310 & 287 (92,6\,\%) \\
-        \gls{etsisi} & 237 & 125 (52,7\,\%) \\
-        \gls{etsist} & 158 & 132 (83,5\,\%) \\
-        \midrule
-        Total (investigadores distintos) & 996 & 709 (71,2\,\%) \\
-        \bottomrule
-    \end{tabularx}
+  \centering
+  \caption{Investigadores del perímetro por escuela y cobertura de temas declarados.}
+  \label{tab:corpus-escuelas}
+  \begin{tabularx}{\textwidth}{X r r}
+      \toprule
+      \rowcolor{upmblue!8} \colhead{Escuela} & \colhead{Investigadores} & \colhead{Con temas declarados} \\
+      \midrule
+      \gls{etsii} & 315 & 188 (59,7\,\%) \\
+      \gls{etsit} & 310 & 287 (92,6\,\%) \\
+      \gls{etsisi} & 237 & 125 (52,7\,\%) \\
+      \gls{etsist} & 158 & 132 (83,5\,\%) \\
+      \midrule
+      Total (investigadores distintos) & 996 & 709 (71,2\,\%) \\
+      \bottomrule
+  \end{tabularx}
 \end{table}
 
 De ese perímetro, los \textbf{709} \glspl{pdi} con contenido aprovechable (los mismos que declaran temas en la Tabla~\ref{tab:corpus-escuelas}) constituyen la población efectivamente indexada.
 La colección dispersa \texttt{researcher\_\allowbreak keywords} (fase 5) está completa con esos 709 puntos, uno por \gls{pdi}.
-La colección \texttt{researcher\_\allowbreak summaries} (fase 7) mantiene un punto por \gls{pdi} y, al concluir, contiene un total de 754.
-\pendiente{Esta colección al fina tiene 754 PDIs, tengo que mirar por qué y explicitarlo en algún lado}
+La colección \texttt{researcher\_\allowbreak summaries} (fase 7) mantiene un punto por \gls{pdi} y, al concluir, contiene un total de 754, algo más que los 709 anteriores.
+La diferencia no es un error, sino consecuencia de que ambas colecciones se nutren de fuentes distintas: el índice disperso (fase 5) parte de los \emph{temas declarados del investigador} en el portal, mientras que la biografía y los dominios (fases 6-7) se sintetizan a partir de su \emph{producción científica}.
+Hay, por tanto, investigadores sin temas declarados pero con publicaciones resumibles que quedan fuera del índice léxico y sí reciben representación semántica.
+El índice denso acaba cubriendo algo más de profesorado que el léxico, lo que juega a favor de basar la representación en la actividad real y no en la \emph{autodeclaración}.
+
+La Tabla~\ref{tab:cobertura-fase7} y la Figura~\ref{fig:cobertura} desglosan esta cobertura semántica por escuela.
+Biografía y dominios cubren exactamente el mismo conjunto (toda biografía generada lleva asociados sus dominios) y la cobertura por escuela reproduce el patrón de los temas declarados (Tabla~\ref{tab:corpus-escuelas}): muy alta en la \gls{etsit} y la \gls{etsist}, y en torno a la mitad en la \gls{etsisi}, reflejo de lo completo que es el dato público de cada escuela en el portal.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Cobertura semántica (biografía y dominios, fase 7) por escuela. Cada \gls{pdi} se asigna a una única escuela (su primera filiación del perímetro), por lo que los totales por escuela difieren levemente de la Tabla~\ref{tab:corpus-escuelas}.}
+  \label{tab:cobertura-fase7}
+  \begin{tabularx}{\textwidth}{X r r r}
+    \toprule
+    \rowcolor{upmblue!8} \colhead{Escuela} & \colhead{\glspl{pdi}} & \colhead{Con biografía y dominios} & \colhead{Cobertura} \\
+    \midrule
+    \gls{etsii} & 312 & 219 & 70,2\,\% \\
+    \gls{etsit} & 307 & 284 & 92,5\,\% \\
+    \gls{etsisi} & 227 & 120 & 52,9\,\% \\
+    \gls{etsist} & 149 & 131 & 87,9\,\% \\
+    \midrule
+    Total & 995 & 754 & 75,8\,\% \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\begin{figure}[htbp]
+  \centering
+  \begin{tikzpicture}
+    \begin{axis}[
+        upmhbar, height=4.8cm, xmax=340, bar width=13pt,
+        symbolic y coords={ETSISI,ETSII,ETSIST,ETSIT},
+        ytick={ETSISI,ETSII,ETSIST,ETSIT},
+        xlabel={Investigadores del perímetro},
+        legend style={at={(0.5,1.04)}, anchor=south, legend columns=-1, font=\footnotesize, draw=black!25},
+        legend cell align=left, clip=false,
+      ]
+      \addplot[fill=upmgrey, draw=black!25] coordinates {(227,ETSISI)(312,ETSII)(149,ETSIST)(307,ETSIT)};
+      \addplot[fill=upmblue, draw=upmblue!60!black] coordinates {(120,ETSISI)(219,ETSII)(131,ETSIST)(284,ETSIT)};
+      \legend{Total, Con biografía y dominios}
+      \node[anchor=west, font=\scriptsize, color=upmblue!85!black] at (axis cs:120,ETSISI){52,9\,\%};
+      \node[anchor=west, font=\scriptsize, color=upmblue!85!black] at (axis cs:219,ETSII){70,2\,\%};
+      \node[anchor=west, font=\scriptsize, color=upmblue!85!black] at (axis cs:131,ETSIST){87,9\,\%};
+      \node[anchor=west, font=\scriptsize, color=upmblue!85!black] at (axis cs:284,ETSIT){92,5\,\%};
+    \end{axis}
+  \end{tikzpicture}
+  \caption{Cobertura semántica (fase 7) por escuela: investigadores con biografía y dominios (azul) frente al total del perímetro (gris). El porcentaje refleja la completitud del dato público de cada escuela en el portal.}
+  \label{fig:cobertura}
+\end{figure}
+
 Conviene contrastar este perímetro con la dimensión total del censo: el grafo contiene 5\,998 nodos \texttt{Pdi}, de modo que la indexación actual cubre una fracción del profesorado de la universidad y deja margen para la extensión al conjunto de la \gls{upm}.
 
-\subsection{Tiempos del pipeline}
-\label{sec:res-tiempos}
-
+Construir ese corpus tiene, además, un coste temporal que conviene cuantificar.
 La Tabla~\ref{tab:tiempos-fases} recoge la duración aproximada de cada fase en una ejecución completa sobre el perímetro, realizada en el servidor de despliegue.
 
 \begin{table}[htbp]
-    \centering
-    \caption{Duración aproximada de cada fase del pipeline en una ejecución completa sobre el perímetro (servidor de despliegue).}
-    \label{tab:tiempos-fases}
-    \begin{tabularx}{\textwidth}{l X r}
-        \toprule
-        \rowcolor{upmblue!8} \colhead{Fase} & \colhead{Cometido} & \colhead{Duración aprox.} \\
-        \midrule
-        1. Censo de identificadores & Descubrimiento de investigadores en el portal & $<$ 10 s \\
-        2. Descarga & Volcado del perfil y la actividad pública & $\sim$ 57 min \\
-        3. Estructuración & Parseo y carga del grafo en Memgraph & $>$ 4 h 30 min \\
-        4. Enriquecimiento & Consolidación del perfil & $>$ 11 min \\
-        5. Indexación de keywords & Colección dispersa \texttt{researcher\_keywords} (solo para los \glspl{pdi} seleccionados) & $\sim$ 25 min \\
-        6. Resúmenes anuales & Síntesis por año con \gls{llm} local (solo para los \glspl{pdi} seleccionados) & 29 h ($\approx$ 1 día y 5 h) \\
-        7. Fusión e indexación & Biografía vigente y \texttt{researcher\_summaries} (solo para los \glspl{pdi} seleccionados) & \ $\sim$ 7h 30 min \\
-        \bottomrule
-    \end{tabularx}
+  \centering
+  \caption{Duración aproximada de cada fase del pipeline en una ejecución completa sobre el perímetro (servidor de despliegue).}
+  \label{tab:tiempos-fases}
+  \begin{tabularx}{\textwidth}{l X r}
+    \toprule
+    \rowcolor{upmblue!8} \colhead{Fase} & \colhead{Cometido} & \colhead{Duración aprox.} \\
+    \midrule
+    1. Censo de identificadores & Descubrimiento de investigadores en el portal & $<$ 10 s \\
+    2. Descarga & Volcado del perfil y la actividad pública & $\sim$ 57 min \\
+    3. Estructuración & Parseo y carga del grafo en Memgraph & $>$ 4 h 30 min \\
+    4. Enriquecimiento & Consolidación del perfil & $>$ 11 min \\
+    5. Indexación de keywords & Colección dispersa \texttt{researcher\_keywords} (solo para los \glspl{pdi} seleccionados) & $\sim$ 25 min \\
+    6. Resúmenes anuales & Síntesis por año con \gls{llm} local (solo para los \glspl{pdi} seleccionados) & 29 h ($\approx$ 1 día y 5 h) \\
+    7. Fusión e indexación & Biografía vigente y \texttt{researcher\_summaries} (solo para los \glspl{pdi} seleccionados) & \ $\sim$ 7h 30 min \\
+    \bottomrule
+  \end{tabularx}
 \end{table}
 
-El reparto de costes es muy desigual y deja una lectura nítida.
+\begin{figure}[htbp]
+  \centering
+
+  \begin{tikzpicture}
+    \begin{axis}[
+      upmbase, xbar, xmode=log, height=7.4cm, width=0.68\linewidth,
+      axis y line=left, y axis line style={draw=none}, ytick style={draw=none},
+      axis x line=bottom, xmajorgrids,
+      xmin=8, xmax=600000,
+      bar width=9pt, enlarge y limits=0.10,
+      every axis plot/.append style={bar shift=0pt},
+      symbolic y coords={F7,F6,F5,F4,F3,F2,F1},
+      ytick={F7,F6,F5,F4,F3,F2,F1},
+      yticklabels={7.~Fusión e indexación, 6.~Resúmenes anuales, 5.~Indexación de keywords, 4.~Enriquecimiento, 3.~Estructuración, 2.~Descarga, 1.~Censo},
+      yticklabel style={anchor=east, xshift=-4pt, align=right, font=\scriptsize, text=black!75},
+      point meta=explicit symbolic,
+      nodes near coords, nodes near coords style={font=\footnotesize\color{black!70}, anchor=west},
+      xlabel={Duración aproximada (escala logarítmica en segundos)},
+      clip=true
+    ]
+      \addplot[fill=upmblue!55, draw=upmblue!60!black] coordinates {
+        (10,F1)[10 s] (3420,F2)[57 min] (16200,F3)[4 h 30] (660,F4)[11 min]
+        (1500,F5)[25 min] (27000,F7)[7 h 30]};
+      \addplot[fill=upmgold, draw=upmgold!60!black] coordinates {(104400,F6)[29 h]};
+    \end{axis}
+  \end{tikzpicture}
+
+  \caption{Coste temporal de cada fase del pipeline en una ejecución completa (escala logarítmica). La generación de resúmenes con el modelo de lenguaje local (fase 6, en dorado) domina el coste, más de un orden de magnitud por encima del resto.}
+  \label{fig:tiempos}
+
+\end{figure}
+
+El reparto de costes es muy desigual y deja una lectura nítida (Figura~\ref{fig:tiempos}).
 Las fases de ingesta y estructuración (1-4), más la indexación léxica (5), se completan en unas pocas horas, dominadas por el parseo y la carga del grafo (fase 3).
 El coste decisivo es la \emph{generación de los resúmenes con el modelo de lenguaje local}.
 Tan solo la fase 6 se prolonga alrededor de un día y cinco horas sobre los 995 \glspl{pdi} y la fase 7 (fusión recurrente e indexación) añade todavía más tiempo.
@@ -215,14 +294,17 @@ Esto justifica que la orquestación con Airflow reanude solo lo nuevo o lo invá
 La corrida completa se ejecutó en el servidor de despliegue, no en una estación de trabajo local.
 Las implicaciones de esta dependencia del hardware para la escalabilidad del proyecto (y el coste de procesar en el futuro toda la \gls{upm}) se analizan en la Sección~\ref{sec:disc-coste-llm}.
 
-\pendiente{Completar al concluir la fase 7: su duración (Tabla~\ref{tab:tiempos-fases}) y la cobertura de biografía y de dominios por escuela.}
+A este coste de construcción del corpus se añade el del propio conjunto de evaluación (Capítulo~\ref{ch:evaluacion}), que también trabaja sobre el \gls{llm} local.
+Evaluar las cinco estrategias sobre el estándar de oro llevó cerca de 5 horas, generar el estándar de plata (tres propuestas por trabajo y su calificación por un jurado de modelos) añadió unas 4 horas y media y evaluar de nuevo las cinco estrategias sobre él algo más de 5 horas.
+En total, la campaña completa supone alrededor de 14 horas y media de cómputo, una vez más dominadas por la inferencia del modelo de lenguaje, no por la búsqueda vectorial.
+Como tanto la generación del estándar de plata como las evaluaciones son reproducibles y se cachean (Sección~\ref{sec:eval-protocolo}), este coste se paga una sola vez y las reejecuciones parciales en caso de fallo o interrupción son baratas.
 
 \section{El prototipo \proyecto}
 \label{sec:res-prototipo}
 
 El prototipo materializa la capa de presentación descrita en la Sección~\ref{sec:met-presentacion}: una aplicación web con un único campo de texto en el que el estudiante describe su idea en cualquier idioma, un selector de estrategia (con la híbrida por defecto) y una lista de resultados ordenada.
 
-Cada tarjeta de resultado muestra el nombre del investigador, \textcolor{red}{su puntuación normalizada respecto al primer resultado}, los temas de su perfil que coinciden con la consulta y, en las estrategias semánticas, su biografía investigadora.
+Cada tarjeta de resultado muestra el nombre del investigador, su puntuación normalizada respecto al primer resultado (de 0 a 100), los temas de su perfil que coinciden con la consulta y, en las estrategias semánticas, su biografía investigadora.
 Cuando interviene el \gls{llm}, la interfaz muestra también la interpretación realizada (los términos extraídos o la reformulación enriquecida), de modo que el estudiante pueda auditar y, en su caso, reformular su consulta.
 La latencia percibida varía según la estrategia: las que incorporan el \gls{llm} añaden el coste de una generación local a la búsqueda vectorial.
 Las puramente vectoriales son inmediatas (la semántica directa resuelve en torno a dos décimas de segundo), mientras que las que invocan el modelo en consulta se sitúan entre los 7 y los 19 segundos de media (Tabla~\ref{tab:benchmark-tiempos}), un coste dominado por la generación local.
@@ -239,47 +321,72 @@ Las consultas son las propuestas reformuladas en primera persona (estándar de p
 De los 500 trabajos del conjunto de referencia, 458 quedan tras restringirlas al universo común de investigadores presentes en todos los índices (Sección~\ref{sec:eval-protocolo}) y sobre ese conjunto se calculan todas las métricas.
 
 \begin{table}[htbp]
-      \centering
-      \caption[Resultados del banco de pruebas sobre la verdad de referencia de supervisión histórica]{Resultados del banco de pruebas sobre la verdad de referencia de supervisión histórica. Las columnas son las métricas que reporta el arnés de evaluación, por haber un único relevante por consulta, $\mathrm{MAP}$ coincide con la $\mathrm{MRR}$ (Sección~\ref{sec:eval-metricas}).}
-      \label{tab:benchmark}
-      \footnotesize
-      \setlength{\tabcolsep}{4pt}
-      \begin{tabularx}{\textwidth}{X c c c c c c c c}
-            \toprule
-            \rowcolor{upmblue!8} \colhead{Estrategia} & \colhead{MRR} & \colhead{MAP} & \colhead{Hit@1} & \colhead{Hit@3} & \colhead{Hit@5} & \colhead{Hit@10} & \colhead{nDCG@5} & \colhead{nDCG@10} \\
-            \midrule
-            Léxica con \gls{llm} & 0,091 & 0,091 & 0,041 & 0,094 & 0,146 & 0,218 & 0,093 & 0,116 \\
-            Léxica directa (control) & 0,063 & 0,063 & 0,033 & 0,066 & 0,098 & 0,135 & 0,065 & 0,077 \\
-            Semántica directa & 0,137 & 0,137 & 0,072 & 0,166 & 0,197 & 0,266 & 0,139 & 0,161 \\
-            Semántica enriquecida & 0,146 & 0,146 & 0,085 & 0,168 & 0,205 & 0,284 & 0,148 & 0,173 \\
-            Híbrida & \textbf{0,153} & \textbf{0,153} & \textbf{0,090} & \textbf{0,175} & \textbf{0,218} & \textbf{0,303} & \textbf{0,156} & \textbf{0,184} \\
-            \bottomrule
-      \end{tabularx}
+  \centering
+  \caption[Resultados del banco de pruebas sobre la verdad de referencia de supervisión histórica]{Resultados del banco de pruebas sobre la verdad de referencia de supervisión histórica. Las columnas son las métricas que reporta el arnés de evaluación, por haber un único relevante por consulta, $\mathrm{MAP}$ coincide con la $\mathrm{MRR}$ (Sección~\ref{sec:eval-metricas}).}
+  \label{tab:benchmark}
+  \footnotesize
+  \setlength{\tabcolsep}{4pt}
+  \begin{tabularx}{\textwidth}{X c c c c c c c c}
+    \toprule
+    \rowcolor{upmblue!8} \colhead{Estrategia} & \colhead{MRR} & \colhead{MAP} & \colhead{Hit@1} & \colhead{Hit@3} & \colhead{Hit@5} & \colhead{Hit@10} & \colhead{nDCG@5} & \colhead{nDCG@10} \\
+    \midrule
+    Léxica con \gls{llm} & 0,091 & 0,091 & 0,041 & 0,094 & 0,146 & 0,218 & 0,093 & 0,116 \\
+    Léxica directa (control) & 0,063 & 0,063 & 0,033 & 0,066 & 0,098 & 0,135 & 0,065 & 0,077 \\
+    Semántica directa & 0,137 & 0,137 & 0,072 & 0,166 & 0,197 & 0,266 & 0,139 & 0,161 \\
+    Semántica enriquecida & 0,146 & 0,146 & 0,085 & 0,168 & 0,205 & 0,284 & 0,148 & 0,173 \\
+    Híbrida & \textbf{0,153} & \textbf{0,153} & \textbf{0,090} & \textbf{0,175} & \textbf{0,218} & \textbf{0,303} & \textbf{0,156} & \textbf{0,184} \\
+    \bottomrule
+  \end{tabularx}
 \end{table}
+
+\begin{figure}[htbp]
+  \centering
+  \begin{tikzpicture}
+    \begin{axis}[
+        upmhbar, height=5cm, width=0.84\linewidth, xmax=0.19,
+        symbolic y coords={Léxica directa,Léxica con LLM,Semántica directa,Semántica enriquecida,Híbrida},
+        ytick={Léxica directa,Léxica con LLM,Semántica directa,Semántica enriquecida,Híbrida},
+        yticklabels={Léxica directa,Léxica con LLM,Sem. directa,Sem. enriquecida,Híbrida},
+        nodes near coords,
+        nodes near coords style={font=\footnotesize\color{black!70}, anchor=west,
+          /pgf/number format/.cd, fixed, fixed zerofill, precision=3, use comma},
+        xlabel={MRR (estándar de plata)},
+        legend style={at={(0.5,1.03)}, anchor=south, legend columns=-1, font=\footnotesize, draw=black!25},
+        legend cell align=left,
+      ]
+      \addplot[fill=upmgrey, draw=black!35] coordinates {(0.063,Léxica directa) (0.091,Léxica con LLM)};
+      \addplot[fill=upmblue!45, draw=upmblue!60!black] coordinates {(0.137,Semántica directa) (0.146,Semántica enriquecida)};
+      \addplot[fill=upmblue, draw=upmblue!60!black] coordinates {(0.153,Híbrida)};
+      \legend{Léxica, Semántica, Híbrida (defecto)}
+    \end{axis}
+  \end{tikzpicture}
+  \caption{Calidad de recuperación por estrategia (\acrshort{mrr} sobre el estándar de plata). El color distingue la familia (léxica frente a semántica) y resalta la híbrida, la mejor estrategia y la usada por defecto en el prototipo.}
+  \label{fig:bench-mrr}
+\end{figure}
 
 El tiempo medio por consulta (Tabla~\ref{tab:benchmark-tiempos}) cuantifica el coste de incorporar el \gls{llm} al bucle de consulta, separando el coste de generación (extracción o enriquecimiento) del de la búsqueda vectorial propiamente dicha.
 
 \begin{table}[htbp]
-      \centering
-      \caption[Tiempo medio por consulta de cada estrategia]{Tiempo por consulta de cada estrategia, en segundos, sobre la misma máquina e índices ($n=458$). La columna \textit{LLM} es la fracción del tiempo total dedicada a la generación (extracción de términos o enriquecimiento); \textit{búsqueda} es el resto (embebido y consulta a Qdrant).}
-      \label{tab:benchmark-tiempos}
-      \footnotesize
-      \begin{tabularx}{\textwidth}{X c c c c c}
-            \toprule
-            \rowcolor{upmblue!8} \colhead{Estrategia} & \colhead{Media} & \colhead{Mediana} & \colhead{p90} & \colhead{LLM} & \colhead{Búsqueda} \\
-            \midrule
-            Semántica directa & 0,23  & 0,21  & 0,22  & 0,00  & 0,23 \\
-            Léxica directa (control) & 2,57  & 2,50  & 3,30  & 0,00  & 2,57 \\
-            Léxica con \gls{llm} & 7,59  & 7,50  & 9,86  & 5,99  & 1,60 \\
-            Semántica enriquecida & 11,51 & 11,42 & 12,68 & 7,61  & 3,90 \\
-            Híbrida & 18,69 & 18,50 & 20,60 & 13,15 & 5,54 \\
-            \bottomrule
-      \end{tabularx}
+  \centering
+  \caption[Tiempo medio por consulta de cada estrategia]{Tiempo por consulta de cada estrategia, en segundos, sobre la misma máquina e índices ($n=458$). La columna \textit{LLM} es la fracción del tiempo total dedicada a la generación (extracción de términos o enriquecimiento); \textit{búsqueda} es el resto (embebido y consulta a Qdrant).}
+  \label{tab:benchmark-tiempos}
+  \footnotesize
+  \begin{tabularx}{\textwidth}{X c c c c c}
+    \toprule
+    \rowcolor{upmblue!8} \colhead{Estrategia} & \colhead{Media} & \colhead{Mediana} & \colhead{p90} & \colhead{LLM} & \colhead{Búsqueda} \\
+    \midrule
+    Semántica directa & 0,23  & 0,21  & 0,22  & 0,00  & 0,23 \\
+    Léxica directa (control) & 2,57  & 2,50  & 3,30  & 0,00  & 2,57 \\
+    Léxica con \gls{llm} & 7,59  & 7,50  & 9,86  & 5,99  & 1,60 \\
+    Semántica enriquecida & 11,51 & 11,42 & 12,68 & 7,61  & 3,90 \\
+    Híbrida & 18,69 & 18,50 & 20,60 & 13,15 & 5,54 \\
+    \bottomrule
+  \end{tabularx}
 \end{table}
 
 De estas cifras se extraen cuatro lecturas, todas ellas a interpretar como \emph{comparación relativa} entre estrategias y no como medidas absolutas de utilidad (Sección~\ref{sec:eval-validez}).
 
-Primera, \textbf{la señal semántica domina con holgura a la léxica}.
+Primera, \textbf{la señal semántica domina a la léxica} (Figura~\ref{fig:bench-mrr}).
 Las tres estrategias densas superan a las dos léxicas en todas las métricas y cortes: la peor de las semánticas (la directa, \gls{mrr} 0,137) aventaja con claridad a la mejor de las léxicas (la guiada por \gls{llm}, 0,091) y esta a su vez al control de coincidencia léxica pura (0,063).
 La afinidad temática entre la idea del estudiante y la trayectoria del investigador se captura, por tanto, mucho mejor en el espacio denso de los \emph{embeddings} que mediante la coincidencia de términos.
 
@@ -296,10 +403,64 @@ Cuarta, \textbf{la calidad se paga en latencia}.
 La estrategia ganadora es también la más cara: la híbrida resuelve en 18,7\,s de media (Tabla~\ref{tab:benchmark-tiempos}), dominados por la generación local, frente a los 0,23\,s de la semántica directa, que no invoca el \gls{llm} en consulta.
 Existe, pues, un compromiso real entre calidad y coste (Sección~\ref{sec:disc-coste-llm}): la semántica directa es una alternativa atractiva cuando la latencia sea crítica, a cambio de una pérdida moderada de acierto (\gls{mrr} 0,137 frente a 0,153).
 
-Conviene subrayar que esta jerarquía solo emerge con las propuestas reformuladas.
-En una corrida exploratoria previa, tomando el texto de referencia directamente como consulta, el orden se invertía: la semántica directa lideraba y ni el enriquecimiento ni la hibridación aportaban nada.
-El motivo es el solapamiento léxico entre el texto original del trabajo y el perfil de su propio tutor, que premia artificialmente a las estrategias más literales (la amenaza de optimismo por solapamiento de la Sección~\ref{sec:eval-validez}).
-La reformulación en primera persona reduce ese solapamiento y revela el valor real del \gls{llm} y de la fusión de señales, lo que constituye, además, una validación empírica de la conveniencia de construir las consultas mediante el estándar de plata.
+Conviene subrayar que esta jerarquía solo emerge al consultar con las propuestas reformuladas.
+El banco de pruebas admite dos fuentes de consulta sobre la misma verdad de referencia (Sección~\ref{sec:eval-groundtruth}): el \emph{estándar de oro}, que toma directamente el texto original de cada trabajo (título, resumen y palabras clave), y el \emph{estándar de plata}, que lo sustituye por una propuesta breve en primera persona, generada por tres modelos de lenguaje y seleccionada por ellos mismos actuando como jurado.
+Las tablas anteriores corresponden al estándar de plata; la Tabla~\ref{tab:benchmark-oro-plata} los enfrenta a los del estándar de oro.
+
+\begin{table}[htbp]
+  \centering
+  \caption[Estándar de oro frente a estándar de plata]{Comparación de ambas fuentes de consulta sobre la misma verdad de referencia ($n=458$). El estándar de oro emplea el texto original del trabajo; el de plata, la propuesta reformulada. En negrita, la mejor estrategia de cada columna.}
+  \label{tab:benchmark-oro-plata}
+  \footnotesize
+  \begin{tabularx}{\textwidth}{X c c c c}
+    \toprule
+    \rowcolor{upmblue!8} & \multicolumn{2}{c}{\colhead{MRR}} & \multicolumn{2}{c}{\colhead{Hit@10}} \\
+    \rowcolor{upmblue!8} \colhead{Estrategia} & \colhead{Oro} & \colhead{Plata} & \colhead{Oro} & \colhead{Plata} \\
+    \midrule
+    Léxica con \gls{llm}     & 0,114 & 0,091 & 0,253 & 0,218 \\
+    Léxica directa (control) & 0,077 & 0,063 & 0,166 & 0,135 \\
+    Semántica directa        & \textbf{0,158} & 0,137 & 0,293 & 0,266 \\
+    Semántica enriquecida    & 0,153 & 0,146 & \textbf{0,299} & 0,284 \\
+    Híbrida                  & 0,150 & \textbf{0,153} & \textbf{0,299} & \textbf{0,303} \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\begin{figure}[htbp]
+  \centering
+  \begin{tikzpicture}
+    \begin{axis}[
+        upmbase, height=6cm, width=0.82\linewidth,
+        xmin=-0.12, xmax=1.7, ymin=0.045, ymax=0.165,
+        xtick={0,1}, xticklabels={Estándar de oro, Estándar de plata},
+        axis y line=left, axis x line=bottom,
+        ylabel={MRR}, ytick={0.06,0.09,0.12,0.15},
+        yticklabel style={/pgf/number format/.cd, fixed, fixed zerofill, precision=2, use comma},
+        clip=false,
+      ]
+      \addplot[color=black!35, mark=*, mark size=1.3pt, thick] coordinates {(0,0.114)(1,0.091)};
+      \addplot[color=black!35, mark=*, mark size=1.3pt, thick] coordinates {(0,0.077)(1,0.063)};
+      \addplot[color=black!35, mark=*, mark size=1.3pt, thick] coordinates {(0,0.153)(1,0.146)};
+      \addplot[color=umpred, mark=*, mark size=1.9pt, very thick] coordinates {(0,0.158)(1,0.137)};
+      \addplot[color=upmblue, mark=*, mark size=1.9pt, very thick] coordinates {(0,0.150)(1,0.153)};
+      \node[anchor=west, font=\scriptsize, color=upmblue!85!black] at (axis cs:1.04,0.1545){Híbrida};
+      \node[anchor=west, font=\scriptsize, color=black!55]        at (axis cs:1.04,0.1455){Sem. enriquecida};
+      \node[anchor=west, font=\scriptsize, color=umpred!85!black] at (axis cs:1.04,0.1355){Sem. directa};
+      \node[anchor=west, font=\scriptsize, color=black!55]        at (axis cs:1.04,0.0910){Léxica con LLM};
+      \node[anchor=west, font=\scriptsize, color=black!55]        at (axis cs:1.04,0.0630){Léxica directa};
+    \end{axis}
+  \end{tikzpicture}
+  \caption{Efecto del estándar de consulta sobre la \acrshort{mrr} de cada estrategia. Al pasar del texto original del trabajo (oro) a la propuesta reformulada (plata), el orden se invierte: la híbrida (azul) pasa a encabezar y la semántica directa (rojo) cae desde la primera posición.}
+  \label{fig:oro-plata}
+\end{figure}
+
+El contraste, que la Figura~\ref{fig:oro-plata} hace visible, es revelador.
+Con el estándar de oro todas las estrategias obtienen cifras más altas y la semántica directa lidera (\gls{mrr} 0,158), mientras que ni el enriquecimiento ni la hibridación aportan nada sobre ella.
+Con el estándar de plata, en cambio, todas las estrategias literales caen, la semántica directa pierde más de dos centésimas de \gls{mrr} y solo la híbrida mejora, hasta encabezar la comparación.
+El motivo es el solapamiento léxico entre el texto original del trabajo y el perfil de su propio tutor (que recoge ese mismo trabajo entre los supervisados): un solapamiento que premia artificialmente a las estrategias más literales y que es, precisamente, la amenaza de optimismo por solapamiento de la Sección~\ref{sec:eval-validez}.
+La reformulación en primera persona rompe ese atajo léxico y obliga a las estrategias a competir por afinidad de significado, lo que revela el valor real del \gls{llm} y de la fusión de señales.
+Esto valida empíricamente la decisión de construir las consultas mediante el estándar de plata: es el escenario que mejor aproxima a un estudiante real, que describe su idea con sus propias palabras en lugar de copiar el resumen de un trabajo ya hecho.
+El Anexo~\ref{annex:ejemplo-eval} recorre este proceso de principio a fin sobre un trabajo concreto, desde el texto original hasta la propuesta reformulada con la que finalmente se consulta.
 
 El desglose por tipo de trabajo, escuela y curso (Anexo~\ref{annex:resultados-extendidos}) matiza estas tendencias: el liderazgo de las estrategias enriquecida e híbrida es transversal, con la \gls{etsit} como la escuela mejor recuperada y la \gls{etsii} la más difícil.
 Entre \glspl{tfg} y \glspl{tfm} las diferencias son pequeñas.
@@ -307,5 +468,35 @@ Entre \glspl{tfg} y \glspl{tfm} las diferencias son pequeñas.
 \section{Casos ilustrativos}
 \label{sec:res-casos}
 
-\pendiente{Incluir dos o tres casos cualitativos end-to-end: la consulta de ejemplo (una en español coloquial, otra técnica en inglés), los tres primeros investigadores devueltos por la estrategia híbrida con sus evidencias, y un breve comentario sobre la pertinencia de cada recomendación.
-Elegir casos que ilustren tanto un acierto claro como un fallo instructivo, en línea con la discusión del Capítulo~\ref{ch:discusion}.}
+Para ilustrar el comportamiento del sistema de extremo a extremo se recorre una consulta real sobre el prototipo en su estrategia por defecto (híbrida).
+Se reutiliza la propuesta de plata del trabajo del Anexo~\ref{annex:ejemplo-eval} (un \gls{tfm} sobre un sistema RAG multimodal sensible al contexto temporal, dirigido por \texttt{pdi\_308607}), de modo que pueda seguirse el recorrido completo desde el texto de la propuesta hasta la lista de tutores.
+
+El sistema interpreta primero la idea.
+El enriquecedor la traduce y condensa al inglés técnico (\emph{«\ldots a context-aware temporal multimodal information retrieval and generation system for audiovisual content exploration\ldots»}) y el extractor produce los términos de búsqueda (generales: \emph{multimodal information retrieval}, \emph{context-aware systems}, \emph{temporal content exploration\ldots}; específicos: \emph{automatic speech recognition}, \emph{temporally aligned embeddings}, \emph{content-based video indexing\ldots}).
+Esta interpretación se muestra en la interfaz, de modo que el estudiante puede auditarla.
+La Tabla~\ref{tab:caso-308607} recoge los cinco primeros investigadores devueltos.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Cinco primeros resultados de la estrategia híbrida para la consulta de ejemplo. La puntuación se normaliza a 100 respecto al primer resultado.}
+    \label{tab:caso-308607}
+    \begin{tabularx}{\textwidth}{l c X}
+        \toprule
+        \rowcolor{upmblue!8} \colhead{Investigador} & \colhead{Punt.} & \colhead{Líneas principales de su perfil} \\
+        \midrule
+        \texttt{pdi\_303138} & 100 & Experiencias multisensoriales y multimodales, audio binaural, accesibilidad, sistemas de recomendación de contenidos. \\
+        \texttt{pdi\_306126} & 100 & Fusión de información, computación en la nube, arquitecturas dirigidas por eventos. \\
+        \texttt{pdi\_312223} & 87  & Modelos visión-lenguaje, memorabilidad de vídeo, percepción multimodal. \\
+        \texttt{pdi\_304513} & 75  & Modelos visión-lenguaje, memorabilidad de vídeo, comprensión multimodal. \\
+        \texttt{pdi\_303621} & 67  & Detección de objetos, fusión multimodal tardía. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+Dos lecturas se desprenden del caso.
+La primera es que las cinco recomendaciones son \emph{temáticamente pertinentes} (multimedia, interacción multimodal, modelos visión-lenguaje, recuperación de información) pese a que ninguna comparte términos literales con la consulta: en todas ellas la lista de temas coincidentes que devuelve el sistema está vacía, de modo que la afinidad procede enteramente de la señal semántica densa.
+Es, en un caso concreto, la ventaja de la recuperación semántica sobre la léxica que la comparación de la Sección~\ref{sec:res-benchmark} cuantifica de forma agregada.
+
+La segunda es que el tutor real del trabajo (\texttt{pdi\_308607}) \emph{no} aparece entre los cinco primeros.
+Lejos de ser un simple fallo, es el caso instructivo: el sistema recupera un conjunto de investigadores plausibles del mismo dominio, entre los cuales el supervisor original es solo una opción válida más.
+Es la manifestación concreta del límite metodológico declarado (Sección~\ref{sec:eval-validez}): al contabilizar como acierto únicamente al supervisor real, aciertos temáticos como estos se computan como fallos, lo que confirma que las métricas absolutas de este capítulo deben leerse como cotas inferiores de la utilidad real.
