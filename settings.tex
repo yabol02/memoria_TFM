@@ -34,6 +34,41 @@
 % Graphics
 \usepackage{tikz}  % drawing custom shapes
 \usetikzlibrary{positioning, arrows.meta, fit, backgrounds, calc}
+\usepackage{pgfplots}  % data charts (bar/slope/log)
+\pgfplotsset{compat=1.18}
+% Shared, minimal-chartjunk style for all data charts (institutional palette).
+\pgfplotsset{
+  upmbase/.style={
+    width=\linewidth,
+    font=\small,
+    axis line style={draw=black!55},
+    tick style={draw=black!40},
+    label style={font=\small\color{black!75}},
+    tick label style={font=\footnotesize\color{black!70}},
+    every axis title/.style={font=\small\bfseries\color{upmblue!85!black}, at={(0.5,1.04)}, anchor=south},
+    grid style={draw=black!12},
+  },
+  % Horizontal bar charts (categorical y): clean, x grid only, category labels kept.
+  upmhbar/.style={
+    upmbase, xbar,
+    axis y line=left, y axis line style={draw=none}, ytick style={draw=none}, ytick=data,
+    axis x line=bottom, xmajorgrids,
+    bar width=11pt, enlarge y limits=0.16, xmin=0,
+    every axis plot/.append style={bar shift=0pt},
+  },
+}
+\usepackage{listings}  % code blocks
+\lstdefinestyle{upmcode}{
+  basicstyle=\footnotesize\ttfamily,
+  backgroundcolor=\color{upmblue!4},
+  frame=single, framerule=0.4pt, rulecolor=\color{upmblue!30},
+  framesep=5pt, xleftmargin=7pt, xrightmargin=5pt,
+  aboveskip=1.2em, belowskip=1em,
+  breaklines=true, showstringspaces=false, tabsize=2,
+  literate={á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1 {ñ}{{\~n}}1 {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1 {Ñ}{{\~N}}1 {ü}{{\"u}}1 {¿}{{?`}}1 {«}{{\guillemotleft}}1 {»}{{\guillemotright}}1,
+}
+\lstset{style=upmcode}
+
 \usepackage{graphicx}  % manage images
 \usepackage[export]{adjustbox}
 

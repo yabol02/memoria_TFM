@@ -87,20 +87,195 @@ La Tabla~\ref{tab:grafo-nodos} detalla la información que guarda cada nodo y la
     \end{tabularx}
 \end{table}
 
-\pendiente{Añadir un ejemplo real abreviado y anonimizado de un documento de perfil enriquecido (JSON validado por Pydantic).}
+El siguiente listado reproduce un ejemplo real de uno de estos documentos, tal como queda tras la fase de enriquecimiento.
+Por respeto a la privacidad se ha anonimizado (nombre, correo e identificadores suprimidos o sustituidos por marcadores) y abreviado (listas recortadas, resúmenes de publicaciones omitidos), conservando intacta la estructura y el contenido en inglés de los campos generados por el modelo (temas, dominios y biografías).
+Es importante resaltar la doble salida del enriquecimiento: la serie \texttt{history} (un resumen y unos dominios por año, base de la trazabilidad temporal) y, condensados a partir de ella, el \texttt{summary} y los \texttt{domains} vigentes que alimentan la indexación (Sección~\ref{sec:met-indexacion}).
+
+\begin{lstlisting}[style=upmcode]
+{
+  "id": "pdi_NNNNNN",
+  "first_year": 2015,
+  "topics": ["knowledge graph", "linked data", "document retrieval",
+             "natural language processing", "ontology",
+             "dynamic topic model", "document similarity",
+             "information search and retrieval"],
+  "positions": [
+    {"id": "loc_...", "name": "[grupo de investigacion]",
+     "entity": "Grupo de investigacion", "role": "Miembro", "since": 2015},
+    {"id": "loc_...", "name": "[departamento]",
+     "entity": "Departamento Universitario",
+     "role": "Profesor Permanente Laboral", "since": 2024}
+  ],
+  "publications": [
+    {"id": "pub_...", "title": "[titulo de la publicacion]", "type": "Articulo",
+     "year": 2026, "source": "[...]",
+     "keywords": ["adaptive learning", "bloom taxonomy",
+                  "educational technology", "question answer generation"],
+     "abstract": "[omitido]", "coauthorship": ["pdi_...", "pdi_..."]}
+    /* ... resto de publicaciones omitidas ... */
+  ],
+  "history": {
+    "2023": {
+      "domains": ["knowledge graphs", "natural language question answering",
+                  "fake news detection", "disinformation"],
+      "profile": "[researcher] is deeply expert in developing systems that
+                  detect the veracity of news items by combining content
+                  reliability with external evidence from a knowledge graph.
+                  His work focuses on addressing disinformation ..."
+    },
+    "2026": {
+      "domains": ["spanish verbalization", "knowledge graphs",
+                  "natural language generation", "structured data transformation"],
+      "profile": "[researcher] is deeply expert in Spanish verbalization of
+                  knowledge graphs, natural language generation, and
+                  structured data transformation ..."
+    }
+    /* ... resto de años omitidos (2015-2022, 2024-2025) ... */
+  },
+  "summary": "[researcher] is deeply expert in Spanish verbalization of
+              knowledge graphs, natural language generation, and structured
+              data transformation. His work addresses the challenges of
+              generating fluent and accurate text from structured data, with
+              a focus on Spanish. He also develops systems that detect the
+              veracity of news items and enhance educational technologies
+              using knowledge graphs.",
+  "domains": ["knowledge graphs", "natural language generation",
+              "structured data transformation", "spanish verbalization",
+              "anomaly detection", "fake news detection", "disinformation"]
+}
+\end{lstlisting}
+\noindent\textit{Ejemplo real, anonimizado y abreviado, de un documento de perfil enriquecido (\texttt{enrichment.json}).}
+
+\medskip
+En el listado anterior la serie \texttt{history} se ha recortado a dos años por brevedad, pero es la pieza que sostiene la representación semántica: cada año se resume de forma autónoma y, a partir de esa serie, la biografía vigente (\texttt{summary} y \texttt{domains}) se condensa priorizando lo reciente (Sección~\ref{sec:met-indexacion}).
+La Tabla~\ref{tab:ej-history} reproduce la evolución completa de los dominios de este mismo investigador, año a año.
+Permite seguir cómo el foco temático se desplaza con el tiempo (de la gestión de repositorios y los datos enlazados hacia los grafos de conocimiento, la detección de desinformación o la generación de lenguaje natural) sin perder las líneas anteriores que siguen vigentes, que es justo lo que la fusión recurrente recoge en el \texttt{summary} final.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Evolución año a año de los dominios de especialización del investigador de ejemplo (campo \texttt{history} del listado anterior).
+    Los dominios se conservan en inglés, tal como los genera el modelo.}
+    \label{tab:ej-history}
+    \begin{tabularx}{\textwidth}{l X}
+        \toprule
+        \rowcolor{upmblue!8} \colhead{Año} & \colhead{Dominios de especialización extraídos} \\
+        \midrule
+        2015 & repository management; indexed resources \\
+        2016 & live linked data; crowdsourced user annotations; spatial data; city infrastructure; light pollution mapping \\
+        2017 & text mining; knowledge extraction; linked data; research paper summarization \\
+        2018 & knowledge management; drug interactions; terminology \\
+        2019 & medication safety; health informatics; natural language processing; data analytics \\
+        2020 & knowledge graphs; procurement data integration; drug-drug interactions; hiv management; polypharmacy analysis \\
+        2021 & knowledge graphs; configuration management; ontology networks; web services \\
+        2022 & knowledge graphs; open data; anomaly detection; procurement analytics; biomedical named entity recognition \\
+        2023 & knowledge graphs; natural language question answering; fake news detection; disinformation \\
+        2024 & artificial intelligence in education; knowledge graphs; political discourse ontology; ontology engineering \\
+        2025 & drug discovery; sars-cov-2 \\
+        2026 & spanish verbalization; knowledge graphs; natural language generation; structured data transformation \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
 
 \chapter{Prompts de los agentes}
 \label{annex:prompts}
 
-Este anexo recoge las instrucciones (\emph{prompts}) de los tres agentes basados en LLM que intervienen en el sistema, con su contrato de salida estructurada:
+Este anexo reproduce, tal como figuran en el código, las instrucciones (\emph{prompts}) de todos los agentes basados en \gls{llm} que intervienen en el trabajo, agrupados por la fase en que actúan: la preparación del corpus, la atención de consultas y la evaluación.
+Todos comparten dos rasgos: emplean el modelo \texttt{qwen2.5:\allowbreak7b-instruct} servido por Ollama (salvo el panel de evaluación, que usa además otros modelos abiertos) y exigen \emph{salida estructurada} validada contra un esquema Pydantic, de modo que cualquier respuesta malformada se rechaza y se reintenta (Sección~\ref{sec:met-enriquecimiento}).
+Las instrucciones del sistema están redactadas en inglés porque toda la representación interna (biografías, dominios y términos de búsqueda) se construye en inglés, el idioma común del corpus.
+Las de la evaluación están en español por simular a un estudiante de la \gls{upm}.
 
-\begin{itemize}
-    \item \textbf{Biógrafo incremental} (preparación del corpus): recibe los dominios establecidos y los resúmenes de un periodo, y devuelve la lista acumulativa de dominios y la biografía refinada.
-    \item \textbf{Extractor de términos} (consulta, estrategias léxica e híbrida): recibe la idea del estudiante y devuelve dos listas de términos en inglés (generales y específicos).
-    \item \textbf{Enriquecedor de consulta} (consulta, estrategias semántica enriquecida e híbrida): recibe la idea y devuelve una reformulación técnica en inglés, con la restricción de no introducir temas nuevos.
+\section*{Preparación del corpus}
+
+\textbf{Resumen anual (fase de enriquecimiento).}
+Resume la producción de un investigador en un año concreto y mantiene la lista acumulativa de dominios.
+Salida estructurada con dos campos: \texttt{domains} (lista) y \texttt{profile} (prosa).
+Rol del sistema: \emph{«You are an academic research profiler building a cumulative picture of a researcher's expertise. Your output is used to match students with thesis supervisors.»}
+Instrucciones:
+
+\begin{itemize}[nosep]
+    \item Produce dos salidas: \texttt{domains} (lista) y \texttt{profile} (prosa).
+    \item \textsc{Domains}: lista acumulativa de áreas de especialización: 4-12 ítems, cada uno de 2-6 palabras, en minúsculas (p.~ej.\ \emph{knowledge graphs}, \emph{named entity recognition}). Si se dan dominios establecidos, repítelos \emph{todos} sin cambios y añade solo las áreas genuinamente nuevas.
+    Si se empieza de cero, extrae las áreas principales de los resúmenes.
+    \item \textsc{Profile}: de 3 a 5 frases en inglés correcto (máximo estricto: 5): las frases 1-4 describen aquello en lo que el investigador es experto, agrupando dominios afines y la última (opcional, solo si se añadieron dominios nuevos) introduce con naturalidad la nueva dirección.
+    \item Si no se añadieron dominios nuevos, describe solo la especialización central, \emph{sin referencias al tiempo, la recencia o el cambio}.
+    \item Nunca menciona nombres de programas, sistemas, herramientas, conjuntos de datos, títulos de artículos, congresos ni revistas (sin nombres propios).
+    \item Nunca usa marcadores temporales (\emph{continued}, \emph{expanded}, \emph{recently}, \emph{this year}, \emph{currently}\ldots).
 \end{itemize}
 
-\pendiente{Volcar aquí el texto literal de los tres prompts (system + plantilla de usuario) y los esquemas Pydantic de sus salidas, una vez congelada la versión final. Incluir un ejemplo de entrada/salida por agente.}
+El mensaje de usuario aporta, según el caso, los dominios ya establecidos y los resúmenes de las publicaciones del año (o del lote, cuando un año se trocea por exceder la ventana de contexto), con la indicación de si se trata de un periodo nuevo o de la continuación del mismo año.
+
+\textbf{Fusión de la biografía vigente (fase de indexación).}
+Pliega recurrentemente los resúmenes anuales en una única biografía que prioriza el trabajo reciente (Sección~\ref{sec:met-indexacion}).
+Misma salida estructurada (\texttt{domains}, \texttt{profile}).
+Rol del sistema: \emph{«You maintain a researcher's CURRENT expertise profile as you fold in one more recent year of their work at a time. Your output matches students with thesis supervisors, so it must reflect what they work on NOW.»}
+Instrucciones:
+
+\begin{itemize}[nosep]
+    \item Recibe un perfil \textsc{acumulado} (años anteriores) y el perfil de un año \textsc{más reciente}.
+    \item Produce \texttt{domains} y \texttt{profile} actualizados que \emph{prioricen} la dirección de investigación reciente, conservando la experiencia anterior que siga siendo claramente pertinente.
+    \item \textsc{Domains}: 4-12 ítems, 2-6 palabras, minúsculas.
+    Fusiona ambas listas favoreciendo las recientes y descarta líneas claramente abandonadas solo si hace falta para no superar 12.
+    \item \textsc{Profile}: de 3 a 5 frases (máximo 5), presente, encabezando por el foco actual.
+    Sin punto y coma encadenando ítems, sin nombres de herramientas/sistemas/conjuntos de datos ni títulos y sin marcadores temporales.
+\end{itemize}
+
+\section*{Atención de consultas}
+
+\textbf{Extractor de términos} (estrategias léxica con \gls{llm} e híbrida).
+Convierte la idea del estudiante en dos listas de términos de búsqueda.
+Salida: \texttt{general} (5-8) y \texttt{specific} (8-12).
+Rol del sistema: \emph{«You are a research keyword extractor for an academic advisor matching system at the university. Your output is used directly as search queries against an indexed academic database, so precision and conciseness are critical.»}
+Instrucciones:
+
+\begin{itemize}[nosep]
+    \item Extrae exactamente dos listas de términos de la idea de investigación dada.
+    \item Reglas (incumplir cualquiera degrada la búsqueda): solo inglés y en minúsculas; cada término de 1 a 4 palabras; sin abreviaturas, paréntesis, barras ni puntuación; con el formato del campo \emph{Keywords} de un artículo IEEE/ACM/Elsevier; sin duplicados entre las dos listas.
+    \item Ejemplos correctos: \emph{machine learning}, \emph{question generation}, \emph{transfer learning}. Incorrectos: \emph{AI-Powered Assessment Tools}, \emph{LLM-based QG (Question Generation)}.
+    \item Lista \textsc{general} (5-8 ítems): disciplinas y dominios paraguas.
+    Lista \textsc{specific} (8-12 ítems): métodos, algoritmos, arquitecturas o aplicaciones precisos.
+    \item Aunque la idea de entrada sea verbosa y en cualquier idioma, la salida debe ser concisa y en inglés.
+    El foco es extraer los conceptos y técnicas centrales, no reformular la idea.
+\end{itemize}
+
+\textbf{Enriquecedor de consulta} (estrategias semántica enriquecida e híbrida).
+Traduce y expande la idea a un párrafo en inglés apto para la búsqueda densa. Salida: un único campo \texttt{text}.
+Rol del sistema: \emph{«You are a research query optimizer for an academic advisor matching system. Your output is used to search a database of researcher profile summaries written in English.»}
+Instrucciones:
+
+\begin{itemize}[nosep]
+    \item Recibe una descripción de investigación escrita por un estudiante (en cualquier idioma) y devuelve un único campo \texttt{text}: un párrafo fluido en inglés de 3 a 5 frases.
+    \item Reglas (incumplir cualquiera degrada la búsqueda): traduce fielmente conservando todos los conceptos mencionados; puede añadir terminología técnica estrechamente relacionada que un investigador del área reconocería; \emph{nunca} añade temas, aplicaciones o dominios no claramente implicados por el texto del estudiante.
+    \item Escribe en tercera persona (\emph{«This research focuses on\ldots»}), en prosa continua (sin viñetas, listas ni encabezados), y sin referirse al estudiante, la universidad o el formato de trabajo.
+\end{itemize}
+
+Ambos agentes de consulta se ejecutan con una temperatura de muestreo baja ($t=0{,}1$) para favorecer salidas estables y fieles (Sección~\ref{sec:met-emparejamiento}).
+
+\section*{Evaluación: construcción del estándar de plata}
+
+\textbf{Generador de propuestas.}
+Reescribe la descripción de un trabajo ya realizado como la propuesta que el estudiante habría escrito \emph{antes} de empezarlo (Sección~\ref{sec:eval-groundtruth}).
+Salida: un campo \texttt{proposal}. Se ejecuta con temperatura $0{,}7$ para diversificar las tres candidatas.
+Rol del sistema: \emph{«Eres un estudiante de la Universidad Politécnica de Madrid que busca director para su Trabajo de Fin de Grado o de Máster. Escribes una breve propuesta con tu idea de proyecto para que el sistema te recomiende un director.»}
+Instrucciones:
+
+\begin{itemize}[nosep]
+    \item A partir de la descripción de un trabajo ya realizado, redacta la propuesta que habría escrito el estudiante \textsc{antes} de empezarlo.
+    \item Reglas: en español, primera persona y tono natural de estudiante (no académico); de 3 a 6 frases que expliquen el interés, el problema y el enfoque técnico; no copiar el título literal del trabajo; no mencionar nombres de profesores, directores ni títulos de artículos; prosa continua, sin listas ni encabezados.
+\end{itemize}
+
+\textbf{Jurado (\emph{LLM como juez}).}
+Puntúa cada propuesta candidata para seleccionar la mejor.
+Salida: \texttt{score} (entero 1-5) y \texttt{reason} (breve).
+Rol del sistema: \emph{«Eres un evaluador imparcial de propuestas de estudiantes para un sistema de recomendación de directores de TFG/TFM.»}
+Instrucciones:
+
+\begin{itemize}[nosep]
+    \item Puntúa de 1 a 5 la propuesta según tres criterios combinados: \emph{fidelidad} (refleja el mismo tema e idea técnica del trabajo original), \emph{realismo} (parece una consulta natural escrita por un estudiante) y \emph{limpieza} (no copia el título literal ni filtra el nombre del director).
+\end{itemize}
+
+Cada uno de los tres modelos del panel (\texttt{mistral:7b}, \texttt{llama3.1:8b} y \texttt{gemma3:12b}) genera una propuesta y, después, los tres puntúan las tres candidatas.
+La de mayor nota media se adopta como consulta del estándar de plata.
+El Anexo~\ref{annex:ejemplo-eval} muestra un caso completo.
 
 \chapter{Guía de despliegue reproducible}
 \label{annex:despliegue}
@@ -148,10 +323,116 @@ El contraste es relevante porque demuestra que el diseño es operable tanto en u
     \end{tabularx}
 \end{table}
 
-\pendiente{Completar al cierre del desarrollo: pasos de arranque desde cero (levantar servicios, ejecutar el pipeline por fases, verificar los índices) y los tiempos de ejecución observados por fase en el servidor.}
+El arranque parte de un único requisito previo: \textbf{Docker} (con paso de \gls{gpu} a los contenedores para Ollama) y un fichero \texttt{.env} en la raíz del proyecto con las credenciales, los puertos y la ruta base (\texttt{APP\_BASE\_PATH}, por defecto \texttt{/upm-match}).
+Todo el sistema se sirve tras un \emph{único} puerto y subruta del servidor anfitrión, de modo que el despliegue no necesita subdominios: el Nginx del anfitrión reenvía esa subruta a un Nginx de contenedor que la reparte entre los servicios.
+
+Desde la raíz del repositorio, la puesta en marcha desde cero consta de tres pasos:
+
+\begin{lstlisting}[style=upmcode]
+# 1. Configurar el entorno (credenciales, puertos, ruta base)
+cp .env.sample .env        # y completar los valores reales
+
+# 2. Inicializar Airflow y, despues, construir y levantar toda la pila
+docker compose --env-file .env -f infra/docker-compose.yaml up airflow-init --build
+docker compose --env-file .env -f infra/docker-compose.yaml up -d --build
+
+# 3. Descargar los modelos en Ollama (una sola vez)
+docker exec -it upm_match_ollama ollama pull qwen2.5:7b-instruct
+docker exec -it upm_match_ollama ollama pull nomic-embed-text-v2-moe
+\end{lstlisting}
+
+Una vez en marcha, el \textbf{pipeline} de preparación del corpus se lanza desde la interfaz de Airflow (servicio \texttt{\ldots/airflow}), activando su DAG, que ejecuta de forma encadenada e idempotente (\emph{skip-existing}) las fases descritas en la Tabla~\ref{tab:tiempos-fases}.
+Sus duraciones aproximadas en el servidor figuran en esa misma tabla.
+Los índices resultantes pueden \textbf{verificarse} en el panel de Qdrant (colecciones \texttt{researcher\_keywords} y \texttt{researcher\_summaries}) y el grafo en Memgraph Lab, ambos accesibles bajo la misma subruta.
+En operación diaria basta con \texttt{up -d} y \texttt{down} para arrancar y detener la pila, que conserva los datos en sus volúmenes \texttt{docker}.
+Tras un cambio de código, \texttt{up -d -{}-build app} reconstruye solo la aplicación.
 
 El código fuente completo, incluida esta memoria, está disponible en el repositorio público del proyecto: \url{https://github.com/cbadenes/upm-match}.
-\pendiente{Si procede, añadir DOI o release etiquetada para la versión entregada.}
+
+\chapter{Ejemplo del proceso de evaluación}
+\label{annex:ejemplo-eval}
+
+Este anexo recorre, sobre un trabajo real del conjunto de referencia, las etapas que el Capítulo~\ref{ch:evaluacion} describe en general: del texto original del trabajo (estándar de oro) a la propuesta reformulada con la que se consulta el sistema (estándar de plata), pasando por la generación de candidatas y su selección por un jurado de modelos.
+El trabajo elegido es un \gls{tfm} de la \gls{etsisi} de 2025, dirigido por el investigador \texttt{pdi\_308607}.
+
+\section*{Paso 1: el trabajo original (estándar de oro)}
+
+El punto de partida es el registro del trabajo tal como figura en el corpus: su título, su resumen y sus palabras clave (Tabla~\ref{tab:ej-oro}).
+Este texto es, a la vez, la consulta del \emph{estándar de oro} y la base de la que se derivará la propuesta de plata.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Registro original del trabajo de ejemplo (estándar de oro). Se omite la traducción al inglés del resumen, incluida en el original.}
+    \label{tab:ej-oro}
+    \begin{tabularx}{\textwidth}{l X}
+        \toprule
+        \rowcolor{upmblue!8} \colhead{Campo} & \colhead{Contenido} \\
+        \midrule
+        Identificador & \texttt{gold\_tfm\_0128} — \gls{tfm}, 2025, \gls{etsisi}; director \texttt{pdi\_308607}. \\
+        Título & Diseño y evaluación de un sistema RAG multimodal sensible al contexto temporal para la exploración de contenidos audiovisuales. \\
+        Resumen & Este Trabajo Fin de Máster presenta el diseño, desarrollo y evaluación de un sistema RAG (\emph{Retrieval-Augmented Generation}) multimodal sensible al contexto temporal, orientado a facilitar la exploración y consulta de contenido audiovisual sobre el dominio del tenis. El objetivo principal del proyecto es construir una base de conocimiento a partir de documentos multimedia (PDFs, vídeos y podcasts) y evaluar la capacidad de un sistema RAG para ofrecer respuestas fundamentadas que incluyan referencias temporales precisas. Para ello, se ha llevado a cabo una pipeline completa que abarca la recopilación de datos, la transcripción automática con Whisper, la segmentación de los contenidos, la generación de embeddings semánticos, la indexación y la recuperación de información relevante. Se han explorado y comparado cuatro enfoques distintos de segmentación y alineación temporal, evaluando su impacto sobre la calidad de las respuestas generadas a través de métricas como BERTScore-F1, ROUGE-L y similitud del coseno. El sistema se ha probado con un \emph{dataset} de evaluación diseñado manualmente, centrado en preguntas que requieren localizar eventos en el tiempo. Los resultados muestran que solo cuando se incorpora una transcripción con marcas temporales reales (formato .srt) el sistema es capaz de ofrecer respuestas coherentes y temporalmente precisas. Siguiendo ese enfoque se alcanzó un BERTScore-F1 medio de 0,91, un ROUGE-L de 0,73 y una similitud del coseno de 0,94, superando ampliamente a los enfoques anteriores. Estos resultados confirman que la alineación temporal precisa es clave para abordar preguntas sensibles al tiempo. \\
+        Palabras clave & informatica \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+Es importante destacar que es un texto formal, en tercera persona y cargado de terminología muy específica (BERTScore-F1, ROUGE-L, Whisper, formato .srt), buena parte de la cual reaparece en el perfil del propio tutor por proceder del mismo trabajo.
+Es justamente ese solapamiento el que conviene neutralizar (Sección~\ref{sec:eval-validez}).
+
+\section*{Paso 2: generación de propuestas candidatas}
+
+Tres modelos locales reescriben el trabajo como lo haría un estudiante que busca tutor: una propuesta breve, en primera persona y en lenguaje natural (Tabla~\ref{tab:ej-propuestas}).
+
+\begin{table}[htbp]
+    \centering
+    \caption{Propuestas candidatas generadas por los tres modelos (estándar de plata). Se reproducen literalmente.}
+    \label{tab:ej-propuestas}
+    \begin{tabularx}{\textwidth}{l X}
+        \toprule
+        \rowcolor{upmblue!8} \colhead{Modelo} & \colhead{Propuesta en primera persona} \\
+        \midrule
+        \texttt{mistral:7b} & Estoy buscando un director para mi Trabajo Fin de Máster sobre el diseño y evaluación de un sistema RAG multimodal sensible al contexto temporal. Mi proyecto busca facilitar la exploración y consulta de contenido audiovisual en el dominio del tenis, construyendo una base de conocimiento a partir de documentos multimedia (PDFs, vídeos y podcasts) y evaluando la capacidad de un sistema RAG para ofrecer respuestas fundamentadas que incluyan referencias temporales precisas. He desarrollado una pipeline completa que abarca la recopilación de datos, la transcripción automática con Whisper, la segmentación de los contenidos, la generación de embeddings semánticos, la indexación y la recuperación de información relevante. Para ello, he explorado y comparado cuatro enfoques distintos de segmentación y alineación temporal, evaluando su impacto sobre la calidad de las respuestas generadas a través de métricas como BERTScore-F1, ROUGE-L y similitud del coseno. Estoy buscando un director que me apoye en mejorar el sistema y extendere mi investigación hacia futuras betterías. \\
+        \midrule
+        \texttt{llama3.1:8b} & Estoy interesado en diseñar y evaluar un sistema de recuperación y generación de información multimodal sensible al contexto temporal para la exploración de contenido audiovisual. Me gustaría abordar el problema de cómo ofrecer respuestas fundamentadas que incluyan referencias temporales precisas a preguntas relacionadas con eventos en el tiempo. Mi enfoque técnico consistirá en desarrollar un pipeline completo que abarque la recopilación de datos, transcripción automática, segmentación y alineación temporal, generación de embeddings semánticos e indexación para recuperar información relevante. \\
+        \midrule
+        \texttt{gemma3:12b} & Me interesa mucho cómo la inteligencia artificial puede ayudar a navegar por grandes cantidades de información audiovisual, especialmente en áreas como el deporte donde el contexto temporal es crucial. Creo que es un problema interesante el de poder responder preguntas sobre un vídeo o audio, no solo con la información relevante, sino también indicando \emph{cuándo} ocurre. Mi idea es explorar cómo combinar técnicas de recuperación de información (como RAG) con información sobre el tiempo, usando transcripciones y segmentación de contenido multimedia para poder responder preguntas que requieran saber, por ejemplo, «¿cuándo marcó el punto decisivo?». Me gustaría experimentar con diferentes formas de alinear esa información temporal con el contenido para ver cuál funciona mejor en la práctica. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+Las tres conservan el núcleo temático (recuperación multimodal sensible al tiempo) pero difieren en estilo y precisión: la de \texttt{gemma3:12b} es la más coloquial e ilustrativa (introduce un ejemplo, «¿cuándo marcó el punto decisivo?»), la de \texttt{llama3.1:8b} es técnica y fiel, y la de \texttt{mistral:7b} arrastra alguna imprecisión de redacción al final.
+
+\section*{Paso 3: calificación por el jurado y selección}
+
+Los mismos tres modelos actúan como jurado y puntúan cada propuesta de $1$ a $5$.
+La ganadora es la de mayor nota media y los empates se deshacen al azar (Tabla~\ref{tab:ej-notas}).
+
+\begin{table}[htbp]
+    \centering
+    \caption{Calificaciones del jurado para cada propuesta (de 1 a 5) y nota media. La fila resaltada es la propuesta seleccionada.}
+    \label{tab:ej-notas}
+    \begin{tabular}{lcccc}
+        \toprule
+        \rowcolor{upmblue!8} & \multicolumn{3}{c}{\colhead{Jurado}} & \\
+        \rowcolor{upmblue!8} \colhead{Propuesta de} & \colhead{mistral} & \colhead{llama} & \colhead{gemma} & \colhead{Media} \\
+        \midrule
+        \texttt{mistral:7b}  & 4 & 2 & 4 & 3,33 \\
+        \rowcolor{upmgold!25} \texttt{llama3.1:8b} & 4 & 5 & 4 & 4,33 \\
+        \texttt{gemma3:12b}  & 4 & 5 & 4 & 4,33 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+Las propuestas de \texttt{llama3.1:8b} y \texttt{gemma3:12b} empatan a 4,33 de media, por delante de la de \texttt{mistral:7b} (3,33).
+El desempate aleatorio selecciona la de \texttt{llama3.1:8b}, que pasa a ser la consulta del estándar de plata para este trabajo.
+El jurado penaliza de forma coherente la candidata menos cuidada, lo que ilustra el papel del panel como filtro de calidad.
+
+\section*{Paso 4: evaluación de las estrategias}
+
+La propuesta elegida se lanza contra el sistema con cada una de las cinco estrategias (Tabla~\ref{tab:modos}): cada una la transforma a su manera (extracción de términos, embebido directo, enriquecimiento o fusión) y devuelve una lista ordenada de investigadores.
+Se registra la posición en que aparece el tutor real (\texttt{pdi\_308607}) en cada lista y, de ella, se derivan las métricas del trabajo (Sección~\ref{sec:eval-metricas}).
+Promediadas sobre los 458 trabajos del universo común, estas posiciones producen las cifras de la Sección~\ref{sec:res-benchmark}: este único trabajo aporta, por tanto, un punto a cada agregado.
+El contraste entre consultarlo con su texto original (Tabla~\ref{tab:ej-oro}) o con la propuesta reformulada (Tabla~\ref{tab:ej-propuestas}) es, en miniatura, el mismo que la Tabla~\ref{tab:benchmark-oro-plata} resume a escala global.
 
 \chapter{Resultados extendidos}
 \label{annex:resultados-extendidos}
