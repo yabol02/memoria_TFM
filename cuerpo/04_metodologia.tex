@@ -91,7 +91,7 @@ La segunda etapa transforma el marcado semiestructurado en un modelo de datos ex
 Se adopta un \emph{property graph} cuyos nodos representan las entidades del dominio (investigador, publicación, trabajo supervisado, posición en la universidad, asignatura impartida) y cuyas aristas capturan las relaciones entre ellas (autoría, supervisión, trabajo y enseñanza); el esquema completo de nodos y aristas se recoge en el Anexo~\ref{annex:modelo-datos}.
 
 La elección del grafo frente a un modelo tabular responde a la naturaleza del dominio: las preguntas relevantes son de vecindad y conexión («¿qué investigadores comparten temas?», «¿quién ha supervisado trabajos próximos a este proyecto?») y el modelo de grafo las hace naturales.
-\textcolor{red}{Además, deja preparado el terreno para la línea futura de detección de colaboraciones, que es esencialmente un problema de análisis de grafos (esto es lo que quiero hacer ahora, igual lo quito).}
+Además, deja preparado el terreno para la línea futura de detección de colaboraciones entre investigadores, que es esencialmente un problema de análisis de grafos (Capítulo~\ref{ch:conclusiones}).
 
 Durante esta etapa se aplica una limpieza \emph{conservadora} del texto: solo se transforma aquello que responde a patrones inequívocos de la fuente (por ejemplo, resúmenes con secciones etiquetadas concatenadas), prefiriéndose conservar una imperfección a introducir una corrupción silenciosa (requisito \ref{req:normalizacion}).
 
