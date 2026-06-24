@@ -76,31 +76,48 @@ La Figura~\ref{fig:arquitectura} muestra la arquitectura completa y la Tabla~\re
 \end{figure}
 
 \begin{table}[htbp]
-      \centering
-      \caption{Correspondencia entre etapas metodológicas y tecnologías empleadas.}
-      \label{tab:stack}
-      \begin{tabularx}{\textwidth}{l X l}
-            \toprule
-            \rowcolor{upmblue!8} \colhead{Etapa} & \colhead{Cometido} & \colhead{Tecnología} \\
-            \midrule
-            Adquisición & Censo de investigadores y descarga concurrente con reintentos & Python (httpx, tenacity) \\
-            Capa cruda & Conservación inmutable del HTML y artefactos intermedios & MinIO \\
-            Estructuración & Extracción de entidades y carga del grafo de actividad & Scrapy (selectores), Memgraph (Cypher) \\
-            Validación & Esquemas tipados de perfiles y documentos & Pydantic \\
-            Resúmenes anuales & Síntesis autónoma por año (resumen y dominios) con \gls{llm} local y salida estructurada & Ollama + Agno (Qwen2.5 7B) \\
-            Biografía vigente & Fusión recurrente de los resúmenes anuales, ponderando el trabajo reciente & Ollama + Agno (Qwen2.5 7B) \\
-            Embeddings densos & Representación semántica de la biografía vigente & nomic-embed-text-v2-moe (Ollama) \\
-            Vectores dispersos & Términos ponderados por atención (temas y dominios) & BM42 (fastembed) \\
-            Índice y búsqueda & Almacenamiento vectorial, similitud y fusión RRF nativa & Qdrant \\
-            Aplicación web & Interfaz de búsqueda y API & Flask + Gunicorn \\
-            Orquestación & Ejecución programada e incremental del pipeline & Airflow \\
-            Despliegue & Contenedores y proxy inverso, todo on-premise & Docker Compose + Nginx \\
-            \bottomrule
-      \end{tabularx}
+  \centering
+  \caption{Correspondencia entre etapas metodológicas y tecnologías empleadas.}
+  \label{tab:stack}
+  \begin{tabularx}{\textwidth}{l X l}
+    \toprule
+    \rowcolor{upmblue!8} \colhead{Etapa} & \colhead{Cometido} & \colhead{Tecnología} \\
+    \midrule
+    Adquisición & Censo de investigadores y descarga concurrente con reintentos & Python (httpx, tenacity) \\
+    Capa cruda & Conservación inmutable del HTML y artefactos intermedios & MinIO \\
+    Estructuración & Extracción de entidades y carga del grafo de actividad & Scrapy (selectores), Memgraph (Cypher) \\
+    Validación & Esquemas tipados de perfiles y documentos & Pydantic \\
+    Resúmenes anuales & Síntesis autónoma por año (resumen y dominios) con \gls{llm} local y salida estructurada & Ollama + Agno (Qwen2.5 7B) \\
+    Biografía vigente & Fusión recurrente de los resúmenes anuales, ponderando el trabajo reciente & Ollama + Agno (Qwen2.5 7B) \\
+    Embeddings densos & Representación semántica de la biografía vigente & nomic-embed-text-v2-moe (Ollama) \\
+    Vectores dispersos & Términos ponderados por atención (temas y dominios) & BM42 (fastembed) \\
+    Índice y búsqueda & Almacenamiento vectorial, similitud y fusión RRF nativa & Qdrant \\
+    Aplicación web & Interfaz de búsqueda y API & Flask + Gunicorn \\
+    Orquestación & Ejecución programada e incremental del pipeline & Airflow \\
+    Despliegue & Contenedores y proxy inverso, todo on-premise & Docker Compose + Nginx \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+La Tabla~\ref{tab:etapas-fases} relaciona las cuatro etapas conceptuales del Capítulo~\ref{ch:metodologia} con las siete fases en que se implementan y se cronometran más adelante (Tabla~\ref{tab:tiempos-fases}).
+
+\begin{table}[htbp]
+  \centering
+  \caption{Correspondencia entre las cuatro etapas metodológicas (Capítulo~\ref{ch:metodologia}) y las siete fases de implementación del pipeline.}
+  \label{tab:etapas-fases}
+  \begin{tabularx}{\textwidth}{l X}
+    \toprule
+    \rowcolor{upmblue!8} \colhead{Etapa metodológica} & \colhead{Fases de implementación} \\
+    \midrule
+    Adquisición (§\ref{sec:met-adquisicion}) & 1.~Censo de identificadores y 2.~Descarga \\
+    Estructuración (§\ref{sec:met-grafo}) & 3.~Parseo y carga del grafo \\
+    Consolidación y enriquecimiento (§\ref{sec:met-enriquecimiento}) & 4.~Consolidación del perfil y 6.~Resúmenes anuales \\
+    Representación e indexación (§\ref{sec:met-indexacion}) & 5.~Indexación léxica de keywords y 7.~Biografía vigente e indexación semántica \\
+    \bottomrule
+  \end{tabularx}
 \end{table}
 
 Tres decisiones merecen justificación expresa.
-\duda{Creo que habría que justificar algo más cada tecnología}
 Primera, el \textbf{\gls{llm} local} (Qwen2.5 7B instruccional servido por Ollama) es el punto donde el requisito \ref{req:soberania} se juega su viabilidad, pues sustituye a las \gls{api} propietarias tanto en el enriquecimiento masivo del corpus como en la interpretación de consultas en línea.
 Por otro lado, Agno aporta la capa de agentes con salida estructurada validada por Pydantic.
 El texto íntegro de los \emph{prompts} de todos los agentes (preparación del corpus, consulta y evaluación) se recoge en el Anexo~\ref{annex:prompts}.
@@ -113,7 +130,7 @@ El modelo de datos se mantuvo agnóstico del motor de grafo, de modo que podría
 \section{El corpus resultante}
 \label{sec:res-corpus}
 
-La ejecución del pipeline sobre el perímetro de las cuatro escuelas del ámbito de las Tecnologías de la Información y las Comunicaciones produce un grafo de conocimiento de 172\,621 nodos y 268\,886 relaciones.
+La ejecución del pipeline sobre la actividad pública censada de la universidad produce un grafo de conocimiento de 172\,621 nodos y 268\,886 relaciones, del que el perímetro de las cuatro escuelas del ámbito de las Tecnologías de la Información y las Comunicaciones es solo un subconjunto, que se delimita más adelante.
 La Tabla~\ref{tab:corpus-grafo} desglosa su composición por tipo (el esquema del grafo se detalla en el Anexo~\ref{annex:modelo-datos}).
 
 \begin{table}[htbp]
@@ -152,29 +169,12 @@ Como no puede filtrarse de manera fiable por escuela (la mayoría de los investi
 En consecuencia, el criterio puede incorporar a algún investigador que enseña en otra escuela y omitir a otros que sí lo hacen en las del perímetro.
 Se asume como mal menor, destinado a diluirse cuando el corpus se extienda al conjunto de la universidad.
 
-Aplicando ese criterio determinista, el perímetro efectivo de las cuatro escuelas (sus cuatro nodos de escuela y catorce departamentos adscritos) reúne 996 investigadores distintos; los 5\,998 nodos \texttt{Pdi} del grafo incluyen, además, a coautores externos arrastrados por las relaciones de actividad.
-La Tabla~\ref{tab:corpus-escuelas} desglosa el perímetro por escuela, junto con la cobertura de temas declarados en el portal.
-Veinticuatro investigadores están adscritos a unidades de más de una escuela, por lo que la suma por escuela supera ligeramente el total de investigadores distintos.
+Aplicando ese criterio determinista, el perímetro efectivo de las cuatro escuelas (sus cuatro nodos de escuela y catorce departamentos adscritos) reúne 995 investigadores distintos.
+Cada investigador se asigna a una única escuela (su primera filiación dentro del perímetro).
+La Tabla~\ref{tab:cobertura-fase7} desglosa el perímetro por escuela, junto con la cobertura de temas declarados en el portal (índice léxico) y de biografía y dominios generados (índice semántico).
 
-\begin{table}[htbp]
-  \centering
-  \caption{Investigadores del perímetro por escuela y cobertura de temas declarados.}
-  \label{tab:corpus-escuelas}
-  \begin{tabularx}{\textwidth}{X r r}
-      \toprule
-      \rowcolor{upmblue!8} \colhead{Escuela} & \colhead{Investigadores} & \colhead{Con temas declarados} \\
-      \midrule
-      \gls{etsii} & 315 & 188 (59,7\,\%) \\
-      \gls{etsit} & 310 & 287 (92,6\,\%) \\
-      \gls{etsisi} & 237 & 125 (52,7\,\%) \\
-      \gls{etsist} & 158 & 132 (83,5\,\%) \\
-      \midrule
-      Total (investigadores distintos) & 996 & 709 (71,2\,\%) \\
-      \bottomrule
-  \end{tabularx}
-\end{table}
-
-De ese perímetro, los \textbf{709} \glspl{pdi} con contenido aprovechable (los mismos que declaran temas en la Tabla~\ref{tab:corpus-escuelas}) constituyen la población efectivamente indexada.
+De ese perímetro, \textbf{709} \glspl{pdi} tienen temas declarados en el portal y \textbf{754} disponen de biografía generada a partir de su producción científica (Tabla~\ref{tab:cobertura-fase7}).
+Ambos conjuntos conforman la población indexada, el primero en el índice léxico y el segundo en el semántico.
 La colección dispersa \texttt{researcher\_\allowbreak keywords} (fase 5) está completa con esos 709 puntos, uno por \gls{pdi}.
 La colección \texttt{researcher\_\allowbreak summaries} (fase 7) mantiene un punto por \gls{pdi} y, al concluir, contiene un total de 754, algo más que los 709 anteriores.
 La diferencia no es un error, sino consecuencia de que ambas colecciones se nutren de fuentes distintas: el índice disperso (fase 5) parte de los \emph{temas declarados del investigador} en el portal, mientras que la biografía y los dominios (fases 6-7) se sintetizan a partir de su \emph{producción científica}.
@@ -182,22 +182,22 @@ Hay, por tanto, investigadores sin temas declarados pero con publicaciones resum
 El índice denso acaba cubriendo algo más de profesorado que el léxico, lo que juega a favor de basar la representación en la actividad real y no en la \emph{autodeclaración}.
 
 La Tabla~\ref{tab:cobertura-fase7} y la Figura~\ref{fig:cobertura} desglosan esta cobertura semántica por escuela.
-Biografía y dominios cubren exactamente el mismo conjunto (toda biografía generada lleva asociados sus dominios) y la cobertura por escuela reproduce el patrón de los temas declarados (Tabla~\ref{tab:corpus-escuelas}): muy alta en la \gls{etsit} y la \gls{etsist}, y en torno a la mitad en la \gls{etsisi}, reflejo de lo completo que es el dato público de cada escuela en el portal.
+Biografía y dominios cubren exactamente el mismo conjunto (toda biografía generada lleva asociados sus dominios) y la cobertura por escuela reproduce el patrón de los temas declarados de la misma tabla (Tabla~\ref{tab:cobertura-fase7}): muy alta en la \gls{etsit} y la \gls{etsist} y en torno a la mitad en la \gls{etsisi}, reflejo de lo completo que es el dato público de cada escuela en el portal.
 
 \begin{table}[htbp]
   \centering
-  \caption{Cobertura semántica (biografía y dominios, fase 7) por escuela. Cada \gls{pdi} se asigna a una única escuela (su primera filiación del perímetro), por lo que los totales por escuela difieren levemente de la Tabla~\ref{tab:corpus-escuelas}.}
+  \caption{Perímetro por escuela: investigadores, con temas declarados (índice léxico, fase 5) y con biografía y dominios (índice semántico, fase 7). Cada \gls{pdi} se asigna a una única escuela (su primera filiación dentro del perímetro).}
   \label{tab:cobertura-fase7}
   \begin{tabularx}{\textwidth}{X r r r}
     \toprule
-    \rowcolor{upmblue!8} \colhead{Escuela} & \colhead{\glspl{pdi}} & \colhead{Con biografía y dominios} & \colhead{Cobertura} \\
+    \rowcolor{upmblue!8} \colhead{Escuela} & \colhead{Investigadores} & \colhead{Con temas declarados} & \colhead{Con biografía y dominios} \\
     \midrule
-    \gls{etsii} & 312 & 219 & 70,2\,\% \\
-    \gls{etsit} & 307 & 284 & 92,5\,\% \\
-    \gls{etsisi} & 227 & 120 & 52,9\,\% \\
-    \gls{etsist} & 149 & 131 & 87,9\,\% \\
+    \gls{etsii} & 312 & 186 (59,6\%) & 219 (70,2\%) \\
+    \gls{etsit} & 307 & 284 (92,5\%) & 284 (92,5\%) \\
+    \gls{etsisi} & 227 & 115 (50,7\%) & 120 (52,9\%) \\
+    \gls{etsist} & 149 & 124 (83,2\%) & 131 (87,9\%) \\
     \midrule
-    Total & 995 & 754 & 75,8\,\% \\
+    Total & 995 & 709 (71,3\%) & 754 (75,8\%) \\
     \bottomrule
   \end{tabularx}
 \end{table}
@@ -216,10 +216,10 @@ Biografía y dominios cubren exactamente el mismo conjunto (toda biografía gene
       \addplot[fill=upmgrey, draw=black!25] coordinates {(227,ETSISI)(312,ETSII)(149,ETSIST)(307,ETSIT)};
       \addplot[fill=upmblue, draw=upmblue!60!black] coordinates {(120,ETSISI)(219,ETSII)(131,ETSIST)(284,ETSIT)};
       \legend{Total, Con biografía y dominios}
-      \node[anchor=west, font=\scriptsize, color=upmblue!85!black] at (axis cs:120,ETSISI){52,9\,\%};
-      \node[anchor=west, font=\scriptsize, color=upmblue!85!black] at (axis cs:219,ETSII){70,2\,\%};
-      \node[anchor=west, font=\scriptsize, color=upmblue!85!black] at (axis cs:131,ETSIST){87,9\,\%};
-      \node[anchor=west, font=\scriptsize, color=upmblue!85!black] at (axis cs:284,ETSIT){92,5\,\%};
+      \node[anchor=west, font=\scriptsize, color=upmblue!85!black] at (axis cs:120,ETSISI){52,9\%};
+      \node[anchor=west, font=\scriptsize, color=upmblue!85!black] at (axis cs:219,ETSII){70,2\%};
+      \node[anchor=west, font=\scriptsize, color=upmblue!85!black] at (axis cs:131,ETSIST){87,9\%};
+      \node[anchor=west, font=\scriptsize, color=upmblue!85!black] at (axis cs:284,ETSIT){92,5\%};
     \end{axis}
   \end{tikzpicture}
   \caption{Cobertura semántica (fase 7) por escuela: investigadores con biografía y dominios (azul) frente al total del perímetro (gris). El porcentaje refleja la completitud del dato público de cada escuela en el portal.}
@@ -302,14 +302,53 @@ Como tanto la generación del estándar de plata como las evaluaciones son repro
 \section{El prototipo \proyecto}
 \label{sec:res-prototipo}
 
-El prototipo materializa la capa de presentación descrita en la Sección~\ref{sec:met-presentacion}: una aplicación web con un único campo de texto en el que el estudiante describe su idea en cualquier idioma, un selector de estrategia (con la híbrida por defecto) y una lista de resultados ordenada.
+El prototipo materializa la capa de presentación descrita en la Sección~\ref{sec:met-presentacion}: una aplicación web con un único campo de texto en el que el estudiante describe su idea en cualquier idioma, un selector de estrategia (las cuatro disponibles, agrupadas en tres controles porque la búsqueda por resumen ofrece las variantes directa y enriquecida; la híbrida por defecto) y una lista de resultados ordenada.
 
 Cada tarjeta de resultado muestra el nombre del investigador, su puntuación normalizada respecto al primer resultado (de 0 a 100), los temas de su perfil que coinciden con la consulta y, en las estrategias semánticas, su biografía investigadora.
 Cuando interviene el \gls{llm}, la interfaz muestra también la interpretación realizada (los términos extraídos o la reformulación enriquecida), de modo que el estudiante pueda auditar y, en su caso, reformular su consulta.
 La latencia percibida varía según la estrategia: las que incorporan el \gls{llm} añaden el coste de una generación local a la búsqueda vectorial.
 Las puramente vectoriales son inmediatas (la semántica directa resuelve en torno a dos décimas de segundo), mientras que las que invocan el modelo en consulta se sitúan entre los 7 y los 19 segundos de media (Tabla~\ref{tab:benchmark-tiempos}), un coste dominado por la generación local.
 
-\pendiente{Incluir una o dos capturas de pantalla del prototipo (búsqueda y resultados, idealmente con la misma consulta en dos modos distintos) y un párrafo guiando su lectura.}
+La Figura~\ref{fig:prototipo-hibrido} ilustra el prototipo en funcionamiento sobre una consulta de ejemplo, redactada en español coloquial como la escribiría un estudiante: \emph{«Me interesa desarrollar un sistema que ayude a detectar bulos y desinformación en redes sociales. La idea es analizar el contenido de las publicaciones y contrastarlo con fuentes fiables para estimar su veracidad mediante técnicas de procesamiento de lenguaje natural, de forma que el sistema pueda además explicar por qué considera que algo es falso.»}
+Es, precisamente, el tipo de idea con que se motivó el trabajo (Sección~\ref{sec:motivacion}): una descripción en lenguaje natural y orientada a la aplicación, alejada del registro técnico en inglés de los perfiles.
+La figura se compone de dos capturas: la primera (\ref{fig:hibrido-interpretacion}) recoge la caja de consulta y lo que genera la app; la segunda (\ref{fig:hibrido-resultados}), los primeros tutores recomendados.
+
+\begin{figure}[htbp]
+  \centering
+  \begin{subfigure}{\textwidth}
+    \centering
+    \includegraphics[width=0.9\linewidth]{figures/query_hibrido_1.png}
+    \caption{Consulta e interpretación: la idea del estudiante y, debajo, lo que genera la app (las dos listas de términos de búsqueda y la consulta reformulada al inglés técnico).}
+    \label{fig:hibrido-interpretacion}
+  \end{subfigure}
+
+  \vspace{4mm}
+
+  \begin{subfigure}{\textwidth}
+    \centering
+    \includegraphics[width=0.9\linewidth]{figures/query_hibrido_2.png}
+    \caption{Resultados: los primeros tutores recomendados, ordenados por afinidad y con su puntuación normalizada.}
+    \label{fig:hibrido-resultados}
+  \end{subfigure}
+
+  \caption{Estrategia híbrida (la usada por defecto) sobre la consulta de ejemplo: interpretación de la idea (a) y tutores recomendados (b).}
+  \label{fig:prototipo-hibrido}
+\end{figure}
+
+La estrategia híbrida (Figura~\ref{fig:prototipo-hibrido}) es la que más muestra de su funcionamiento interno.
+A partir de la idea en español, el \gls{llm} produce dos listas de términos de búsqueda en inglés, generales (\emph{social media}, \emph{misinformation}, \emph{fake news}\ldots) y específicos (\emph{natural language processing}, \emph{fact checking}, \emph{external sources verification}, \emph{disinformation detection}\ldots), y una reformulación de la consulta al inglés técnico (\emph{«This research focuses on developing a system to detect misinformation and disinformation on social media by combining content analysis with external source verification.»}).
+La estrategia combina ambas señales: los términos alimentan la vía dispersa (dominios) y la reformulación, la vía densa (biografías), fusionadas por \gls{rrf}.
+La subfigura~\subref{fig:hibrido-interpretacion} recoge esa interpretación y la~\subref{fig:hibrido-resultados}, los tutores resultantes.
+
+Esta misma captura deja a la vista una limitación del modelo local elegido.
+Entre los términos específicos se cuela alguno espurio: un fragmento suelto (\emph{automatic}) y, sobre todo, un término escrito en caracteres chinos (que, traducido, significa \emph{reconocimiento de rumores}), visible en la captura.
+El modelo, pequeño y cuantizado, capta bien el tema (el término es incluso pertinente) pero ocasionalmente se desvía del idioma o emite \emph{tokens} sin sentido, pese a la instrucción explícita de producir solo inglés en minúsculas.
+Es un síntoma benigno (el término simplemente no casa con ningún perfil y no altera el resultado), pero visible, de la obediencia frágil de los modelos pequeños analizada en la Sección~\ref{sec:lec-llm} y forma parte del precio honesto del enfoque local.
+
+La híbrida es, además, la estrategia que más interpretación expone, por invocar a la vez la extracción de términos y la reformulación.
+Los demás modos muestran solo la parte que utilizan: la estrategia léxica con \gls{llm} presenta únicamente las dos listas de términos (sin reformulación); la semántica enriquecida, únicamente la reformulación; y la semántica directa, que no invoca al modelo en consulta, no muestra panel de interpretación alguno.
+Basta, por tanto, esta figura para ilustrar la capa de transparencia común a todas las estrategias.
+El valor real de incorporar la señal semántica, que la interfaz hace visible en un caso concreto, se cuantifica de forma agregada en el banco de pruebas (Sección~\ref{sec:res-benchmark}).
 
 El prototipo está desplegado y es accesible públicamente en \url{https://wiig.dia.fi.upm.es/upm-match/}, donde cualquier usuario puede introducir una idea de trabajo y obtener recomendaciones en tiempo real.
 
@@ -384,7 +423,7 @@ El tiempo medio por consulta (Tabla~\ref{tab:benchmark-tiempos}) cuantifica el c
   \end{tabularx}
 \end{table}
 
-De estas cifras se extraen cuatro lecturas, todas ellas a interpretar como \emph{comparación relativa} entre estrategias y no como medidas absolutas de utilidad (Sección~\ref{sec:eval-validez}).
+De estas cifras se extraen cuatro lecturas, que aquí se enuncian (su discusión e implicaciones se retoman en el Capítulo~\ref{ch:discusion}) y que deben interpretarse como \emph{comparación relativa} entre estrategias, no como medidas absolutas de utilidad (Sección~\ref{sec:eval-validez}).
 
 Primera, \textbf{la señal semántica domina a la léxica} (Figura~\ref{fig:bench-mrr}).
 Las tres estrategias densas superan a las dos léxicas en todas las métricas y cortes: la peor de las semánticas (la directa, \gls{mrr} 0,137) aventaja con claridad a la mejor de las léxicas (la guiada por \gls{llm}, 0,091) y esta a su vez al control de coincidencia léxica pura (0,063).
@@ -455,7 +494,7 @@ Las tablas anteriores corresponden al estándar de plata; la Tabla~\ref{tab:benc
 \end{figure}
 
 El contraste, que la Figura~\ref{fig:oro-plata} hace visible, es revelador.
-Con el estándar de oro todas las estrategias obtienen cifras más altas y la semántica directa lidera (\gls{mrr} 0,158), mientras que ni el enriquecimiento ni la hibridación aportan nada sobre ella.
+Con el estándar de oro todas las estrategias obtienen cifras más altas y la semántica directa lidera (\gls{mrr} 0,158), mientras que ni el enriquecimiento ni la hibridación aportan nada sobre ella en \gls{mrr} (aunque la igualan o superan ligeramente en \mbox{Hit@10}: 0,299 frente a 0,293).
 Con el estándar de plata, en cambio, todas las estrategias literales caen, la semántica directa pierde más de dos centésimas de \gls{mrr} y solo la híbrida mejora, hasta encabezar la comparación.
 El motivo es el solapamiento léxico entre el texto original del trabajo y el perfil de su propio tutor (que recoge ese mismo trabajo entre los supervisados): un solapamiento que premia artificialmente a las estrategias más literales y que es, precisamente, la amenaza de optimismo por solapamiento de la Sección~\ref{sec:eval-validez}.
 La reformulación en primera persona rompe ese atajo léxico y obliga a las estrategias a competir por afinidad de significado, lo que revela el valor real del \gls{llm} y de la fusión de señales.
