@@ -11,6 +11,48 @@ Este capítulo las analiza una a una y concluye destilando los requisitos que cu
 El Portal Científico de la UPM está diseñado para la consulta humana, ficha a ficha.
 No ofrece una interfaz programática de acceso a los datos, los identificadores de los investigadores no están publicados como un censo descargable y la información de cada perfil se sirve como HTML semiestructurado cuya organización interna no está documentada ni garantizada en el tiempo.
 
+Las capturas de la Figura~\ref{fig:portal} muestran el aspecto real de un perfil en el portal, la materia prima de la que parte el sistema: una ficha perfectamente legible \emph{de una en una}, pero cuya comparación masiva (decenas o cientos de perfiles) para hallar al tutor idóneo es justamente el esfuerzo manual que el portal no resuelve.
+
+Las dos primeras capturas muestran lo que encuentra el usuario nada más acceder a un perfil.
+La Figura~\ref{fig:portal-1} recoge las secciones en que se divide la ficha —Presentación, Trayectoria profesional, Bibliometría, Proyectos y transferencia, Docencia, Red, y Resultados y actividad— y corresponde a la primera de ellas, la Presentación.
+Todos los perfiles comparten esta estructura: la Presentación reúne las afiliaciones del \gls{pdi}, un breve resumen de su trayectoria (no todos lo tienen y, al parecer, lo genera automáticamente la \gls{upm}) y un gráfico con los temas en los que es experto.
+La Figura~\ref{fig:portal-2} amplía ese gráfico de temas, con uno de ellos resaltado para ilustrar cómo se presenta en la interfaz.
+
+La Figura~\ref{fig:portal-3} muestra la última sección, Resultados y actividad, la más relevante para este trabajo, pues concentra la evidencia que el sistema explota: publicaciones, proyectos y trabajos supervisados.
+La sección ofrece varios controles para filtrar esa actividad, pero solo dentro del perfil de un investigador: ayudan a explorar a una persona, no a comparar a muchas.
+Se confirma así la barrera de partida: el portal está pensado para la consulta uno a uno, no para una búsqueda a escala sobre todo el \gls{pdi} de la \gls{upm}.
+
+\begin{figure}[htbp]
+  \centering
+  \begin{subfigure}{0.48\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{figures/portal_cientifico_1.png}
+    \caption{Página inicial de un \gls{pdi} del Portal Científico.}
+    \label{fig:portal-1}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}{0.48\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{figures/portal_cientifico_2.png}
+    \caption{Gráfico con los temas del \gls{pdi}.}
+    \label{fig:portal-2}
+  \end{subfigure}
+
+  \vspace{4mm}
+
+  \begin{subfigure}{\textwidth}
+    \centering
+    \includegraphics[width=0.90\linewidth]{figures/portal_cientifico_3.png}
+    \caption{Sección de Resultados y actividad del \gls{pdi} con toda su información.}
+    \label{fig:portal-3}
+  \end{subfigure}
+
+  \caption{Perfil público de un investigador en el Portal Científico de la \gls{upm}, tal como lo consulta hoy un estudiante: rico y bien presentado para la lectura humana ficha a ficha, pero no pensado para la exploración ni la comparación a escala.}
+  \label{fig:portal}
+\end{figure}
+
+\pendiente{Mirar si tengo que anonimizar los datos de la captura}
+
 Convertir esa fuente en un activo operativo exige, por tanto, un esfuerzo previo considerable: descubrir el censo de investigadores, descargar de forma respetuosa y reproducible las miles de páginas y transformar un marcado pensado para presentación visual en datos estructurados.
 Es un trabajo de ingeniería poco vistoso, pero es la condición de posibilidad de todo lo demás.
 Su ausencia explica que muchos intentos similares no pasen de la idea.
@@ -21,6 +63,29 @@ Esta barrera motiva el requisito~\ref{req:adquisicion} y se aborda en el objetiv
 
 Aún una vez estructurados, los datos distan de ser homogéneos.
 La densidad de los perfiles varía en órdenes de magnitud: conviven investigadores con cientos de publicaciones y décadas de actividad con perfiles prácticamente vacíos.
+La Figura~\ref{fig:densidad} lo cuantifica sobre el perímetro: de los 995 investigadores, 219 (el 22\%) no tienen ninguna publicación registrada, mientras que 147 (casi el 15\%) superan el centenar y el más prolífico acumula 726.
+La mediana, 17 publicaciones por investigador, queda muy por debajo de la media (46), reflejo de una distribución fuertemente sesgada.
+
+\begin{figure}[htbp]
+  \centering
+  \begin{tikzpicture}
+    \begin{axis}[
+      upmhbar, height=5.2cm, xmax=255, bar width=12pt,
+      symbolic y coords={c0,c1,c2,c3,c4,c5},
+      ytick={c0,c1,c2,c3,c4,c5},
+      yticklabels={0, 1--5, 6--20, 21--50, 51--100, {$>$100}},
+      xlabel={Investigadores del perímetro},
+      ylabel={Publicaciones por investigador},
+      nodes near coords, nodes near coords style={font=\footnotesize\color{black!70}},
+      clip=false,
+    ]
+      \addplot[fill=upmblue, draw=upmblue!60!black] coordinates {(219,c0)(135,c1)(176,c2)(184,c3)(134,c4)(147,c5)};
+    \end{axis}
+  \end{tikzpicture}
+  \caption{Distribución del número de publicaciones por investigador en el perímetro (995 \glspl{pdi}). Los extremos conviven: 219 perfiles sin publicaciones registradas y 147 con más de cien (hasta un máximo de 726), lo que ilustra la heterogeneidad que la representación debe tolerar.}
+  \label{fig:densidad}
+\end{figure}
+
 Los temas de investigación se expresan en vocabularios no controlados, con duplicados, variantes morfológicas y mezcla de idiomas.
 Los resúmenes de las publicaciones presentan formatos idiosincrásicos que requieren una limpieza cuidadosa para no introducir ruido en las representaciones semánticas posteriores.
 
