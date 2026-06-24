@@ -60,7 +60,7 @@ A los costes temporal y material se añade uno ambiental: una generación que se
 Cabe acotarla con una estimación de orden de magnitud.
 Una medición sobre el propio servidor sitúa el consumo de una de sus \glspl{gpu} (NVIDIA L40, 300\,W de potencia máxima) en torno a 85\,W en reposo y cerca de 285\,W bajo carga de inferencia.
 Las fases dominadas por el modelo de lenguaje (la generación de resúmenes, su fusión y la campaña de evaluación) suman del orden de 51 horas de cómputo sobre una única \gls{gpu}, pues el sistema sirve un solo modelo a la vez.
-Tomando la potencia bajo carga como cota superior, construir y evaluar todo el sistema consume en torno a 15\,kWh que, con una intensidad media de la red eléctrica española del orden de 130\,gCO\textsubscript{2}/kWh (una de las más limpias de Europa, con más de un 56\,\% de generación renovable en 2025\footnote{Datos de Red Eléctrica de España para 2024-2025 (\url{https://www.ree.es}); el factor exacto varía con la hora y la estación.}) equivalen a una huella aproximada de 2\,kg de CO\textsubscript{2}.
+Tomando la potencia bajo carga como cota superior, construir y evaluar todo el sistema consume en torno a 15\,kWh que, con una intensidad media de la red eléctrica española del orden de 130\,gCO\textsubscript{2}/kWh (una de las más limpias de Europa, con más de un 56\% de generación renovable en 2025\footnote{Datos de Red Eléctrica de España para 2024-2025 (\url{https://www.ree.es}); el factor exacto varía con la hora y la estación.}) equivalen a una huella aproximada de 2\,kg de CO\textsubscript{2}.
 
 La cifra es deliberadamente conservadora (supone la \gls{gpu} a plena carga de forma continua, cuando en la práctica alterna con operaciones de entrada/salida) y aproximada (al ser el servidor compartido, las lecturas instantáneas de potencia incluyen otras cargas).
 Aun así, esta magnitud es ilustrativa: el coste ambiental de construir y evaluar el sistema completo con un modelo abierto pequeño en hardware propio equivale al consumo eléctrico de un hogar durante uno o dos días, y se paga una sola vez por actualización, no por consulta.
@@ -99,12 +99,18 @@ Se ha observado, por ejemplo, una publicación en coautoría entre un investigad
 Una omisión así empobrece el perfil del investigador afectado: la actividad existe, pero no se le atribuye y, por tanto, no puede pesar en las recomendaciones que le conciernen.
 Si el patrón se repite (y nada garantiza que sea un caso aislado), el efecto agregado es un sesgo sistemático contra los perfiles peor consignados en la fuente, con frecuencia los más noveles, que se suma al sesgo de visibilidad analizado más adelante (Sección~\ref{sec:disc-etica}).
 
+A esa incompletitud de la autoría se suman dos carencias estructurales del portal que conviene declarar.
+La primera afecta al profesorado en formación: muchos doctorandos apenas tienen presencia pública (sin temas declarados y con un perfil incompleto de publicaciones o de docencia impartida), de modo que su actividad real queda infrarrepresentada y, con ella, su visibilidad en las recomendaciones, un caso particular del problema de \emph{arranque en frío} (Sección~\ref{sec:eval-validez}).
+La segunda afecta a la propia verdad de referencia: tras defender su trabajo, el estudiante decide si su \gls{tfg} o \gls{tfm} queda público o privado, por lo que un trabajo cuyo autor no autoriza (o sencillamente olvida autorizar) su difusión no es recuperable, ni para la evaluación ni para el sistema.
+Cabe suponer que algo análogo ocurre con parte de la producción científica.
+Es una de las razones por las que el trabajo no incorpora en ningún método de recuperación las métricas de las publicaciones (citas, índices de impacto y similares): al desconocer cuán completas y actualizadas están, se evita deliberadamente sobreajustar las recomendaciones a una señal de fiabilidad incierta.
+
 La consecuencia metodológica es nítida: la calidad de las recomendaciones está acotada superiormente por la calidad y la completitud del registro público y ninguna mejora del modelo de recuperación puede recuperar evidencia que la fuente no expone.
 Mitigarlo exigiría contrastar con fuentes adicionales o habilitar mecanismos de corrección supervisada, lo que excede el perímetro de este trabajo.
 
 \section{Consideraciones éticas}
-\label{sec:disc-etica}
 \duda{Esto lo tengo escrito de la asignatura de ética. Debería ser un capítulo entero, no una sección.}
+\label{sec:disc-etica}
 
 Un recomendador de personas exige cautelas adicionales a las de un buscador de documentos.
 Tres merecen mención.
