@@ -18,7 +18,7 @@ Este anexo detalla el documento de perfil que la fase de consolidación produce 
         Proyectos supervisados & Trabajos dirigidos recientemente, con título, resumen y palabras clave (base de la verdad de referencia del Capítulo~\ref{ch:evaluacion}). \\
         Dominios & Áreas de especialización extraídas automáticamente, acumulativas entre ejecuciones. \\
         Biografía & Síntesis en prosa de la trayectoria, generada incrementalmente. \\
-        Metadatos & Fechas de actividad (primer y último año), recuentos y trazas de procesamiento. \\
+        Metadatos & Fechas de actividad, recuentos y trazas de procesamiento. \\
         \bottomrule
     \end{tabularx}
 \end{table}
@@ -35,20 +35,31 @@ La Figura~\ref{fig:grafo-esquema} muestra su esquema: un nodo central \texttt{Pd
         rel/.style={-{Stealth[length=2.4mm]}, semithick, draw=upmblue!70!black},
         rellab/.style={font=\scriptsize\sffamily, text=upmblue!85!black, fill=white, inner sep=1.5pt}
     ]
-        \node[central] (pdi)  at ( 0, 0)    {Pdi};
-        \node[nodo]    (pub)  at (-4, 2.4)  {Publi-\\cation};
-        \node[nodo]    (tft)  at ( 4, 2.4)  {LastYear-\\Project};
-        \node[nodo]    (pos)  at (-4,-2.4)  {Position};
-        \node[nodo]    (subj) at ( 4,-2.4)  {Subject};
+        \node[central] (pdi)  at ( 0, 0) {Pdi};
+        \node[nodo] (pub) at (-4, 2.4) {Publi-\\cation};
+        \node[nodo] (tft) at ( 4, 2.4) {LastYear-\\Project};
+        \node[nodo] (pos) at (-4,-2.4) {Position};
+        \node[nodo] (subj) at ( 4,-2.4) {Subject};
 
         \draw[rel] (pdi) -- node[rellab,sloped]{AUTHORSHIP} (pub);
-        \draw[rel] (pdi) -- node[rellab,sloped]{TUTORING}   (tft);
-        \draw[rel] (pdi) -- node[rellab,sloped]{WORKS}      (pos);
-        \draw[rel] (pdi) -- node[rellab,sloped]{TEACHING}   (subj);
+        \draw[rel] (pdi) -- node[rellab,sloped]{TUTORING} (tft);
+        \draw[rel] (pdi) -- node[rellab,sloped]{WORKS} (pos);
+        \draw[rel] (pdi) -- node[rellab,sloped]{TEACHING} (subj);
         \draw[rel] (pdi) to[out=120,in=60,looseness=9] node[rellab,above]{COAUTHORED} (pdi);
     \end{tikzpicture}
     \caption{Esquema del grafo de propiedades: tipos de nodo y relaciones. Todas las relaciones del modelo parten del investigador (\texttt{Pdi}); \texttt{COAUTHORED} es una arista derivada que conecta investigadores entre sí.}
     \label{fig:grafo-esquema}
+\end{figure}
+
+Mientras que la Figura~\ref{fig:grafo-esquema} presenta el esquema, la Figura~\ref{fig:memgraph} reproduce una porción real del grafo ya cargado: la vecindad de un investigador concreto explorada en Memgraph Lab, con todas sus relaciones a otros nodos.
+En esta, los nodos de los \glspl{pdi} aparecen en color amarillo, las publicaciones en morado, los trabajos de fin de titulación en azul, las asignaturas en morado y los puestos en rojo. 
+Hace tangible que el modelo de datos no es un diseño sobre el papel, sino un grafo poblado y navegable, sobre el que las consultas de vecindad que motivaron su elección (Sección~\ref{sec:met-grafo}) son inmediatas.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.9\linewidth]{figures/memgraph_grafo.png}
+  \caption{Vecindad de un investigador en el grafo cargado, explorada en Memgraph Lab: el nodo \texttt{Pdi} central y sus relaciones con publicaciones, trabajos supervisados, coautores y unidades. Captura anonimizada de una instancia real.}
+  \label{fig:memgraph}
 \end{figure}
 
 La Tabla~\ref{tab:grafo-nodos} detalla la información que guarda cada nodo y la Tabla~\ref{tab:grafo-aristas} la de cada relación, conforme a los esquemas Pydantic del proyecto.
@@ -301,7 +312,8 @@ El sistema completo se despliega con contenedores (Docker Compose) sobre una ún
     \end{tabularx}
 \end{table}
 
-Los modelos empleados son \texttt{qwen2.5:\allowbreak 7b-instruct} para la generación (biografías y agentes de consulta), \texttt{nomic-\allowbreak embed-\allowbreak text-\allowbreak v2-\allowbreak moe} para los \emph{embeddings} densos y \texttt{Qdrant/\allowbreak bm42-\allowbreak all-\allowbreak minilm-\allowbreak l6-\allowbreak v2-\allowbreak attentions} (BM42) para la representación dispersa.
+La elección de modelos es enteramente configurable mediante variables de entorno (\texttt{OLLAMA\_MODEL}, \texttt{OLLAMA\_EMBED\_MODEL} y el modelo BM42), de modo que el sistema no queda atado a ninguno en particular.
+Los empleados son: \texttt{Qdrant/\allowbreak bm42-\allowbreak all-\allowbreak minilm-\allowbreak l6-\allowbreak v2-\allowbreak attentions} (BM42) para la representación dispersa de las palabras clave, tanto al indexar los temas como al embeber los términos de la consulta; \texttt{qwen2.5:\allowbreak 7b-instruct} para la generación de los resúmenes de los \glspl{pdi} y para los agentes de consulta (extracción de términos y enriquecimiento de la idea); \texttt{nomic-\allowbreak embed-\allowbreak text-\allowbreak v2-\allowbreak moe} para el \emph{embedding} denso de los resúmenes y de la consulta; y \texttt{mistral:\allowbreak 7b}, \texttt{llama3.1:\allowbreak 8b} y \texttt{gemma3:\allowbreak 12b} para construir el estándar de plata (generación y jurado).
 El desarrollo se llevó a cabo en dos entornos: una estación local (Windows con Docker Desktop) durante las primeras fases y un servidor Linux de la \gls{upm} para el despliegue definitivo (el que sirve la aplicación pública bajo \texttt{wiig.dia.fi.upm.es}), sobre el que opera actualmente todo el sistema.
 La Tabla~\ref{tab:hardware} resume las características de ambos.
 El contraste es relevante porque demuestra que el diseño es operable tanto en una máquina de desarrollo modesta como en hardware de servidor, y que la holgura de recursos del servidor (en particular, sus dos \glspl{gpu} y su amplia memoria) permite acelerar el enriquecimiento masivo con el \gls{llm} local sin recurrir a servicios externos.
@@ -341,9 +353,28 @@ docker exec -it upm_match_ollama ollama pull qwen2.5:7b-instruct
 docker exec -it upm_match_ollama ollama pull nomic-embed-text-v2-moe
 \end{lstlisting}
 
-Una vez en marcha, el \textbf{pipeline} de preparación del corpus se lanza desde la interfaz de Airflow (servicio \texttt{\ldots/airflow}), activando su DAG, que ejecuta de forma encadenada e idempotente (\emph{skip-existing}) las fases descritas en la Tabla~\ref{tab:tiempos-fases}.
+Una vez en marcha, el \textbf{pipeline} de preparación del corpus se lanza desde la interfaz de Airflow (servicio \texttt{\ldots/airflow}), activando su \gls{dag}, que ejecuta de forma encadenada e idempotente (activando el \emph{flag} \emph{skip-existing}) las fases descritas en la Tabla~\ref{tab:tiempos-fases}.
 Sus duraciones aproximadas en el servidor figuran en esa misma tabla.
+
+La Figura~\ref{fig:airflow} muestra ese \gls{dag} en la interfaz de Airflow: las siete fases encadenadas, con la indexación léxica (fase 5) ejecutándose en paralelo a la cadena de resúmenes y fusión (fases 6 y 7), tal como se describió en la Sección~\ref{sec:res-arquitectura}.
+Cada tarea es idempotente y reanudable, de modo que un fallo a mitad de ejecución se retoma desde la última fase completada sin repetir el trabajo previo.
+A modo de curiosidad, en la zona izquierda se pueden ver todas las ejecuciones de este \gls{dag} durante el desarrollo de este proyecto.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.95\linewidth]{figures/airflow_dag.png}
+  \caption{El \gls{dag} del pipeline en la interfaz de Airflow: las siete fases encadenadas (la fase 5 en paralelo con la cadena 6-7) que orquestan la preparación del corpus de forma desatendida e incremental.}
+  \label{fig:airflow}
+\end{figure}
 Los índices resultantes pueden \textbf{verificarse} en el panel de Qdrant (colecciones \texttt{researcher\_keywords} y \texttt{researcher\_summaries}) y el grafo en Memgraph Lab, ambos accesibles bajo la misma subruta.
+La Figura~\ref{fig:qdrant} reproduce ese panel: las dos colecciones que sostienen la búsqueda, \texttt{researcher\_keywords} (índice disperso BM42, 709 puntos) y \texttt{researcher\_summaries} (vector denso de la biografía más un vector disperso de dominios, 754 puntos), con un punto por investigador en cada una. Permite comprobar de un vistazo el tamaño efectivo de cada índice y su correspondencia con las cifras del corpus (Sección~\ref{sec:res-corpus}).
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.9\linewidth]{figures/qdrant_colecciones.png}
+  \caption{Panel de Qdrant con las dos colecciones de recuperación: \texttt{researcher\_keywords} (dispersa, 709 puntos) y \texttt{researcher\_summaries} (densa más dispersa de dominios, 754 puntos), un punto por investigador.}
+  \label{fig:qdrant}
+\end{figure}
 En operación diaria basta con \texttt{up -d} y \texttt{down} para arrancar y detener la pila, que conserva los datos en sus volúmenes \texttt{docker}.
 Tras un cambio de código, \texttt{up -d -{}-build app} reconstruye solo la aplicación.
 
@@ -495,6 +526,17 @@ La ventaja de la señal semántica sobre la léxica es \emph{transversal}: en to
 Por escuela, la \gls{etsit} es la mejor recuperada y la \gls{etsii} la más difícil, una brecha que probablemente refleja la distinta cobertura de perfiles y la separabilidad temática de cada escuela.
 Por tipo, las diferencias entre \gls{tfg} y \gls{tfm} son pequeñas; la híbrida las iguala prácticamente (0,154 frente a 0,153).
 El desglose por curso, con tamaños de muestra reducidos en los años antiguos, no muestra una tendencia temporal clara más allá de la ya descrita ventaja de las estrategias densas.
+
+Más allá de los promedios, conviene observar \emph{dónde} cae el supervisor real en el ranking.
+La Figura~\ref{fig:rango-director} muestra, para la estrategia híbrida, la distribución de la posición en que aparece el tutor verdadero: cuántas consultas lo sitúan en el primer puesto, entre los tres primeros, en la primera página o más allá (y cuántas no lo recuperan en absoluto).
+Esta lectura complementa las métricas agregadas, al revelar si los fallos se concentran en posiciones cercanas (recuperables con una lista algo más larga) o lejanas.
+
+\begin{figure}[htbp]
+  \centering
+  \pendiente{Generar la figura de distribución del rango del tutor real (estrategia híbrida) a partir de la caché de evaluación, pendiente de incorporar. Sustituir este recuadro por el gráfico correspondiente.}
+  \caption{Distribución de la posición del supervisor real en la lista devuelta por la estrategia híbrida (estándar de plata).}
+  \label{fig:rango-director}
+\end{figure}
 
 \pendiente{Si se ejecutan varias semillas, añadir desviaciones o intervalos. Considerar el desglose por idioma de la consulta y experimentos secundarios (p.~ej., sensibilidad al límite de recuperación). Añadir los casos ilustrativos que no quepan en el Capítulo~\ref{ch:resultados}.}
 
