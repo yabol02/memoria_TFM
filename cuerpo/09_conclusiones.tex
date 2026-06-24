@@ -9,7 +9,7 @@ Retomando los objetivos formulados en la Sección~\ref{sec:objetivos}:
 \begin{itemize}
     \item \textbf{\ref{obj:adquisicion} - Adquisición y estructuración.}
     Se ha construido un pipeline automatizado e incremental que censa, descarga y estructura la actividad pública de la \gls{upm} en un grafo de investigadores, publicaciones, proyectos y supervisiones, con la fuente cruda conservada para reprocesado.
-    El corpus resultante reúne 172\,621 nodos y 268\,886 relaciones, con 709 investigadores efectivamente indexados de los 996 que componen el perímetro de las cuatro escuelas seleccionadas para las búsquedas.
+    El corpus resultante reúne 172\,621 nodos y 268\,886 relaciones a partir de la actividad pública censada, de los 995 investigadores del perímetro de las cuatro escuelas seleccionadas, 709 quedan indexados por sus temas declarados (índice léxico) y 754 por su biografía y dominios generados (índice semántico).
     \item \textbf{\ref{obj:perfilado} - Perfilado semántico.}
     Cada investigador dispone de un perfil enriquecido (temas normalizados, dominios de especialización y biografía investigadora generada incrementalmente con un \gls{llm} local) que agrega toda su evidencia pública en una representación homogénea.
     \item \textbf{\ref{obj:emparejamiento} - Emparejamiento.}
@@ -45,13 +45,17 @@ El trabajo abre varias líneas naturales de continuación, ordenadas aquí de la
     Complementar la evaluación con la prueba piloto con estudiantes ya prevista como trabajo futuro (Sección~\ref{sec:contexto}): consultas genuinas y la valoración directa de las recomendaciones recibidas.
     Esto permitiría, además, cuantificar el sesgo del marco planteado (Sección~\ref{sec:eval-validez}).
     \item[Mejoras de recuperación.]
-    Dos candidatas claras: el \emph{re-ranking} de los primeros resultados con un modelo más potente (\emph{cross-encoder} o \gls{llm} como juez) y el ajuste fino del modelo de embedding al dominio académico bilingüe utilizando los propios pares $supervisión-proyecto$ como señal de entrenamiento.
+    Dos candidatas claras: el \emph{re-ranking} de los primeros resultados con un modelo más potente (\emph{cross-encoder} o \gls{llm} como juez) y el ajuste fino del modelo de embedding al dominio académico bilingüe utilizando los propios pares $supervisi\acute{o}n-proyecto$ como señal de entrenamiento.
+    Una tercera, sugerida por el desajuste temporal observado en la evaluación (Sección~\ref{sec:eval-validez}), es indexar varios resúmenes anuales por investigador (los últimos $N$) junto a la biografía vigente, deduplicando o consolidando los resultados en la recuperación, para recoger también líneas recientes que la fusión global pudiera diluir.
     \item[Equidad y arranque en frío.]
     Incorporar mecanismos que den visibilidad al profesorado con poco historial (desde la exploración controlada en el ranking hasta perfiles basados en su producción doctoral) y métricas de equidad en el banco de pruebas.
     \item[Ampliación del perímetro.]
     Extender el corpus al conjunto de la \gls{upm} y validar la portabilidad del flujo en otra institución, idealmente con un portal de estructura distinta, para convertir la generalización argumentada (Sección~\ref{sec:disc-generalizacion}) en generalización demostrada.
     Esta ampliación es ante todo un ejercicio de planificación de capacidad: dado el coste de generación medido (Sección~\ref{sec:disc-coste-llm}), procesar toda la universidad exige dimensionar de antemano el cómputo necesario, ya sea ampliando los recursos propios o recurriendo a un servicio de mayor potencia (esta última opción en tensión con el requisito de soberanía de \ref{req:soberania}).
     Con esa previsión, el salto de escala es manejable y no un obstáculo de fondo.
+    \item[Filtros y controles en la interfaz.]
+    El prototipo devuelve hoy a los investigadores más afines con independencia de su adscripción. Aunque el sentido del sistema sea precisamente derribar las barreras de ubicación y departamento (más aún con la generalización del trabajo en remoto), un estudiante puede preferir restringir la búsqueda a su propia escuela, a un departamento concreto u otros criterios.
+    Ofrecer filtros opcionales (escuela, departamento, idioma de la actividad\ldots) sobre la lista de resultados es una mejora de usabilidad inmediata que no altera el motor de recuperación.
     \item[Integración institucional.]
     Llevar el prototipo a un servicio: autenticación corporativa, retroalimentación de los usuarios como señal de mejora continua y conexión con los procesos reales de oferta y asignación de trabajos.
     \item[Base de conocimiento conversacional y agentes.]
