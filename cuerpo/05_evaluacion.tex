@@ -34,8 +34,12 @@ Para que la comparación entre estrategias sea justa, el conjunto de candidatos 
 
 En la implementación, la consulta no se toma literalmente del trabajo: para acercarla a lo que escribiría un estudiante y, sobre todo, para reducir el solapamiento léxico con el perfil del propio tutor, cada descripción se reformula automáticamente en una propuesta breve en primera persona.
 Distinguimos así dos fuentes de consulta sobre la misma verdad de referencia: el \emph{estándar de oro}, formado por los textos originales de los trabajos, y el \emph{estándar de plata}, formado por las propuestas reformuladas que de ellos se derivan y que constituyen la entrada por defecto de la evaluación.
+La nomenclatura sigue la convención de \emph{dato crudo} frente a \emph{dato procesado}: el de oro es el texto original del trabajo sin alterar y el de plata el texto sintético que de él se deriva. En ambos casos la verdad de referencia (el supervisor real) es idéntica, de modo que oro y plata no son dos verdades de distinta fiabilidad, sino dos maneras de construir la consulta sobre una misma verdad.
+El de plata, por aproximar mejor lo que escribiría un estudiante, es la entrada por defecto y el escenario principal de la evaluación.
 La reformulación sigue un esquema de \emph{\gls{llm} como juez}: tres \glspl{llm} locales distintos generan, cada uno, una propuesta candidata, y un panel formado por esos mismos modelos las puntúa de $1$ a $5$ y selecciona la de mayor nota media, deshaciendo los empates al azar.
-El proceso es reproducible (semilla fija) y se aplica sobre un conjunto de referencia de 500 trabajos reales (250 \glspl{tfg} y 250 \glspl{tfm}).
+El proceso es reproducible (semilla fija) y se aplica sobre un conjunto de referencia de 500 trabajos reales (250 \glspl{tfg} y 250 \glspl{tfm}) seleccionados de la forma siguiente: se eligió un conjunto de investigadores repartido entre las cuatro escuelas y sus departamentos \emph{de forma proporcional al tamaño total de cada escuela} (para que la muestra fuese representativa y ninguna escuela quedara infrarrepresentada) y, para cada investigador seleccionado, se escogieron sus \glspl{tfg} y \glspl{tfm} más interesantes, dando prioridad a los que disponían de resumen y palabras clave.
+Un trabajo sin resumen público no se consideraba, por interesante que pareciera su título, bajo la premisa razonable de que quien hace público un trabajo cuida su resumen.
+El conjunto resultante de 500 registros se publica en el repositorio, lo que hace la evaluación reproducible con independencia del criterio concreto de selección.
 El Anexo~\ref{annex:ejemplo-eval} ilustra este proceso paso a paso sobre un trabajo concreto.
 
 Este diseño formaliza, además, el \emph{retroanálisis} previsto en el plan de evaluación del proyecto de innovación educativa en que se enmarca el trabajo (Sección~\ref{sec:contexto}), que contempla la «precisión de las recomendaciones en retroanálisis» como métrica de éxito del sistema: las cifras de este capítulo son, por tanto, directamente reportables al proyecto.
@@ -116,10 +120,18 @@ El protocolo fija las condiciones comunes a todas las estrategias:
 El marco propuesto es objetivo y reproducible, pero no está libre de sesgos, que conviene declarar:
 
 \begin{mydescription}
-    \item[Optimismo absoluto por solapamiento.]\duda{Creo que esto lo estoy evitando con lo de los resúmenes por año} Los perfiles agregan la actividad completa de cada investigador, que puede incluir evidencia relacionada con el propio trabajo usado como consulta.
+    \item[Optimismo absoluto por solapamiento.]
+    \duda{Creo que esto lo estoy evitando con lo de los resúmenes por año}
+    Los perfiles agregan la actividad completa de cada investigador, que puede incluir evidencia relacionada con el propio trabajo usado como consulta.
     Las cifras absolutas deben leerse, por tanto, como cota optimista; el valor del marco está en la \emph{comparación relativa} entre estrategias, que se realiza en condiciones idénticas.
-    \item[Un único relevante por consulta.] Otros investigadores podrían ser tutores igualmente válidos para la misma idea; al contar solo al supervisor real, las métricas son cotas inferiores de la utilidad percibida.
-    \item[Sesgo de historial.]\duda{No deberíamos tener problemas con esto ahora mismo, solo usamos las tutorizaciones anteriores para evaluación, no para el proceso de recomendación} La verdad de referencia solo contiene investigadores que ya han supervisado trabajos, por lo que no mide la capacidad del sistema para recomendar a profesorado novel (problema de arranque en frío, que afecta por igual a todas las estrategias comparadas).
-    \item[Deriva temporal.] Consultas y perfiles proceden del mismo corte temporal del corpus; el rendimiento con ideas genuinamente nuevas podría diferir.
-\pendiente{Si da tiempo, complementar con una pequeña validación cualitativa con consultas redactadas por estudiantes reales.}
+    \item[Un único relevante por consulta.]
+    Otros investigadores podrían ser tutores igualmente válidos para la misma idea; al contar solo al supervisor real, las métricas son cotas inferiores de la utilidad percibida.
+    \item[Sesgo de historial.]
+    \duda{No deberíamos tener problemas con esto ahora mismo, solo usamos las tutorizaciones anteriores para evaluación, no para el proceso de recomendación}
+    La verdad de referencia solo contiene investigadores que ya han supervisado trabajos, por lo que no mide la capacidad del sistema para recomendar a profesorado novel (problema de arranque en frío, que afecta por igual a todas las estrategias comparadas).
+    \item[Desajuste temporal entre la consulta histórica y el perfil vigente.]
+    La verdad de referencia usa trabajos supervisados a lo largo de varios años, pero cada investigador se representa con una \emph{única biografía vigente} que prioriza su actividad reciente (Sección~\ref{sec:met-indexacion}).
+    Un trabajo dirigido hace años puede corresponder a una línea que el investigador ha abandonado después: aunque entonces fuera el supervisor idóneo, hoy su biografía ya no la refleja y la consulta se contabiliza como fallo.
+    Conviene subrayar que esto es una limitación \emph{de la evaluación}, no del sistema en uso: para atender a un estudiante actual, una biografía que prioriza lo reciente es justamente lo deseable, pues si un investigador es hoy experto en un tema, aparecerá en ella.
+    Mitigar el desajuste en la evaluación exigiría indexar también varios resúmenes anuales por investigador (los últimos $N$) y deduplicar o consolidar los resultados en el momento de la recuperación, lo que queda como trabajo futuro (Sección~\ref{sec:conc-futuro}).
 \end{mydescription}
