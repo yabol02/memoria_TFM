@@ -366,7 +366,7 @@ A modo de curiosidad, en la zona izquierda se pueden ver todas las ejecuciones d
   \caption{El \gls{dag} del pipeline en la interfaz de Airflow: las siete fases encadenadas (la fase 5 en paralelo con la cadena 6-7) que orquestan la preparación del corpus de forma desatendida e incremental.}
   \label{fig:airflow}
 \end{figure}
-Los índices resultantes pueden \textbf{verificarse} en el panel de Qdrant (colecciones \texttt{researcher\_keywords} y \texttt{researcher\_summaries}) y el grafo en Memgraph Lab, ambos accesibles bajo la misma subruta.
+Los índices resultantes pueden \emph{verificarse} en el panel de Qdrant (colecciones \texttt{researcher\_keywords} y \texttt{researcher\_summaries}) y el grafo en Memgraph Lab, ambos accesibles bajo la misma subruta.
 La Figura~\ref{fig:qdrant} reproduce ese panel: las dos colecciones que sostienen la búsqueda, \texttt{researcher\_keywords} (índice disperso BM42, 709 puntos) y \texttt{researcher\_summaries} (vector denso de la biografía más un vector disperso de dominios, 754 puntos), con un punto por investigador en cada una. Permite comprobar de un vistazo el tamaño efectivo de cada índice y su correspondencia con las cifras del corpus (Sección~\ref{sec:res-corpus}).
 
 \begin{figure}[htbp]
