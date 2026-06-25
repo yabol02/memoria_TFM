@@ -72,11 +72,16 @@ Tres principios de diseño atraviesan todo el flujo:
     \item[Neutralidad tecnológica.] Las etapas se definen por contratos de entrada/salida, no por herramientas. Cada una admite implementaciones alternativas (otro almacén, otro modelo de embedding) sin alterar el diseño.
 \end{mydescription}
 
+Conviene distinguir desde el principio dos artefactos que el flujo produce y que constituyen aportaciones diferenciadas, para que el lector no los confunda.
+El \textbf{grafo de conocimiento} (etapa de estructuración) \emph{organiza} la actividad en entidades y relaciones (investigadores, publicaciones, proyectos, trabajos supervisados, asignaturas) y hace naturales las preguntas de conexión y vecindad.
+La \textbf{representación semántica} (etapas de enriquecimiento e indexación) \emph{transforma} esa actividad en biografías, dominios de especialización y vectores localizables en un espacio de búsqueda.
+En síntesis: el grafo dice \emph{cómo se relaciona} la evidencia y la representación semántica la hace \emph{buscable por afinidad}.
+
 \section{Adquisición}
 \label{sec:met-adquisicion}
 
-La primera etapa convierte el portal público en una colección local y versionada, comprende dos pasos.
-El primero es el \emph{censo}: descubrir los investigadores recorriendo las unidades organizativas del portal (escuelas y departamentos), dado que no existe un listado descargable.\duda{Esto es mentira, es justo lo que descargo, pongo otra cosa mejor?}
+La primera etapa convierte el portal público en una colección local y versionada y comprende dos pasos.
+El primero es el \emph{censo}: construir un censo operativo de investigadores a partir de las vistas públicas disponibles en el portal, recorriendo el Portal Científico y recogiendo cada uno de los miembros.
 El segundo es la \emph{descarga} de las dos vistas públicas de cada investigador, tanto el perfil (datos de filiación, posiciones, temas declarados), como su actividad (publicaciones, proyectos, trabajos supervisados).
 
 La descarga se realiza de forma concurrente pero acotada, con reintentos ante fallos transitorios y de manera incremental: las páginas ya adquiridas no se vuelven a solicitar salvo refresco programado.
@@ -84,7 +89,7 @@ La descarga se realiza de forma concurrente pero acotada, con reintentos ante fa
 El resultado se conserva tal cual se recibió, sin transformación alguna, como capa inmutable del sistema.
 
 
-\section{Estructuración: el perfil como grafo}
+\section{Estructuración de la actividad en un grafo de conocimiento}
 \label{sec:met-grafo}
 
 La segunda etapa transforma el marcado semiestructurado en un modelo de datos explícito.
@@ -98,11 +103,11 @@ Durante esta etapa se aplica una limpieza \emph{conservadora} del texto: solo se
 \section{Consolidación y enriquecimiento del perfil}
 \label{sec:met-enriquecimiento}
 
-La tercera etapa produce, para cada investigador, un \emph{documento de perfil} autocontenido que agrega su evidencia: posiciones ocupadas, temas normalizados (unificación de variantes y duplicados), publicaciones con sus resúmenes, proyectos recientes, trabajos supervisados en el último periodo y asignaturas impartidas.
+La tercera etapa produce, para cada \gls{pdi}, un \emph{documento de perfil} autocontenido que agrega toda la evidencia pública disponible: su producción científica (publicaciones con sus resúmenes), proyectos recientes, trabajos supervisados, temas declarados, filiaciones y posiciones ocupadas y, cuando está disponible, su actividad docente (asignaturas impartidas).
+Conviene recordar que un \gls{pdi} es Personal Docente \emph{e} Investigador: aunque la recomendación se apoya principalmente en la actividad investigadora y de supervisión, la estructura del perfil conserva también esa dimensión \emph{docente}, de modo que ambas vertientes queden representadas.
 Este documento es la unidad de trabajo de todo lo que sigue.
-\pendiente{Un PDI es Personal Docente e Investigador. En general, tenemos que hacer más hincapié en estas dos vertientes (en el código también!!!)}
 
-Sobre él se aplica el enriquecimiento lingüístico mediante un modelo de lenguaje operado localmente.
+Sobre él se aplica el enriquecimiento lingüístico mediante un modelo de lenguaje operado localmente, en coherencia con el requisito de despliegue en infraestructura propia (\ref{req:soberania}).
 La producción científica se agrupa cronológicamente y cada año se sintetiza \emph{de forma autónoma}, sin arrastre de unos periodos a otros, en un par de artefactos complementarios:
 
 \begin{itemize}
@@ -126,11 +131,12 @@ Este esquema de resumen recurrente ponderado por recencia sigue la práctica rev
 La biografía vigente y sus dominios resultantes se persisten junto al perfil.
 
 Sobre ellos se proyecta cada investigador a un espacio de representación buscable.
-Atendiendo al análisis del Capítulo~\ref{ch:sota}, se mantienen deliberadamente \emph{dos}\duda{CUIDADO, esto es ahora y no estoy seguro del todo que lo haya dejado así, que cambié cosas} representaciones complementarias por investigador:
+Atendiendo al análisis del Capítulo~\ref{ch:sota}, se mantienen deliberadamente \emph{dos} representaciones complementarias por investigador:
 
 \begin{itemize}
     \item Una \textbf{representación léxica dispersa} de sus vocabularios temáticos (temas declarados y dominios extraídos), en la que cada componente es un término ponderado por su importancia contextual.
     Es eficiente e \emph{interpretable}, permite mostrar qué términos han producido cada coincidencia.
+    Conservarla no responde solo a la transparencia: la señal léxica sigue siendo una línea base muy competitiva que, en ciertas tareas de recuperación, iguala o supera a los \emph{embeddings} densos (Sección~\ref{sec:sota-lexica}), de modo que mantenerla junto a la densa aporta robustez, no solo explicabilidad.
     \item Una \textbf{representación semántica densa} de su biografía vigente, que captura proximidad conceptual más allá de la superficie léxica y de la lengua en que se exprese la consulta.
 \end{itemize}
 
@@ -140,7 +146,7 @@ La consulta del estudiante se proyectará a estos mismos espacios para realizar 
 \section{Emparejamiento}
 \label{sec:met-emparejamiento}
 
-La fase en línea ofrece cuatro estrategias de emparejamiento\duda{CUIDADO, esto lo voy a cambiar}, que se corresponden con las familias revisadas en el estado del arte (Tabla~\ref{tab:posicionamiento}) y que el marco de evaluación comparará en igualdad de condiciones:
+La fase en línea ofrece cuatro estrategias de emparejamiento, robustas al desajuste léxico y translingüe entre consulta y perfil (requisito \ref{req:emparejamiento}), que se corresponden con las familias revisadas en el estado del arte (Tabla~\ref{tab:posicionamiento}) y que el marco de evaluación comparará en igualdad de condiciones:
 
 \begin{enumerate}
     \item \textbf{Léxica con interpretación.} Un modelo de lenguaje extrae de la idea del estudiante dos listas de términos en el registro de los perfiles (términos generales del área y términos específicos de método). Cada lista lanza una búsqueda dispersa y ambas se fusionan por RRF (Ecuación~\ref{eq:rrf}).
@@ -148,6 +154,8 @@ La fase en línea ofrece cuatro estrategias de emparejamiento\duda{CUIDADO, esto
     \item \textbf{Semántica enriquecida.} Antes de proyectar, un modelo de lenguaje reformula la idea: la traduce al registro técnico y la expande con terminología estrechamente relacionada, con la instrucción explícita de no introducir temas que el estudiante no haya pedido.
     \item \textbf{Híbrida.} Se lanzan en paralelo una señal léxica (términos extraídos contra los dominios de especialización) y una semántica (idea enriquecida contra las biografías) y ambas listas se fusionan por RRF.
 \end{enumerate}
+
+A estas cuatro estrategias del prototipo, el marco de evaluación añade una quinta de \emph{control} (léxica directa): lanza la búsqueda dispersa con el texto de la consulta tal cual, sin que el modelo de lenguaje extraiga ni reformule nada, lo que aísla la contribución del \gls{llm} y actúa como línea base clásica de coincidencia léxica (Sección~\ref{sec:eval-estrategias}).
 
 En conjunto, el sistema emplea la \gls{rrf} (Ecuación~\ref{eq:rrf}) en dos puntos: para fusionar las dos listas de términos de la consulta en el modo léxico y para fusionar las señales léxica y semántica en el modo híbrido.
 En todas ellas el resultado es una lista ordenada de investigadores con su puntuación normalizada y sus evidencias asociadas.
