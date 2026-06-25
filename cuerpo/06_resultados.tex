@@ -22,7 +22,8 @@ La Figura~\ref{fig:arquitectura} muestra la arquitectura completa y la Tabla~\re
       ext/.style={draw=black!60, fill=black!4, thick, rounded corners=3pt, align=center, minimum height=13mm, text width=27mm, inner sep=2mm},
       infra/.style={draw=black!50, fill=orange!8, thick, rounded corners=3pt, align=center, minimum height=10mm, inner sep=2mm},
       flecha/.style={-{Stealth[length=2.6mm]}, semithick, draw=black!75},
-      flechad/.style={{Stealth[length=2.6mm]}-{Stealth[length=2.6mm]}, semithick, draw=black!75}
+      flechad/.style={{Stealth[length=2.6mm]}-{Stealth[length=2.6mm]}, semithick, draw=black!75},
+      etiq/.style={font=\scriptsize\itshape, text=black!60, fill=white, inner sep=1.2pt}
     ]
     % Fila 1: ingesta y estructuración
     \node[ext] (portal) {\textbf{Portal Científico UPM}\\[0.5mm] \footnotesize Fuente pública};
@@ -31,10 +32,10 @@ La Figura~\ref{fig:arquitectura} muestra la arquitectura completa y la Tabla~\re
     \node[proc, right=of minio1] (parsing) {\textbf{Parseo y modelado}\\[0.5mm] \footnotesize Scrapy + Pydantic};
     \node[store, right=of parsing] (memgraph) {\textbf{Memgraph}\\[0.5mm] \footnotesize Grafo de actividad};
 
-    \draw[flecha] (portal) -- (descarga);
-    \draw[flecha] (descarga) -- (minio1);
-    \draw[flecha] (minio1) -- (parsing);
-    \draw[flecha] (parsing) -- (memgraph);
+    \draw[flecha] (portal) -- node[etiq]{HTTPS} (descarga);
+    \draw[flecha] (descarga) -- node[etiq]{S3} (minio1);
+    \draw[flecha] (minio1) -- node[etiq]{S3} (parsing);
+    \draw[flecha] (parsing) -- node[etiq]{Bolt/Cypher} (memgraph);
 
     % Fila 2 (sentido inverso): enriquecimiento e indexación
     \node[proc, below=14mm of memgraph] (consol) {\textbf{Resúmenes anuales}\\[0.5mm] \footnotesize Ollama + Agno};
@@ -42,19 +43,19 @@ La Figura~\ref{fig:arquitectura} muestra la arquitectura completa y la Tabla~\re
     \node[proc, below=10mm of minio1] (indexa) {\textbf{Fusión e indexación}\\[0.5mm] \footnotesize Biografía vigente, dispersa y densa};
     \node[store, below=14mm of descarga] (qdrant) {\textbf{Qdrant}\\[0.5mm] \footnotesize Índices disperso y denso};
 
-    \draw[flecha] (memgraph) -- (consol);
-    \draw[flecha] (consol) -- (minio2);
-    \draw[flechad] (minio2) -- (indexa);
-    \draw[flecha] (indexa) -- (qdrant);
+    \draw[flecha] (memgraph) -- node[etiq]{Bolt} (consol);
+    \draw[flecha] (consol) -- node[etiq]{S3} (minio2);
+    \draw[flecha] (minio2) -- node[etiq]{S3} (indexa);
+    \draw[flecha] (indexa) -- node[etiq]{gRPC} (qdrant);
 
     % Fila 3: servicio en línea
     \node[ext, below=18mm of qdrant] (estudiante) {\textbf{Estudiante}\\[0.5mm] \footnotesize navegador web};
     \node[proc, below=16mm of indexa] (flask) {\textbf{\proyecto}\\[0.5mm] \footnotesize Flask + Gunicorn};
     \node[proc, below=15mm of minio2] (agentes) {\textbf{Agentes \gls{llm}}\\[0.5mm] \footnotesize Ollama (Qwen2.5)};
 
-    \draw[flechad] (estudiante) -- (flask);
-    \draw[flechad] (flask) -- (agentes);
-    \draw[flechad] (flask) -- (qdrant);
+    \draw[flechad] (estudiante) -- node[etiq]{HTTPS · Nginx} (flask);
+    \draw[flechad] (flask) -- node[etiq]{Ollama API} (agentes);
+    \draw[flechad] (flask) -- node[etiq]{gRPC} (qdrant);
 
     % Infraestructura transversal
     \node[infra, below=12mm of flask, text width=120mm] (infra) {\textbf{Orquestación y despliegue:} Airflow (ejecución periódica del pipeline) · Docker Compose (todos los servicios) · Nginx (proxy inverso) íntegramente \emph{on-premise}};
@@ -67,11 +68,19 @@ La Figura~\ref{fig:arquitectura} muestra la arquitectura completa y la Tabla~\re
           fit=(estudiante)(flask)(agentes),
           label={[black!60, font=\footnotesize\bfseries]180:Servicio}] {};
     \end{scope}
+
+    \node[below=5mm of infra, font=\footnotesize, align=center, text width=120mm, draw=black!25,
+          rounded corners=2pt, fill=black!2, inner sep=4pt] (leyenda)
+      {\textbf{Líneas:}\quad flecha simple ($\rightarrow$): flujo de datos por lotes
+       \\flecha doble ($\leftrightarrow$): llamada de servicio (petición/respuesta).\\
+       Las etiquetas indican el protocolo o interfaz de cada comunicación.};
     \end{tikzpicture}
   }
-  \caption{Arquitectura tecnológica del sistema.
+  \caption{Arquitectura tecnológica del sistema y comunicación entre componentes.
   Las filas superiores implementan la preparación del corpus (Figura~\ref{fig:flujo}); la inferior, la atención de consultas.
-  Los almacenes (MinIO, Memgraph, Qdrant) materializan los artefactos persistentes entre etapas.}
+  Los almacenes (MinIO, Memgraph, Qdrant) materializan los artefactos persistentes entre etapas.
+  Cada arista se etiqueta con el protocolo o interfaz de la comunicación (HTTPS, S3, Bolt/Cypher, gRPC, API de Ollama) y su trazo distingue el flujo de datos por lotes de las llamadas de servicio (véase la leyenda).
+  Toda la plataforma se orquesta con Airflow y se despliega \emph{on-premise} sobre Docker Compose tras un proxy inverso Nginx.}
   \label{fig:arquitectura}
 \end{figure}
 
@@ -179,7 +188,8 @@ La colección dispersa \texttt{researcher\_\allowbreak keywords} (fase 5) está 
 La colección \texttt{researcher\_\allowbreak summaries} (fase 7) mantiene un punto por \gls{pdi} y, al concluir, contiene un total de 754, algo más que los 709 anteriores.
 La diferencia no es un error, sino consecuencia de que ambas colecciones se nutren de fuentes distintas: el índice disperso (fase 5) parte de los \emph{temas declarados del investigador} en el portal, mientras que la biografía y los dominios (fases 6-7) se sintetizan a partir de su \emph{producción científica}.
 Hay, por tanto, investigadores sin temas declarados pero con publicaciones resumibles que quedan fuera del índice léxico y sí reciben representación semántica.
-El índice denso acaba cubriendo algo más de profesorado que el léxico, lo que juega a favor de basar la representación en la actividad real y no en la \emph{autodeclaración}.
+Este desajuste pone en valor la aproximación semántica: al derivar la representación de la \emph{actividad real} del investigador (su producción científica) y no de su \emph{autodeclaración}, el índice denso no depende de que cada \gls{pdi} mantenga al día los temas de su ficha y alcanza a quienes tienen producción pero no han declarado tema alguno.
+De ahí que acabe cubriendo algo más de profesorado que el léxico, lo que refuerza la decisión de basar la representación en lo que el investigador \emph{hace} y no en lo que \emph{declara}.
 
 La Tabla~\ref{tab:cobertura-fase7} y la Figura~\ref{fig:cobertura} desglosan esta cobertura semántica por escuela.
 Biografía y dominios cubren exactamente el mismo conjunto (toda biografía generada lleva asociados sus dominios) y la cobertura por escuela reproduce el patrón de los temas declarados de la misma tabla (Tabla~\ref{tab:cobertura-fase7}): muy alta en la \gls{etsit} y la \gls{etsist} y en torno a la mitad en la \gls{etsisi}, reflejo de lo completo que es el dato público de cada escuela en el portal.
@@ -230,6 +240,8 @@ Conviene contrastar este perímetro con la dimensión total del censo: el grafo 
 
 Construir ese corpus tiene, además, un coste temporal que conviene cuantificar.
 La Tabla~\ref{tab:tiempos-fases} recoge la duración aproximada de cada fase en una ejecución completa sobre el perímetro, realizada en el servidor de despliegue.
+Estas duraciones deben leerse a la luz del hardware sobre el que se midieron: el servidor cuenta con 2~\glspl{cpu} Intel Xeon Gold 5418Y (96 hilos), 503\,GB de memoria y 2~\glspl{gpu} NVIDIA L40 de 48\,GB, cuyas características completas (y las de la estación de desarrollo local) se detallan en el Anexo~\ref{annex:despliegue} (Tabla~\ref{tab:hardware}).
+Gracias a estos recursos se puede acelerar bastante todo el proceso de generación de los perfiles ya que, en local, el tiempo se disparaba aún para hacer pruebas.
 
 \begin{table}[htbp]
   \centering
