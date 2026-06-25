@@ -56,7 +56,7 @@ Se confirma así la barrera de partida: el portal está pensado para la consulta
 Convertir esa fuente en un activo operativo exige, por tanto, un esfuerzo previo considerable: descubrir el censo de investigadores, descargar de forma respetuosa y reproducible las miles de páginas y transformar un marcado pensado para presentación visual en datos estructurados.
 Es un trabajo de ingeniería poco vistoso, pero es la condición de posibilidad de todo lo demás.
 Su ausencia explica que muchos intentos similares no pasen de la idea.
-Esta barrera motiva el requisito~\ref{req:adquisicion} y se aborda en el objetivo~\ref{obj:adquisicion}.
+Esta barrera motiva el primer requisito de diseño del sistema: la \emph{adquisición automatizada, incremental y reproducible} de los datos del portal (\ref{req:adquisicion}), que se aborda mediante el objetivo~\ref{obj:adquisicion}.
 
 \section{Heterogeneidad y ruido}
 \label{sec:problema-heterogeneidad}
@@ -86,13 +86,33 @@ La mediana, 17 publicaciones por investigador, queda muy por debajo de la media 
   \label{fig:densidad}
 \end{figure}
 
-Los temas de investigación se expresan en vocabularios no controlados, con duplicados, variantes morfológicas y mezcla de idiomas.
-Los resúmenes de las publicaciones presentan formatos idiosincrásicos que requieren una limpieza cuidadosa para no introducir ruido en las representaciones semánticas posteriores.
+A la disparidad de densidad se suma el ruido en el contenido de cada campo.
+Los temas de investigación se expresan en vocabularios no controlados, con duplicados, variantes morfológicas y mezcla de idiomas; los resúmenes de las publicaciones presentan formatos idiosincrásicos (cuando no contienen, directamente, metadatos de la fuente en su lugar); y conviven publicaciones duplicadas e incluso fragmentos bibliográficos capturados por error como publicaciones propias.
+La Tabla~\ref{tab:ruido} recoge ejemplos reales (anonimizados) de estos fenómenos, extraídos del propio perímetro: todos ellos deben tolerarse o corregirse durante una limpieza cuidadosa antes de construir las representaciones semánticas posteriores, para no contaminarlas.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Ejemplos reales (anonimizados) de heterogeneidad y ruido observados en el perímetro. Los nombres propios se han sustituido por marcadores; el resto del dato se reproduce literalmente.}
+    \label{tab:ruido}
+    \footnotesize
+    \begin{tabularx}{\textwidth}{l X}
+        \toprule
+        \rowcolor{upmblue!8} \colhead{Fenómeno} & \colhead{Ejemplo real (anonimizado)} \\
+        \midrule
+        Densidad muy dispar & El Investigador~A reúne 726 publicaciones (la más antigua, de 1999), mientras que el Investigador~B acumula solo 15 repartidas a lo largo de 31 años (1994--2025). \\
+        Temas duplicados y variantes & Entre los temas de un mismo investigador conviven \texttt{cord-1} y \texttt{cord-19}, o el solapamiento de \texttt{knowledge graph}, \texttt{ontology} y \texttt{linked data}. \\
+        Vocabulario no controlado y multilingüe & Una misma publicación se etiqueta a la vez como \texttt{computer science (all)}, \texttt{computer science (miscellaneous)}, \texttt{general computer science} y \texttt{computer science, theory \& methods}, junto al portugués \texttt{ciência da computação} y \texttt{administração pública e de empresas}. \\
+        Publicaciones duplicadas & El registro «Repository of indexed ROs» aparece dos veces: una fechada en 2015 y otra sin año válido. \\
+        Descripciones que no son resúmenes & El campo de descripción contiene a menudo metadatos de la fuente en lugar de un resumen: \texttt{Deliverable}, \texttt{Proceedings of ICTERI} o \texttt{International Semantic Web Conference (Posters \& Demos)}. \\
+        Citas capturadas como publicaciones & Fragmentos bibliográficos colados como publicaciones propias, p.\,ej. «[Apellido], [Inicial]., y [Apellido], [Inicial]. (2017a)», y fechados con un año inválido (0). \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
 
 Esta heterogeneidad tiene una consecuencia metodológica clara: la representación de cada investigador debe tolerar perfiles incompletos y agregar toda la evidencia disponible (publicaciones, proyectos, temas declarados) en lugar de depender de un único campo bien cumplimentado.
-Esta barrera motiva el requisito~\ref{req:normalizacion} y se aborda en los objetivos~\ref{obj:adquisicion} y~\ref{obj:perfilado}.
+Esta barrera motiva el segundo requisito de diseño: \emph{perfiles normalizados} que agreguen toda la evidencia disponible y toleren datos incompletos (\ref{req:normalizacion}), que se aborda mediante los objetivos~\ref{obj:adquisicion} y~\ref{obj:perfilado}.
 
-\section{La brecha de vocabulario entre estudiante e investigador}
+\section{La brecha de vocabulario entre estudiante y PDI}
 \label{sec:problema-vocabulario}
 
 La dificultad principal del emparejamiento es lingüística.
@@ -100,18 +120,18 @@ Un estudiante describe su interés en lenguaje coloquial, habitualmente en espa�
 La actividad de un investigador, en cambio, queda registrada en el lenguaje de las publicaciones: técnico, mayoritariamente en inglés y orientado al método (\emph{misinformation detection}, \emph{transformer-based fact verification}).
 Entre ambos registros media una doble brecha (tanto de idioma como de vocabulario) que hace fracasar la coincidencia léxica directa: los términos del estudiante, literalmente, no aparecen en el perfil del tutor idóneo.
 
-Este fenómeno, identificado desde los orígenes de la recuperación de información como el \emph{problema del vocabulario} \citep{furnas1987vocabulary} (la constatación empírica de que dos personas eligen el mismo término para referirse a un mismo objeto con una probabilidad inferior al 20\%), es aquí especialmente severo por su carácter multilingüe, lo que constituye la razón técnica por la que una solución ingenua basada en búsqueda de palabras clave resulta insuficiente\duda{No me gusta esta afirmación, no deberíamos poder afirmar esto tan pronto}.
+Este fenómeno, identificado desde los orígenes de la recuperación de información como el \emph{problema del vocabulario} \citep{furnas1987vocabulary} (la constatación empírica de que dos personas eligen el mismo término para referirse a un mismo objeto con una probabilidad inferior al 20\%), es aquí especialmente severo por su carácter multilingüe, lo que anticipa una limitación importante de las aproximaciones basadas únicamente en coincidencia léxica.
 Abordarlo exige representaciones que capturen proximidad semántica más allá de la superficie léxica, o mecanismos que traduzcan y expandan la consulta del estudiante hacia el registro de los perfiles, idealmente, ambas cosas (se abordan en el Capítulo~\ref{ch:sota}).
-Esta barrera motiva el requisito~\ref{req:emparejamiento} y se aborda en los objetivos~\ref{obj:perfilado} y~\ref{obj:emparejamiento}.
+Esta barrera motiva el tercer requisito de diseño: un \emph{emparejamiento robusto al desajuste léxico y translingüe} entre consulta y perfil (\ref{req:emparejamiento}), que se aborda mediante los objetivos~\ref{obj:perfilado} y~\ref{obj:emparejamiento}.
 
 \section{La ausencia de verdad de referencia}
 \label{sec:problema-groundtruth}
 
 Supongamos construido el sistema: ¿cómo saber si recomienda bien? Evaluar un recomendador de tutores requiere pares (consulta, tutor correcto), y obtenerlos por etiquetado manual es costoso y delicado: exigiría que expertos conocedores de toda la plantilla juzgaran, para cada consulta, qué investigadores son pertinentes, convirtiendo el problema en un juicio subjetivo, caro y difícilmente reproducible.
 
-Esta carencia de verdad de referencia es, a nuestro juicio,\duda{Puedo poner valoraciones personales?} una de las razones de fondo por las que las herramientas de este tipo rara vez superan la fase de demostración: sin evaluación objetiva no hay forma de comparar alternativas ni de justificar mejoras y el desarrollo se estanca en la anécdota.
+Esta carencia de verdad de referencia constituye una limitación metodológica relevante para este tipo de herramientas: sin evaluación objetiva se dificulta su validación, su comparación con alternativas y su mejora sistemática y el desarrollo tiende a estancarse en la anécdota.
 Este trabajo propone una salida: explotar la \emph{historia real de supervisión} (los trabajos que cada investigador ha dirigido efectivamente) como fuente automática de \emph{pares consulta-respuesta} (Capítulo~\ref{ch:evaluacion}).
-Esta barrera motiva el requisito~\ref{req:evaluacion} y se aborda en el objetivo~\ref{obj:evaluacion}.
+Esta barrera motiva el cuarto requisito de diseño: una \emph{evaluación objetiva y reproducible sin etiquetado manual} (\ref{req:evaluacion}), que se aborda mediante el objetivo~\ref{obj:evaluacion}.
 
 \section{Restricciones institucionales: soberanía del dato y coste}
 \label{sec:problema-institucional}
@@ -123,7 +143,7 @@ A ello se suma la exigencia práctica de que el sistema completo sea operable po
 Hasta hace muy poco, esta restricción era casi eliminatoria: la calidad necesaria para interpretar consultas y sintetizar perfiles solo la ofrecían modelos propietarios accesibles por \gls{api}.
 La reciente madurez de los modelos de lenguaje abiertos ejecutables en local (y de los ecosistemas para servirlos) cambia ese panorama y abre, por primera vez, la posibilidad de un sistema de esta naturaleza íntegramente \emph{on-premise}.
 Este trabajo adopta esa vía y la somete a prueba.
-Esta barrera motiva el requisito~\ref{req:soberania} y se aborda en el objetivo~\ref{obj:prototipo}.
+Esta barrera motiva el quinto y último requisito de diseño: el \emph{despliegue íntegro en infraestructura propia}, con modelos abiertos y coste marginal nulo por consulta (\ref{req:soberania}), que se aborda mediante el objetivo~\ref{obj:prototipo}.
 
 \section{Síntesis: requisitos de la solución}
 \label{sec:problema-requisitos}
