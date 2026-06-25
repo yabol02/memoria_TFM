@@ -40,6 +40,7 @@ La reformulación sigue un esquema de \emph{\gls{llm} como juez}: tres \glspl{ll
 El proceso es reproducible (semilla fija) y se aplica sobre un conjunto de referencia de 500 trabajos reales (250 \glspl{tfg} y 250 \glspl{tfm}) seleccionados de la forma siguiente: se eligió un conjunto de investigadores repartido entre las cuatro escuelas y sus departamentos \emph{de forma proporcional al tamaño total de cada escuela} (para que la muestra fuese representativa y ninguna escuela quedara infrarrepresentada) y, para cada investigador seleccionado, se escogieron sus \glspl{tfg} y \glspl{tfm} más interesantes, dando prioridad a los que disponían de resumen y palabras clave.
 Un trabajo sin resumen público no se consideraba, por interesante que pareciera su título, bajo la premisa razonable de que quien hace público un trabajo cuida su resumen.
 El conjunto resultante de 500 registros se publica en el repositorio, lo que hace la evaluación reproducible con independencia del criterio concreto de selección.
+Este tamaño permite comparar estrategias de forma estable manteniendo un coste experimental asumible con modelos de lenguaje locales, cuya inferencia es considerablemente más lenta que la de los servicios alojados.
 El Anexo~\ref{annex:ejemplo-eval} ilustra este proceso paso a paso sobre un trabajo concreto.
 
 Este diseño formaliza, además, el \emph{retroanálisis} previsto en el plan de evaluación del proyecto de innovación educativa en que se enmarca el trabajo (Sección~\ref{sec:contexto}), que contempla la «precisión de las recomendaciones en retroanálisis» como métrica de éxito del sistema: las cifras de este capítulo son, por tanto, directamente reportables al proyecto.
@@ -108,7 +109,7 @@ La estrategia de control (léxica directa) lanza la búsqueda dispersa con el te
 El protocolo fija las condiciones comunes a todas las estrategias:
 
 \begin{itemize}
-    \item \textbf{Profundidad de recuperación}: cada estrategia devuelve sus $25$ primeros candidatos, profundidad que cubre el mayor de los cortes $k$ evaluados.
+    \item \textbf{Profundidad de recuperación}: cada estrategia devuelve sus $25$ primeros candidatos, profundidad que cubre el mayor de los cortes $k$ evaluados y que se corresponde con el rango razonable de inspección humana en una herramienta de este tipo. Igual que ante una búsqueda en un buscador web, un estudiante revisa los primeros $10$ o $25$ tutores sugeridos (como muchísimo), no cientos, evaluar más allá de esa profundidad carecería de valor práctico.
     \item \textbf{Universo común}: todas las estrategias buscan sobre el mismo conjunto de investigadores (los presentes en todos los índices), de modo que ninguna se ve favorecida ni penalizada por operar sobre un universo distinto (Sección~\ref{sec:eval-groundtruth}).
     \item \textbf{Muestreo controlado}: las consultas sintéticas se generan con semilla fija, lo que hace la evaluación reproducible y permite muestrear subconjuntos para ejecuciones rápidas; los resultados finales se reportan sobre los 500 registros del conjunto de referencia (250 \gls{tfg} y 250 \gls{tfm}).
     \item \textbf{Misma infraestructura}: las cinco estrategias se ejecutan contra los mismos índices, con los mismos modelos y en la misma máquina, registrándose también el tiempo medio por consulta como indicador del coste de incorporar el \gls{llm} al bucle.
@@ -117,21 +118,54 @@ El protocolo fija las condiciones comunes a todas las estrategias:
 \section{Amenazas a la validez}
 \label{sec:eval-validez}
 
-El marco propuesto es objetivo y reproducible, pero no está libre de sesgos, que conviene declarar:
+El marco propuesto es objetivo y reproducible, pero no está libre de sesgos.
+Conviene declararlos de forma organizada según su origen, distinguiendo los que provienen de los \emph{datos}, los que introduce la \emph{construcción de la verdad de referencia} y los que aporta la propia \emph{solución técnica}.
+
+\textbf{Amenazas asociadas a los datos.} Proceden de la fuente y del corpus construido a partir de ella.
 
 \begin{mydescription}
-    \item[Optimismo absoluto por solapamiento.]
-    \duda{Creo que esto lo estoy evitando con lo de los resúmenes por año}
-    Los perfiles agregan la actividad completa de cada investigador, que puede incluir evidencia relacionada con el propio trabajo usado como consulta.
-    Las cifras absolutas deben leerse, por tanto, como cota optimista; el valor del marco está en la \emph{comparación relativa} entre estrategias, que se realiza en condiciones idénticas.
+    \item[Cobertura incompleta del Portal Científico.]
+    No todos los investigadores publican la misma cantidad ni calidad de información.
+    En el portal conviven perfiles muy ricos con otros casi vacíos (Sección~\ref{sec:problema-heterogeneidad}), lo que condiciona lo bien que puede representarse a cada uno.
+    \item[Heterogeneidad entre escuelas y departamentos.]
+    La completitud de los perfiles no es uniforme entre unidades.
+    Algunas escuelas mantienen fichas más detalladas que otras, lo que puede introducir diferencias de rendimiento ajenas a la calidad del método.
+    \item[Perfiles desactualizados o incompletos.]
+    El portal puede no reflejar la actividad más reciente de un investigador, de modo que su representación quede por detrás de su trayectoria real.
+    \item[Sesgo de historial observable.]
+    La verdad de referencia solo contiene investigadores que ya han supervisado trabajos registrados y suficientemente informativos, por lo que la evaluación no mide la capacidad de recomendar a profesorado novel (problema de arranque en frío).
+    La historia de supervisión se usa \emph{solo} para evaluar, nunca en el proceso de recomendación, de modo que este sesgo afecta a la medición (y por igual a todas las estrategias comparadas), no al sistema en uso.
+\end{mydescription}
+
+\textbf{Amenazas asociadas a la construcción de la referencia de evaluación.} Derivan de emplear la supervisión histórica como verdad de referencia.
+
+\begin{mydescription}
     \item[Un único relevante por consulta.]
-    Otros investigadores podrían ser tutores igualmente válidos para la misma idea; al contar solo al supervisor real, las métricas son cotas inferiores de la utilidad percibida.
-    \item[Sesgo de historial.]
-    \duda{No deberíamos tener problemas con esto ahora mismo, solo usamos las tutorizaciones anteriores para evaluación, no para el proceso de recomendación}
-    La verdad de referencia solo contiene investigadores que ya han supervisado trabajos, por lo que no mide la capacidad del sistema para recomendar a profesorado novel (problema de arranque en frío, que afecta por igual a todas las estrategias comparadas).
+    Otros investigadores podrían ser tutores igualmente válidos para la misma idea.
+    Al contar solo al supervisor real, las métricas son cotas inferiores de la utilidad percibida, y el sistema puede ofrecer un rendimiento superior al que este marco mide.
+    \item[Posible solapamiento entre consulta y perfil.]
+    Si el trabajo usado como consulta aparece dentro del perfil del tutor, su recuperación puede verse favorecida.
+    Dos decisiones de diseño atenúan este efecto sin eliminarlo: la consulta por defecto es la propuesta reformulada del \emph{estándar de plata} (Sección~\ref{sec:eval-groundtruth}), que reduce el solapamiento léxico con el perfil, y el enriquecimiento sintetiza la actividad por años en lugar de copiar los textos originales (Sección~\ref{sec:met-enriquecimiento}).
+    Las cifras absolutas deben leerse, en todo caso, como cota optimista, el valor del marco está en la \emph{comparación relativa} entre estrategias, realizada en condiciones idénticas.
+    \item[Dependencia de consultas reformuladas por \gls{llm}.]
+    El estándar de plata se genera con modelos de lenguaje, lo que puede introducir sesgos de estilo, nivel de abstracción o vocabulario en las consultas.
+    El uso de un panel de tres modelos como juez (Sección~\ref{sec:eval-groundtruth}) atenúa la idiosincrasia de un único modelo, pero no la elimina.
     \item[Desajuste temporal entre la consulta histórica y el perfil vigente.]
     La verdad de referencia usa trabajos supervisados a lo largo de varios años, pero cada investigador se representa con una \emph{única biografía vigente} que prioriza su actividad reciente (Sección~\ref{sec:met-indexacion}).
     Un trabajo dirigido hace años puede corresponder a una línea que el investigador ha abandonado después: aunque entonces fuera el supervisor idóneo, hoy su biografía ya no la refleja y la consulta se contabiliza como fallo.
-    Conviene subrayar que esto es una limitación \emph{de la evaluación}, no del sistema en uso: para atender a un estudiante actual, una biografía que prioriza lo reciente es justamente lo deseable, pues si un investigador es hoy experto en un tema, aparecerá en ella.
-    Mitigar el desajuste en la evaluación exigiría indexar también varios resúmenes anuales por investigador (los últimos $N$) y deduplicar o consolidar los resultados en el momento de la recuperación, lo que queda como trabajo futuro (Sección~\ref{sec:conc-futuro}).
+    Es una limitación \emph{de la evaluación}, no del sistema en uso: para atender a un estudiante actual, una biografía que prioriza lo reciente es justamente lo deseable. Mitigarla exigiría indexar varios resúmenes anuales por investigador (los últimos $N$) y consolidar los resultados en el momento de la recuperación, lo que queda como trabajo futuro (Sección~\ref{sec:conc-futuro}).
+\end{mydescription}
+
+\textbf{Amenazas asociadas al sistema y sus modelos.} Atañen a las limitaciones de la solución técnica.
+
+\begin{mydescription}
+    \item[Calidad de los perfiles semánticos generados.]
+    Los \glspl{llm} locales empleados para sintetizar biografías y dominios pueden omitir información, simplificarla en exceso o introducir errores, que se propagarían a la representación del investigador.
+    \item[Sensibilidad a la reformulación de la consulta.]
+    Pequeñas variaciones en la idea del estudiante (o en su reformulación automática) pueden alterar el ranking, lo que afecta a la estabilidad de las recomendaciones.
+    \item[Limitaciones de cada representación.]
+    La búsqueda dispersa y los \emph{embeddings} densos capturan señales distintas y cada una pierde parte de la información: la primera es sensible a la coincidencia de términos y la segunda diluye los matices muy específicos.
+    La hibridación busca compensarlo, pero ninguna representación es completa por sí sola.
+    \item[No-determinismo de los modelos de lenguaje.]
+    Aunque la interpretación de la consulta y la generación de los perfiles se realizan con temperatura baja y semilla fija (Secciones~\ref{sec:met-emparejamiento} y~\ref{sec:eval-groundtruth}), la inferencia de un \gls{llm} puede no ser perfectamente reproducible entre ejecuciones o entornos de cómputo, lo que introduce una variabilidad residual en las representaciones y, por tanto, en las cifras exactas.
 \end{mydescription}
