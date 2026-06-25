@@ -43,14 +43,13 @@ De entre ellos, este \gls{tfm} materializa el prototipo funcional del sistema de
 \duda{Mejor este párrado en un listado?}
 
 El perímetro inicial del sistema abarca los \glspl{pdi} de cuatro escuelas del ámbito de las Tecnologías de la Información y las Comunicaciones de la UPM: la \acrfull{etsisi}, la \gls{etsii}, la \gls{etsist} y la \gls{etsit}, lo que supone un total de 995 investigadores.
-Estos forman parte de un grafo de conocimiento más amplio, construido a partir de toda la actividad pública censada, de más de 172\,000 nodos y 268\,000 relaciones (Capítulo~\ref{ch:resultados}).
-\pendiente{Esto es falso, todos esos nodos y aristas son en total, no de las escuelas}
+Estas cuatro escuelas son solo un subconjunto de un grafo de conocimiento más amplio que abarca el censo público completo de la universidad (más de 172\,000 nodos y 268\,000 relaciones en total), el perímetro de las cuatro escuelas se delimita como subconjunto de ese grafo (Capítulo~\ref{ch:resultados}).
 La metodología, no obstante, se ha diseñado para ser extensible al conjunto de la universidad (y en general, a cualquier institución con un portal científico público) sin tener que realizar cambios conceptuales.
 
 \section{Objetivos}
 \label{sec:objetivos}
 
-El objetivo general de este trabajo es \textbf{diseñar, construir y evaluar un sistema de recomendación de tutores académicos a partir de los datos públicos de actividad investigadora de la UPM}, capaz de atender consultas en lenguaje natural y de justificar sus recomendaciones.
+El objetivo general de este trabajo es \textbf{diseñar, construir y evaluar un sistema de recomendación de tutores académicos} que, a partir de los datos públicos de actividad investigadora de la \gls{upm}, genere \textbf{representaciones semánticas} de las contribuciones académicas e investigadoras del profesorado y las utilice para atender consultas en lenguaje natural, devolver tutores potencialmente afines y justificar sus recomendaciones.
 
 Este objetivo general se descompone en los siguientes objetivos específicos:
 
@@ -70,11 +69,10 @@ Como objetivo exploratorio adicional, el modelo de datos se ha diseñado de form
 Las contribuciones principales de este trabajo son cinco:
 
 \begin{enumerate}
-    \item Un \textbf{corpus institucional estructurado y enriquecido} de la actividad investigadora de toda la \gls{upm}, construido íntegramente a partir de fuentes públicas y reconstruible de forma automática.
-    \item Un \textbf{modelo de perfil semántico del investigador}, basado en un grafo de conocimiento, que sintetiza temas de investigación normalizados, dominios de especialización y una biografía investigadora generada automáticamente.
-    \item Una \textbf{metodología de evaluación sin etiquetado manual} para sistemas de recomendación de tutores, basada en proyectos realmente supervisados como consultas y en su supervisor real como respuesta correcta.
+    \item Un \textbf{corpus institucional estructurado y enriquecido} de la actividad investigadora de cuatro escuelas de la \gls{upm} (extensible al conjunto de la institución), construido íntegramente a partir de fuentes públicas y reconstruible de forma automática.
+    \item Un \textbf{modelo de perfil semántico del investigador}, construido a partir de un grafo de conocimiento y de técnicas de enriquecimiento semántico, que sintetiza temas de investigación normalizados, dominios de especialización y una biografía investigadora generada automáticamente.
+    \item Una \textbf{metodología de evaluación sin etiquetado manual} para sistemas de recomendación de tutores, basada en proyectos realmente supervisados como consultas y en su supervisor real como referencia de evaluación.
     \item Una \textbf{comparación empírica} de estrategias de recuperación representativas del estado del arte (dispersa, densa, con y sin intervención de modelos de lenguaje, e híbrida) sobre un mismo corpus institucional y bajo condiciones idénticas.
-    \duda{No sé si está bien mencionar ya todas, igual eso es para más adelante. Faltaría el tema de Knowledge Graphs y ontologías}
     \item Un \textbf{prototipo funcional de código abierto}, desplegable \emph{on-premise} con modelos de lenguaje locales, que demuestra la viabilidad práctica del enfoque sin dependencia de servicios externos.
 \end{enumerate}
 
