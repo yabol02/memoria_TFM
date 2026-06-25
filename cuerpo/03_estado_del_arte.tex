@@ -2,9 +2,9 @@
 \label{ch:sota}
 
 El problema planteado (emparejar una descripción libre con el perfil de un experto) se sitúa en la intersección de dos campos bien establecidos: la búsqueda de expertos (\emph{expertise retrieval}) y la \gls{ri} textual.
-Este capítulo revisa ambas aproximaciones.
-Recorre la evolución de las técnicas de representación, desde los modelos léxicos clásicos a las representaciones densas y al uso de \glspl{llm}.
-De esta forma, concluye posicionando este trabajo: qué toma de cada familia y qué aporta sobre ellas.
+En lugar de recorrer su evolución de forma cronológica, este capítulo organiza la revisión en torno a las tres decisiones de diseño que estructuran un sistema como el propuesto: \emph{cómo representar al experto} (Secciones~\ref{sec:sota-expertos}-\ref{sec:sota-dispersa}), \emph{cómo representar la consulta del estudiante} y \emph{cómo combinar ambas representaciones} para producir un ranking (Secciones~\ref{sec:sota-fusion} y~\ref{sec:sota-llm}).
+Cada técnica se introduce, por tanto, no por su interés histórico, sino por la necesidad concreta del sistema que ayuda a cubrir: interpretabilidad, robustez ante la brecha de vocabulario, multilingüismo o despliegue local.
+El capítulo concluye posicionando este trabajo: qué toma de cada familia y qué aporta sobre ellas.
 
 \section{Búsqueda de expertos}
 \label{sec:sota-expertos}
@@ -13,8 +13,11 @@ La búsqueda de expertos estudia cómo identificar, dentro de una organización,
 El área quedó consolidada a partir de las campañas de evaluación empresarial de \gls{trec} y está sistematizada en la revisión de referencia de \citet{balog2012expertise}, que distingue dos familias de modelos: los \emph{centrados en el candidato}, que construyen una representación agregada de cada persona a partir de sus documentos y la comparan con la consulta, y los \emph{centrados en el documento}, que recuperan primero documentos relevantes y trasladan después esa relevancia a las personas asociadas.
 Esta monografía sintetiza más de una década de trabajo nacido de dichas campañas y fija la terminología y la taxonomía de modelos que siguen vigentes hoy, lo que la convierte en el anclaje natural para situar nuestra tarea dentro del campo.
 
+Un ejemplo canónico de la aproximación centrada en el candidato es el \emph{Toronto Paper Matching System} \citep{charlin2013tpms}, que en la asignación de revisores construye un perfil agregado de cada experto a partir de sus publicaciones previas y estima su afinidad con cada $texto-consulta$, patrón que este trabajo reutiliza en el dominio de la tutorización.
+
 La recomendación de tutores académicos es una instanciación natural de este marco: la evidencia son publicaciones, proyectos y trabajos supervisados, donde el «experto» buscado es el tutor cuya trayectoria mejor cubre la idea del estudiante.
 Este trabajo adopta la aproximación centrada en el candidato (cada investigador se representa mediante perfiles agregados de su actividad) por dos razones: produce un índice compacto sobre el que la búsqueda es inmediata y genera representaciones interpretables (temas, dominios, biografía) que pueden mostrarse al estudiante como justificación de la recomendación.
+Esto importa en nuestro problema porque la representación del experto debe ser, a la vez, la unidad sobre la que se busca y la evidencia que justifica la recomendación ante el estudiante (requisito \ref{req:emparejamiento}): la vía centrada en el candidato satisface ambas necesidades de partida.
 
 \section{Recuperación léxica: del modelo vectorial a BM25}
 \label{sec:sota-lexica}
@@ -51,6 +54,8 @@ Este trabajo emplea esta familia para representar los vocabularios temáticos de
 \label{sec:sota-fusion}
 
 Dado que las señales léxicas y semánticas fallan en casos distintos, su combinación es habitualmente superior a cualquiera de ellas por separado.
+Combinar una señal de coincidencia de términos o áreas con una señal textual semántica es, de hecho, una práctica consolidada en la asignación de revisores a gran escala, donde la afinidad $experto-documento$ se compone de varias señales heterogéneas \citep{charlin2013tpms}.
+La diferencia aquí está en cómo se combinan, pues los esquemas habituales exigen calibrar pesos entre escalas no comparables.
 Entre las técnicas de fusión, la \gls{rrf} \citep{cormack2009rrf} destaca por su robustez y simplicidad: combina rankings atendiendo solo a las posiciones, sin necesidad de calibrar puntuaciones heterogéneas,
 \begin{equation}
 \mathrm{RRF}(d) \;=\; \sum_{r \in R} \frac{1}{k + \mathrm{rank}_r(d)},
@@ -66,31 +71,37 @@ La irrupción de los \glspl{llm} \citep{brown2020gpt3} ha abierto una tercera v�
 En la dirección $consulta\Rightarrow corpus$, técnicas como Query2doc \citep{wang2023query2doc} e HyDE \citep{gao2023hyde} expanden o reescriben la consulta (incluso generando un documento hipotético) para acercarla al registro del corpus antes de buscar. Trasladado a nuestro problema, un \gls{llm} puede traducir la idea coloquial del estudiante al inglés técnico de los perfiles y enriquecerla con terminología afín, sin que el estudiante deba conocerla.
 En la dirección $\Rightarrow consulta$, el patrón de \gls{rag} \citep{lewis2020rag} consolidó la arquitectura $recuperador+generador$. Aquí lo relevante es el uso inverso: emplear el \gls{llm} para \emph{sintetizar} cada trayectoria investigadora en una biografía homogénea y densa en información, que se convierte en la unidad de indexación semántica.
 Esta estrategia de resumir historiales ricos en texto para alimentar un recomendador, ponderando la actividad más reciente, se ha explorado en recomendación secuencial \citep{zheng2024harnessing}.
-En este trabajo se adopta para construir la biografía de cada investigador de forma incremental, dando más peso a sus años recientes.
+El resumen \emph{recursivo} de textos que exceden la ventana de contexto cuenta, además, con precedentes consolidados en recuperación, como RAPTOR \citep{sarthi2024raptor}, que construye de abajo arriba un árbol de resúmenes para representar documentos extensos a varias granularidades.
+En este trabajo se adopta esta idea para construir la biografía de cada investigador de forma incremental, dando más peso a sus años recientes.
+La variante propuesta agrupa la producción \emph{cronológicamente}, por periodos, en lugar de por similitud, y conserva el resumen de cada periodo como artefacto trazable (Sección~\ref{sec:met-indexacion}).
 
-Dos avances recientes hacen viable todo lo anterior bajo el requisito de despliegue local (\ref{req:soberania}): la disponibilidad de modelos abiertos de tamaño medio con capacidad multilingüe e instruccional suficiente, como la familia Qwen2.5 \citep{qwen2025qwen25} (modelos abiertos con los que ya se han abordado tareas afines a la nuestra, como la síntesis de historiales ricos en texto para alimentar sistemas de recomendación \citep{zheng2024harnessing}\pendiente{Tengo que buscar un ejemplo mejor, no mencionar de nuevo esto}
-) y los marcos de \emph{salida estructurada} que permiten obtener de un \gls{llm} objetos validables (listas de términos, campos tipados) en lugar de texto libre, condición necesaria para integrarlo de forma fiable en un pipeline automatizado.
-\duda{Solo Qwen o pongo más modelos?}
+En ambos casos el \gls{llm} desempeña un papel \emph{acotado y auxiliar} (enriquecer perfiles y reformular o interpretar consultas), nunca el de generar libremente la respuesta final.
+Esta delimitación es deliberada: mantener al modelo fuera del bucle de decisión preserva un sistema medible y auditable, y reduce su dependencia de la generación libre, cuya validación es notoriamente más difícil.
+
+Dos avances recientes hacen viable este enfoque bajo el requisito de despliegue local (\ref{req:soberania}).
+El primero es la madurez de los \glspl{llm} abiertos de tamaño medio ejecutables en local, con capacidad multilingüe e instruccional suficiente, como las familias Qwen \citep{qwen2025qwen25}, Gemma, Llama o Mistral.
+El segundo son los marcos de \emph{salida estructurada}, que permiten obtener de un \gls{llm} objetos validables (listas de términos, campos tipados) en lugar de texto libre, condición necesaria para integrarlo de forma fiable en un pipeline automatizado y evaluable.
 
 \section{Posicionamiento de este trabajo}
 \label{sec:sota-posicionamiento}
 
-El sistema propuesto no introduce un nuevo modelo de recuperación, su contribución es de \emph{integración y medida}: materializa, sobre un mismo corpus institucional real y bajo restricciones de despliegue local una estrategia representativa de cada familia del estado del arte y las somete a una comparación controlada con una verdad de referencia objetiva.
-La Tabla~\ref{tab:posicionamiento} resume esa correspondencia.
+Conviene subrayarlo sin ambigüedad: este trabajo \emph{no} propone un nuevo algoritmo de recuperación.
+Su contribución es de \emph{integración y medida}, y se concreta en tres planos: (i)~integrar técnicas conocidas, representativas de cada familia del estado del arte, en un sistema institucional real y desplegable en infraestructura propia; (ii)~construir, a partir de datos públicos, perfiles semánticos del profesorado que sirvan de representación del experto; y (iii)~evaluar el conjunto sobre un mismo corpus mediante una verdad de referencia objetiva y reproducible (Capítulo~\ref{ch:evaluacion}).
+La Tabla~\ref{tab:posicionamiento} resume la correspondencia entre las estrategias que se comparan y las familias del estado del arte de las que proceden.
 
 \begin{table}[htbp]
     \centering
     \caption{Correspondencia entre las estrategias del sistema y las familias del estado del arte.}
     \label{tab:posicionamiento}
-    \begin{tabularx}{\textwidth}{l X l}
+    \begin{tabularx}{\textwidth}{l X X}
         \toprule
-        \rowcolor{upmblue!8} \colhead{Estrategia del sistema} & \colhead{Descripción} & \colhead{Familia} \\
+        \rowcolor{upmblue!8} \colhead{Estrategia del sistema} & \colhead{Descripción} & \colhead{Marco conceptual} \\
         \midrule
-        Léxica con \gls{llm} & Extracción de términos de la idea con \gls{llm} y búsqueda dispersa BM42 con fusión RRF & §\ref{sec:sota-dispersa}, §\ref{sec:sota-llm} \\
-        Léxica directa & Términos propios de la consulta sobre el índice disperso, sin \gls{llm} (ablación) & §\ref{sec:sota-lexica}, §\ref{sec:sota-dispersa} \\
-        Semántica directa & Embedding denso de la idea tal cual y similitud de coseno sobre biografías & §\ref{sec:sota-densa} \\
-        Semántica enriquecida & Reescritura y expansión de la idea con \gls{llm} (estilo HyDE/Query2doc) y búsqueda densa & §\ref{sec:sota-densa}, §\ref{sec:sota-llm} \\
-        Híbrida & Fusión RRF de la señal dispersa (dominios) y la densa (biografías) & §\ref{sec:sota-fusion} \\
+        Léxica con \gls{llm} & Extracción de términos de la idea con \gls{llm} y búsqueda dispersa BM42 con fusión RRF & Recuperación dispersa neuronal y \glspl{llm} (§\ref{sec:sota-dispersa}, §\ref{sec:sota-llm}) \\
+        Léxica directa & Términos propios de la consulta sobre el índice disperso, sin \gls{llm} (ablación) & Recuperación léxica y dispersa (§\ref{sec:sota-lexica}, §\ref{sec:sota-dispersa}) \\
+        Semántica directa & Embedding denso de la idea tal cual y similitud de coseno sobre biografías & Representaciones densas (§\ref{sec:sota-densa}) \\
+        Semántica enriquecida & Reescritura y expansión de la idea con \gls{llm} (estilo HyDE/Query2doc) y búsqueda densa & Representaciones densas y \glspl{llm} (§\ref{sec:sota-densa}, §\ref{sec:sota-llm}) \\
+        Híbrida & Fusión RRF de la señal dispersa (dominios) y la densa (biografías) & Hibridación y fusión de rankings (§\ref{sec:sota-fusion}) \\
         \bottomrule
     \end{tabularx}
 \end{table}
