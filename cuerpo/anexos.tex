@@ -47,7 +47,7 @@ La Figura~\ref{fig:grafo-esquema} muestra su esquema: un nodo central \texttt{Pd
         \draw[rel] (pdi) -- node[rellab,sloped]{TEACHING} (subj);
         \draw[rel] (pdi) to[out=120,in=60,looseness=9] node[rellab,above]{COAUTHORED} (pdi);
     \end{tikzpicture}
-    \caption{Esquema del grafo de propiedades: tipos de nodo y relaciones. Todas las relaciones del modelo parten del investigador (\texttt{Pdi}); \texttt{COAUTHORED} es una arista derivada que conecta investigadores entre sí.}
+    \caption[Esquema del grafo de propiedades]{Esquema del grafo de propiedades: tipos de nodo y relaciones. Todas las relaciones del modelo parten del investigador (\texttt{Pdi}); \texttt{COAUTHORED} es una arista derivada que conecta investigadores entre sí.}
     \label{fig:grafo-esquema}
 \end{figure}
 
@@ -58,7 +58,7 @@ Hace tangible que el modelo de datos no es un diseño sobre el papel, sino un gr
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=0.9\linewidth]{figures/memgraph_grafo.png}
-  \caption{Vecindad de un investigador en el grafo cargado, explorada en Memgraph Lab: el nodo \texttt{Pdi} central y sus relaciones con publicaciones, trabajos supervisados, coautores y unidades. Captura anonimizada de una instancia real.}
+  \caption[Vecindad de un investigador en el grafo]{Vecindad de un investigador en el grafo cargado, explorada en Memgraph Lab: el nodo \texttt{Pdi} central y sus relaciones con publicaciones, trabajos supervisados, coautores y unidades. Captura anonimizada de una instancia real.}
   \label{fig:memgraph}
 \end{figure}
 
@@ -83,7 +83,7 @@ La Tabla~\ref{tab:grafo-nodos} detalla la información que guarda cada nodo y la
 
 \begin{table}[htbp]
     \centering
-    \caption{Relaciones del grafo: extremos y propiedades. \texttt{COAUTHORED} es una arista derivada (no proviene de un esquema Pydantic).}
+    \caption[Relaciones del grafo]{Relaciones del grafo: extremos y propiedades. \texttt{COAUTHORED} es una arista derivada (no proviene de un esquema Pydantic).}
     \label{tab:grafo-aristas}
     \begin{tabularx}{\textwidth}{l l X}
         \toprule
@@ -164,7 +164,7 @@ Permite seguir cómo el foco temático se desplaza con el tiempo (de la gestión
 
 \begin{table}[htbp]
     \centering
-    \caption{Evolución año a año de los dominios de especialización del investigador de ejemplo (campo \texttt{history} del listado anterior).
+    \caption[Evolución de los dominios de especialización de un PDI]{Evolución año a año de los dominios de especialización del investigador de ejemplo (campo \texttt{history} del listado anterior).
     Los dominios se conservan en inglés, tal como los genera el modelo.}
     \label{tab:ej-history}
     \begin{tabularx}{\textwidth}{l X}
@@ -363,7 +363,7 @@ A modo de curiosidad, en la zona izquierda se pueden ver todas las ejecuciones d
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=0.95\linewidth]{figures/airflow_dag.png}
-  \caption{El \gls{dag} del pipeline en la interfaz de Airflow: las siete fases encadenadas (la fase 5 en paralelo con la cadena 6-7) que orquestan la preparación del corpus de forma desatendida e incremental.}
+  \caption[El DAG del pipeline visto en Airflow]{El \gls{dag} del pipeline en la interfaz de Airflow: las siete fases encadenadas (la fase 5 en paralelo con la cadena 6-7) que orquestan la preparación del corpus de forma desatendida e incremental.}
   \label{fig:airflow}
 \end{figure}
 Los índices resultantes pueden \emph{verificarse} en el panel de Qdrant (colecciones \texttt{researcher\_keywords} y \texttt{researcher\_summaries}) y el grafo en Memgraph Lab, ambos accesibles bajo la misma subruta.
@@ -372,7 +372,7 @@ La Figura~\ref{fig:qdrant} reproduce ese panel: las dos colecciones que sostiene
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=0.9\linewidth]{figures/qdrant_colecciones.png}
-  \caption{Panel de Qdrant con las dos colecciones de recuperación: \texttt{researcher\_keywords} (dispersa, 709 puntos) y \texttt{researcher\_summaries} (densa más dispersa de dominios, 754 puntos), un punto por investigador.}
+  \caption[Panel de Qdrant]{Panel de Qdrant con las dos colecciones de recuperación: \texttt{researcher\_keywords} (dispersa, 709 puntos) y \texttt{researcher\_summaries} (densa más dispersa de dominios, 754 puntos), un punto por investigador.}
   \label{fig:qdrant}
 \end{figure}
 En operación diaria basta con \texttt{up -d} y \texttt{down} para arrancar y detener la pila, que conserva los datos en sus volúmenes \texttt{docker}.
@@ -391,7 +391,7 @@ Este texto es, a la vez, la consulta del \emph{estándar de oro} y la base de la
 
 \begin{table}[htbp]
     \centering
-    \caption{Registro original del trabajo de ejemplo (estándar de oro). Se omite la traducción al inglés del resumen, incluida en el original.}
+    \caption[Registro original del trabajo de ejemplo]{Registro original del trabajo de ejemplo (estándar de oro). Se omite la traducción al inglés del resumen, incluida en el original.}
     \label{tab:ej-oro}
     \begin{tabularx}{\textwidth}{l X}
         \toprule
@@ -414,7 +414,7 @@ Tres modelos locales reescriben el trabajo como lo haría un estudiante que busc
 
 \begin{table}[htbp]
     \centering
-    \caption{Propuestas candidatas generadas por los tres modelos (estándar de plata). Se reproducen literalmente.}
+    \caption[Propuestas candidatas generadas por tres modelos]{Propuestas candidatas generadas por los tres modelos (estándar de plata). Se reproducen literalmente.}
     \label{tab:ej-propuestas}
     \begin{tabularx}{\textwidth}{l X}
         \toprule
@@ -438,7 +438,7 @@ La ganadora es la de mayor nota media y los empates se deshacen al azar (Tabla~\
 
 \begin{table}[htbp]
     \centering
-    \caption{Calificaciones del jurado para cada propuesta (de 1 a 5) y nota media. La fila resaltada es la propuesta seleccionada.}
+    \caption[Calificaciones del jurado para cada propuesta y nota media]{Calificaciones del jurado para cada propuesta (de 1 a 5) y nota media. La fila resaltada es la propuesta seleccionada.}
     \label{tab:ej-notas}
     \begin{tabular}{lcccc}
         \toprule
@@ -460,7 +460,7 @@ El jurado penaliza de forma coherente la candidata menos cuidada, lo que ilustra
 
 La propuesta elegida se lanza contra el sistema con cada una de las cinco estrategias (Tabla~\ref{tab:modos}): cada una la transforma a su manera (extracción de términos, embebido directo, enriquecimiento o fusión) y devuelve una lista ordenada de investigadores.
 Se registra la posición en que aparece el tutor real (\texttt{pdi\_308607}) en cada lista y, de ella, se derivan las métricas del trabajo (Sección~\ref{sec:eval-metricas}).
-Promediadas sobre los 458 trabajos del universo común, estas posiciones producen las cifras de la Sección~\ref{sec:res-benchmark}: este único trabajo aporta, por tanto, un punto a cada agregado.
+Promediadas sobre los 457 trabajos del universo común, estas posiciones producen las cifras de la Sección~\ref{sec:res-benchmark}: este único trabajo aporta, por tanto, un punto a cada agregado.
 El contraste entre consultarlo con su texto original (Tabla~\ref{tab:ej-oro}) o con la propuesta reformulada (Tabla~\ref{tab:ej-propuestas}) es, en miniatura, el mismo que la Tabla~\ref{tab:benchmark-oro-plata} resume a escala global.
 
 \chapter{Resultados extendidos}
@@ -469,7 +469,7 @@ El contraste entre consultarlo con su texto original (Tabla~\ref{tab:ej-oro}) o 
 Este anexo desglosa los resultados del banco de pruebas (Sección~\ref{sec:res-benchmark}) por las tres dimensiones que registra el arnés de evaluación: tipo de trabajo, escuela y curso académico.
 Para mantener la legibilidad, las tablas reportan la \gls{mrr} de cada estrategia (la métrica que resume la calidad del posicionamiento).
 El resto de métricas siguen las mismas tendencias.
-En cada fila se resalta en negrita la estrategia con mejor \gls{mrr}.
+En cada fila se resalta en negrita la estrategia con mejor \gls{mrr} \emph{puntual}, conviene leer estos liderazgos por segmento como orientativos, pues (como establece la Sección~\ref{sec:annex-significacion}) las diferencias dentro de la familia semántica no son estadísticamente significativas.
 
 \begin{table}[htbp]
     \centering
@@ -479,8 +479,8 @@ En cada fila se resalta en negrita la estrategia con mejor \gls{mrr}.
         \toprule
         \rowcolor{upmblue!8} \colhead{Tipo} & \colhead{Léx. dir.} & \colhead{Léx.+LLM} & \colhead{Sem. dir.} & \colhead{Sem. enr.} & \colhead{Híbr.} \\
         \midrule
-        \gls{tfg} (227) & 0,049 & 0,090 & 0,145 & \textbf{0,154} & \textbf{0,154} \\
-        \gls{tfm} (231) & 0,077 & 0,093 & 0,128 & 0,139 & \textbf{0,153} \\
+        \gls{tfg} (226) & 0,049 & 0,090 & 0,146 & \textbf{0,154} & \textbf{0,154} \\
+        \gls{tfm} (231) & 0,077 & 0,095 & 0,128 & 0,138 & \textbf{0,153} \\
         \bottomrule
     \end{tabularx}
 \end{table}
@@ -493,10 +493,10 @@ En cada fila se resalta en negrita la estrategia con mejor \gls{mrr}.
         \toprule
         \rowcolor{upmblue!8} \colhead{Escuela} & \colhead{Léx. dir.} & \colhead{Léx.+LLM} & \colhead{Sem. dir.} & \colhead{Sem. enr.} & \colhead{Híbr.} \\
         \midrule
-        \gls{etsii} (152) & 0,047 & 0,065 & 0,085 & 0,078 & \textbf{0,098} \\
-        \gls{etsisi} (97) & 0,046 & 0,075 & 0,147 & 0,153 & \textbf{0,172} \\
-        \gls{etsist} (73) & 0,067 & 0,107 & 0,139 & \textbf{0,194} & 0,161 \\
-        \gls{etsit} (136) & 0,090 & 0,123 & 0,186 & 0,192 & \textbf{0,198} \\
+        \gls{etsii} (151) & 0,047 & 0,070 & 0,085 & 0,079 & \textbf{0,096} \\
+        \gls{etsisi} (97) & 0,046 & 0,073 & 0,147 & 0,153 & \textbf{0,165} \\
+        \gls{etsist} (73) & 0,067 & 0,099 & 0,139 & \textbf{0,196} & 0,167 \\
+        \gls{etsit} (136) & 0,090 & 0,128 & 0,186 & 0,188 & \textbf{0,202} \\
         \bottomrule
     \end{tabularx}
 \end{table}
@@ -509,14 +509,14 @@ En cada fila se resalta en negrita la estrategia con mejor \gls{mrr}.
         \toprule
         \rowcolor{upmblue!8} \colhead{Curso} & \colhead{Léx. dir.} & \colhead{Léx.+LLM} & \colhead{Sem. dir.} & \colhead{Sem. enr.} & \colhead{Híbr.} \\
         \midrule
-        2019 (14) & 0,005 & 0,149 & \textbf{0,185} & 0,182 & 0,131 \\
-        2020 (47) & 0,017 & 0,090 & 0,103 & 0,104 & \textbf{0,154} \\
-        2021 (39) & 0,050 & 0,073 & 0,154 & \textbf{0,201} & 0,190 \\
-        2022 (66) & 0,066 & 0,097 & 0,118 & 0,128 & \textbf{0,135} \\
-        2023 (51) & 0,099 & 0,104 & \textbf{0,174} & 0,167 & 0,159 \\
-        2024 (84) & 0,055 & 0,072 & 0,180 & \textbf{0,199} & 0,190 \\
-        2025 (122) & 0,092 & 0,105 & 0,108 & 0,111 & \textbf{0,134} \\
-        2026 (27) & 0,023 & 0,048 & 0,131 & 0,121 & \textbf{0,142} \\
+        2019 (14) & 0,005 & 0,151 & \textbf{0,185} & 0,183 & 0,130 \\
+        2020 (47) & 0,017 & 0,099 & 0,103 & 0,107 & \textbf{0,151} \\
+        2021 (39) & 0,050 & 0,083 & 0,154 & 0,199 & \textbf{0,205} \\
+        2022 (66) & 0,066 & 0,096 & 0,118 & 0,125 & \textbf{0,135} \\
+        2023 (51) & 0,099 & 0,098 & \textbf{0,174} & 0,163 & 0,154 \\
+        2024 (84) & 0,055 & 0,074 & 0,180 & \textbf{0,200} & 0,192 \\
+        2025 (121) & 0,092 & 0,101 & 0,109 & 0,111 & \textbf{0,133} \\
+        2026 (27) & 0,023 & 0,057 & \textbf{0,131} & 0,121 & 0,127 \\
         \bottomrule
     \end{tabularx}
 \end{table}
@@ -527,18 +527,158 @@ Por escuela, la \gls{etsit} es la mejor recuperada y la \gls{etsii} la más dif�
 Por tipo, las diferencias entre \gls{tfg} y \gls{tfm} son pequeñas; la híbrida las iguala prácticamente (0,154 frente a 0,153).
 El desglose por curso, con tamaños de muestra reducidos en los años antiguos, no muestra una tendencia temporal clara más allá de la ya descrita ventaja de las estrategias densas.
 
+\section{Contrastes de significación y robustez}
+\label{sec:annex-significacion}
+
+Las conclusiones comparativas del Capítulo~\ref{ch:resultados} se sometieron a contraste estadístico para distinguir las diferencias reales del ruido muestral.
+Como todas las estrategias se evalúan sobre el mismo conjunto de consultas, las comparaciones son \emph{pareadas}: para cada par de estrategias se contrastan sus valores \emph{por consulta}.
+Sobre el rango recíproco (la contribución de cada consulta a la \gls{mrr}) se aplica la prueba de los rangos con signo de Wilcoxon, no paramétrica y adecuada a una distribución discreta y asimétrica; sobre el acierto binario \mbox{Hit@5} se aplica la prueba de McNemar exacta.
+Los $p$-valores se corrigen por las diez comparaciones mediante los métodos de Holm y de Benjamini-Hochberg.
+Los intervalos de confianza al 95\,\% provienen de un \emph{bootstrap} de 10\,000 remuestreos sobre las consultas.
+Todo ello se calcula sobre la media de tres ejecuciones independientes ($n=457$) con el script \texttt{evaluation/analyze\_\-results.py}, a partir de los resultados por consulta almacenados en caché.
+
+Las Tablas~\ref{tab:sig-plata} y~\ref{tab:sig-oro} recogen los diez contrastes por pareja en cada fuente.
+El patrón es idéntico en ambas: las siete comparaciones que cruzan las fronteras entre familias (densa, léxica con \gls{llm}, control) son significativas, mientras que las tres internas a la familia semántica no lo son en ningún caso, ni siquiera antes de corregir.
+Esto sustenta los tres grupos homogéneos de la Tabla~\ref{tab:benchmark-significancia}.
+
+\begin{table}[htbp]
+  \centering
+  \caption[Contrastes pareados sobre el estándar de plata]{Contrastes pareados entre estrategias sobre el estándar de plata.\\Abreviaturas: LD~=~léxica directa (control), LL~=~léxica con \gls{llm}, SD~=~semántica directa, SE~=~semántica enriquecida, H~=~híbrida. $\Delta$MRR~$=$~MRR(A)~$-$~MRR(B); un valor negativo indica que B supera a A en valor puntual.\\«Sig.» señala $p<0{,}05$ en Wilcoxon tras corrección de Holm.}
+  \label{tab:sig-plata}
+  \footnotesize
+  \setlength{\tabcolsep}{4pt}
+  \begin{tabularx}{\textwidth}{l c X c c c c}
+    \toprule
+    \rowcolor{upmblue!8} \colhead{Par (A--B)} & \colhead{$\Delta$MRR} & \colhead{IC 95\,\%} & \colhead{$p$ Wilc.} & \colhead{$p$ Wilc. (Holm)} & \colhead{$p$ McN. (Holm)} & \colhead{Sig.} \\
+    \midrule
+    LD--LL & $-0{,}030$ & $[-0{,}047,\,-0{,}012]$ & $<0{,}001$ & $<0{,}001$ & $0{,}009$ & sí \\
+    LD--SD & $-0{,}074$ & $[-0{,}102,\,-0{,}046]$ & $<0{,}001$ & $<0{,}001$ & $<0{,}001$ & sí \\
+    LD--SE & $-0{,}083$ & $[-0{,}111,\,-0{,}055]$ & $<0{,}001$ & $<0{,}001$ & $<0{,}001$ & sí \\
+    LD--H & $-0{,}090$ & $[-0{,}118,\,-0{,}064]$ & $<0{,}001$ & $<0{,}001$ & $<0{,}001$ & sí \\
+    LL--SD & $-0{,}044$ & $[-0{,}070,\,-0{,}019]$ & $0{,}002$ & $0{,}010$ & $0{,}201$ & sí \\
+    LL--SE & $-0{,}053$ & $[-0{,}080,\,-0{,}027]$ & $<0{,}001$ & $0{,}001$ & $0{,}058$ & sí \\
+    LL--H & $-0{,}061$ & $[-0{,}086,\,-0{,}036]$ & $<0{,}001$ & $<0{,}001$ & $0{,}010$ & sí \\
+    SD--SE & $-0{,}009$ & $[-0{,}023,\,0{,}006]$ & $0{,}128$ & $0{,}384$ & $0{,}592$ & no \\
+    SD--H & $-0{,}016$ & $[-0{,}035,\,0{,}002]$ & $0{,}288$ & $0{,}575$ & $0{,}265$ & no \\
+    SE--H & $-0{,}008$ & $[-0{,}023,\,0{,}007]$ & $0{,}939$ & $0{,}939$ & $0{,}592$ & no \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\begin{table}[htbp]
+  \centering
+  \caption[Contrastes pareados sobre el estándar de oro]{Contrastes pareados entre estrategias sobre el estándar de oro (mismas abreviaturas y convenios que la Tabla~\ref{tab:sig-plata}). El agrupamiento coincide con el del estándar de plata: la familia semántica no se separa internamente.}
+  \label{tab:sig-oro}
+  \footnotesize
+  \setlength{\tabcolsep}{4pt}
+  \begin{tabularx}{\textwidth}{l c X c c c c}
+    \toprule
+    \rowcolor{upmblue!8} \colhead{Par (A--B)} & \colhead{$\Delta$MRR} & \colhead{IC 95\,\%} & \colhead{$p$ Wilc.} & \colhead{$p$ Wilc. (Holm)} & \colhead{$p$ McN. (Holm)} & \colhead{Sig.} \\
+    \midrule
+    LD--LL & $-0{,}031$ & $[-0{,}054,\,-0{,}010]$ & $0{,}001$ & $0{,}007$ & $0{,}568$ & sí \\
+    LD--SD & $-0{,}082$ & $[-0{,}112,\,-0{,}052]$ & $<0{,}001$ & $<0{,}001$ & $<0{,}001$ & sí \\
+    LD--SE & $-0{,}076$ & $[-0{,}107,\,-0{,}047]$ & $<0{,}001$ & $<0{,}001$ & $<0{,}001$ & sí \\
+    LD--H & $-0{,}077$ & $[-0{,}105,\,-0{,}048]$ & $<0{,}001$ & $<0{,}001$ & $<0{,}001$ & sí \\
+    LL--SD & $-0{,}051$ & $[-0{,}077,\,-0{,}025]$ & $<0{,}001$ & $0{,}004$ & $0{,}004$ & sí \\
+    LL--SE & $-0{,}045$ & $[-0{,}071,\,-0{,}019]$ & $0{,}003$ & $0{,}013$ & $0{,}005$ & sí \\
+    LL--H & $-0{,}046$ & $[-0{,}070,\,-0{,}021]$ & $0{,}001$ & $0{,}007$ & $<0{,}001$ & sí \\
+    SD--SE & $0{,}006$ & $[-0{,}006,\,0{,}017]$ & $0{,}573$ & $1{,}000$ & $1{,}000$ & no \\
+    SD--H & $0{,}005$ & $[-0{,}011,\,0{,}021]$ & $0{,}546$ & $1{,}000$ & $0{,}645$ & no \\
+    SE--H & $-0{,}000$ & $[-0{,}013,\,0{,}012]$ & $0{,}346$ & $1{,}000$ & $0{,}568$ & no \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+La estabilidad de las cifras frente al no-determinismo del \gls{llm} se acotó con las mismas tres ejecuciones (Tabla~\ref{tab:robustez}).
+La desviación típica de la \gls{mrr} entre ejecuciones no supera $0{,}005$ en ninguna estrategia, un margen muy inferior a las distancias entre familias, lo que confirma que la jerarquía descrita es reproducible.
+Las estrategias deterministas (léxica y semántica directas) no invocan el modelo en consulta y producen, por construcción, resultados idénticos en cada ejecución.
+
+\begin{table}[htbp]
+  \centering
+  \caption[Robustez entre ejecuciones]{Desviación típica de la \gls{mrr} y de \mbox{Hit@5} entre tres ejecuciones independientes, por estrategia y fuente. Las estrategias deterministas (sin \gls{llm} en consulta) tienen una única ejecución y desviación nula.}
+  \label{tab:robustez}
+  \footnotesize
+  \begin{tabularx}{\textwidth}{X c c c c c}
+    \toprule
+    \rowcolor{upmblue!8} \colhead{Estrategia} & \colhead{$\sigma$ MRR oro} & \colhead{$\sigma$ MRR plata} & \colhead{$\sigma$ Hit@5 oro} & \colhead{$\sigma$ Hit@5 plata} & \colhead{N.\textsuperscript{o} runs} \\
+    \midrule
+    Léxica directa (control) & 0,000 & 0,000 & 0,000 & 0,000 & 1 \\
+    Léxica con \gls{llm} & 0,005 & 0,005 & 0,015 & 0,008 & 3 \\
+    Semántica directa & 0,000 & 0,000 & 0,000 & 0,000 & 1 \\
+    Semántica enriquecida & 0,003 & 0,001 & 0,005 & 0,003 & 3 \\
+    Híbrida & 0,004 & 0,002 & 0,005 & 0,004 & 3 \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
 Más allá de los promedios, conviene observar \emph{dónde} cae el supervisor real en el ranking.
 La Figura~\ref{fig:rango-director} muestra, para la estrategia híbrida, la distribución de la posición en que aparece el tutor verdadero: cuántas consultas lo sitúan en el primer puesto, entre los tres primeros, en la primera página o más allá (y cuántas no lo recuperan en absoluto).
 Esta lectura complementa las métricas agregadas, al revelar si los fallos se concentran en posiciones cercanas (recuperables con una lista algo más larga) o lejanas.
 
 \begin{figure}[htbp]
   \centering
-  \pendiente{Generar la figura de distribución del rango del tutor real (estrategia híbrida) a partir de la caché de evaluación, pendiente de incorporar. Sustituir este recuadro por el gráfico correspondiente.}
-  \caption{Distribución de la posición del supervisor real en la lista devuelta por la estrategia híbrida (estándar de plata).}
+  \begin{tikzpicture}
+    \begin{axis}[
+      upmbase, ybar, width=0.86\linewidth, height=5.6cm,
+      bar width=18pt, ymin=0, ymax=66,
+      symbolic x coords={r1,r23,r45,r610,r1125,rno},
+      xtick=data,
+      xticklabels={1, 2--3, 4--5, 6--10, 11--25, {$>$25 / no rec.}},
+      xticklabel style={font=\footnotesize},
+      ylabel={Consultas (\%)},
+      nodes near coords,
+      nodes near coords style={font=\footnotesize\color{black!70},
+        /pgf/number format/.cd, fixed, fixed zerofill, precision=1, use comma},
+      enlarge x limits=0.10, clip=false,
+    ]
+      \addplot[fill=upmblue, draw=upmblue!60!black] coordinates {
+        (r1,8.7) (r23,9.0) (r45,4.7) (r610,7.8) (r1125,9.8) (rno,60.0)};
+    \end{axis}
+  \end{tikzpicture}
+  \caption[Distribución de la posición del supervisor real]{Distribución de la posición del supervisor real en la lista devuelta por la estrategia híbrida (estándar de plata, tres ejecuciones agrupadas, $n=1\,374$ consultas). En torno al 30\% de las consultas lo sitúan en la primera página (\mbox{Hit@10}) y un 18\% en los tres primeros puestos; de los fallos, una fracción queda cerca del corte (puestos 11--25) y el 60\% no lo recupera entre los 25 primeros, en buena medida por contabilizar como acierto únicamente al supervisor real (Sección~\ref{sec:eval-validez}).}
   \label{fig:rango-director}
 \end{figure}
 
-\pendiente{Si se ejecutan varias semillas, añadir desviaciones o intervalos. Considerar el desglose por idioma de la consulta y experimentos secundarios (p.~ej., sensibilidad al límite de recuperación). Añadir los casos ilustrativos que no quepan en el Capítulo~\ref{ch:resultados}.}
+\section{Sensibilidad a la profundidad de recuperación}
+\label{sec:annex-profundidad}
+
+El protocolo fija la profundidad de recuperación en los $25$ primeros candidatos (Sección~\ref{sec:eval-protocolo}).
+La Figura~\ref{fig:hitk-curva} muestra cómo evoluciona el acierto ($\mathrm{Hit@}k$) al ampliar la lista inspeccionada, de $k=1$ a $k=25$, para las cinco estrategias sobre el estándar de plata.
+
+\begin{figure}[htbp]
+  \centering
+  \begin{tikzpicture}
+    \begin{axis}[
+      upmbase, width=0.86\linewidth, height=6.2cm,
+      xmin=1, xmax=25, ymin=0, ymax=0.42,
+      xlabel={Profundidad de recuperación $k$},
+      ylabel={$\mathrm{Hit@}k$},
+      xtick={1,5,10,15,20,25}, ytick={0,0.1,0.2,0.3,0.4},
+      yticklabel style={/pgf/number format/.cd, fixed, fixed zerofill, precision=1, use comma},
+      legend style={at={(0.02,0.98)}, anchor=north west, font=\scriptsize, draw=black!25, fill=white},
+      legend cell align=left, mark size=1.4pt, thick, clip=false,
+    ]
+      \addplot[color=black!45, mark=*] coordinates {(1,0.033)(5,0.098)(10,0.136)(15,0.155)(20,0.177)(25,0.204)};
+      \addplot[color=black!70, mark=square*] coordinates {(1,0.042)(5,0.153)(10,0.222)(15,0.258)(20,0.294)(25,0.324)};
+      \addplot[color=upmblue!55, mark=triangle*] coordinates {(1,0.072)(5,0.197)(10,0.267)(15,0.326)(20,0.359)(25,0.398)};
+      \addplot[color=upmblue!80, mark=diamond*] coordinates {(1,0.082)(5,0.208)(10,0.282)(15,0.330)(20,0.371)(25,0.400)};
+      \addplot[color=upmblue, mark=*, very thick] coordinates {(1,0.088)(5,0.225)(10,0.303)(15,0.349)(20,0.373)(25,0.401)};
+      \legend{Léxica directa, Léxica con LLM, Semántica directa, Semántica enriquecida, Híbrida}
+    \end{axis}
+  \end{tikzpicture}
+  \caption[Sensibilidad del acierto a la profundidad de recuperación]{$\mathrm{Hit@}k$ por estrategia en función de la profundidad de recuperación $k$ (estándar de plata, $n=457$). El orden entre familias se conserva a cualquier profundidad y las tres estrategias semánticas se solapan en todo el rango.}
+  \label{fig:hitk-curva}
+\end{figure}
+
+De aquí se llega a tres lecturas distintas.
+Primera, el acierto crece de forma monótona con la profundidad pero con ganancia marginal decreciente: para la híbrida pasa de $0{,}088$ en cabeza a $0{,}303$ en la primera página ($k=10$) y a $0{,}401$ al final del corte ($k=25$).
+Ampliar de $10$ a $25$ todavía recupera cerca de diez puntos de acierto, de modo que la profundidad elegida no resulta holgada en exceso.
+Segunda, el orden entre familias se mantiene en \emph{todos} los cortes: las tres densas dominan a la léxica con \gls{llm} y esta al control sea cual sea la profundidad, lo que confirma la robustez de la jerarquía descrita más allá de un corte concreto.
+Tercera, dentro de la familia semántica las tres curvas son prácticamente indistinguibles a cualquier profundidad (en $k=25$, $0{,}398$, $0{,}400$ y $0{,}401$), coherente con la ausencia de diferencias significativas de la Sección~\ref{sec:annex-significacion}.
+
+No se incluye un desglose por idioma de la consulta porque el estándar de plata se genera íntegramente en español (Sección~\ref{sec:eval-groundtruth}), de modo que el conjunto es monolingüe.
+Un estudio de robustez interlingüe exigiría regenerar las consultas en otros idiomas y queda como trabajo futuro (Sección~\ref{sec:conc-futuro}).
+Los casos ilustrativos de extremo a extremo se recogen en la Sección~\ref{sec:res-casos} y en el Anexo~\ref{annex:ejemplo-eval}.
 
 El código y esta memoria residen en el repositorio público \url{https://github.com/cbadenes/upm-match}.
 

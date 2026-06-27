@@ -16,7 +16,7 @@ Retomando los objetivos formulados en la Sección~\ref{sec:objetivos}:
     El sistema implementa cuatro estrategias de recuperación operativas (léxica con \gls{llm}, semántica directa, semántica enriquecida e híbrida con fusión \gls{rrf}) que atienden consultas libres en cualquier idioma.
     \item \textbf{\ref{obj:evaluacion} - Evaluación objetiva.}
     Se ha definido y aplicado un marco de evaluación reproducible que usa la supervisión histórica como verdad de referencia, eliminando el etiquetado manual.
-    La comparación muestra que la estrategia híbrida (fusión \gls{rrf} de la señal dispersa y la densa) es la mejor en todas las métricas (\gls{mrr} 0,153), por delante de la semántica enriquecida (0,146) y de la directa (0,137), y que la recuperación semántica supera con creces a la léxica (la mejor estrategia léxica alcanza 0,091, frente a 0,153 de la híbrida).
+    La comparación muestra que las tres estrategias semánticas forman un grupo estadísticamente indistinguible y claramente superior a las léxicas: la híbrida (fusión \gls{rrf} de la señal dispersa y la densa) obtiene los mejores valores puntuales (\gls{mrr} 0,153), seguida de la semántica enriquecida (0,146) y de la directa (0,137), si bien estas diferencias internas no son significativas; frente a ellas, la mejor estrategia léxica se queda en 0,093, una brecha esta sí significativa que confirma el dominio de la recuperación semántica.
     El modelo de lenguaje en consulta aporta en ambas vías.
     \item \textbf{\ref{obj:prototipo} - Prototipo.}
     El prototipo web es funcional, explica sus recomendaciones y se despliega íntegramente \emph{on-premise} con componentes abiertos, sin dependencia de servicios externos ni coste por consulta.

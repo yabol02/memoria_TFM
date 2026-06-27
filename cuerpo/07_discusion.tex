@@ -13,13 +13,13 @@ La afinidad temática entre la idea del estudiante y la trayectoria del investig
 
 El segundo es la \textbf{aportación del modelo de lenguaje en la consulta}, que resulta beneficiosa en ambos frentes.
 Sobre la señal léxica, la extracción de términos mejora en cerca de la mitad la \gls{mrr} de la línea base directa, porque reinterpreta una consulta pobre en algo recuperable.
-Sobre la señal semántica, el enriquecimiento supera a la búsqueda directa en todas las métricas: al partir de una propuesta breve en lenguaje natural, la traducción y expansión controlada del modelo añade señal que el embebido directo no alcanzaba.
+Sobre la señal semántica, el enriquecimiento mejora los valores puntuales de la búsqueda directa en todas las métricas ---aunque sin alcanzar significación estadística (Tabla~\ref{tab:benchmark-significancia})---: al partir de una propuesta breve en lenguaje natural, la traducción y expansión controlada del modelo añade señal que el embebido directo no alcanzaba.
 Este resultado merece subrayarse porque solo aflora con las propuestas reformuladas: con el texto del trabajo tomado en crudo, el enriquecimiento no aportaba nada, lastrado por el solapamiento léxico con el perfil del propio tutor (Sección~\ref{sec:eval-validez}). La reformulación en primera persona neutraliza ese solapamiento y deja ver el valor real del modelo, lo que valida a posteriori la decisión de construir las consultas mediante el estándar de plata.
 
 El tercero es la \textbf{relación entre calidad y coste}, que dibuja un compromiso real.
-La estrategia más precisa (la híbrida, que encabeza todas las métricas) es también la más cara, al sumar la generación del \gls{llm} a la doble búsqueda.
-La semántica directa, en el extremo opuesto, es casi instantánea a cambio de una pérdida moderada de acierto.
-Que la híbrida gane en todos los cortes respalda con datos la decisión de ofrecerla por defecto en el prototipo, una elección que su valor de interpretabilidad ya recomendaba (Sección~\ref{sec:disc-interpretabilidad}) y la semántica directa quedaría como alternativa natural cuando la latencia sea crítica.
+La estrategia de mejores valores puntuales (la híbrida) es también la más cara, al sumar la generación del \gls{llm} a la doble búsqueda.
+La semántica directa, en el extremo opuesto, es casi instantánea a cambio de una pérdida de acierto moderada y, además, no significativa (Tabla~\ref{tab:benchmark-significancia}).
+Que la híbrida reúna los mejores estimadores puntuales sin ser nunca significativamente peor que ninguna alternativa respalda ofrecerla por defecto en el prototipo, una elección que su valor de interpretabilidad ya recomendaba (Sección~\ref{sec:disc-interpretabilidad}); la semántica directa queda como alternativa natural cuando la latencia sea crítica, sin penalización de calidad estadísticamente apreciable.
 
 Procede, no obstante, una cautela: las cifras absolutas son modestas (\mbox{Hit@1} en torno a 0,09) y deben leerse como cotas, no como medidas de utilidad real, por las amenazas a la validez ya declaradas (Sección~\ref{sec:eval-validez}). El valor de la comparación reside en su carácter relativo.
 
@@ -32,7 +32,9 @@ La señal densa, en cambio, captura afinidades que la léxica no alcanza (parafr
 
 En una herramienta institucional de orientación, donde la confianza del usuario es condición de adopción, este compromiso no es accesorio.
 La posición adoptada aquí (fusionar ambas señales y mostrar siempre las evidencias léxicas junto a la biografía) es un equilibrio pragmático: la semántica aporta cobertura y la léxica aporta justificación.
-\pendiente{Matizar esta sección con lo observado en los casos ilustrativos.}
+El caso ilustrativo de la Sección~\ref{sec:res-casos} matiza, sin embargo, este equilibrio: en él los cinco tutores recomendados son temáticamente pertinentes pese a que la lista de temas coincidentes que devuelve el sistema está \emph{vacía} en todos ellos, de modo que la afinidad procede enteramente de la señal densa.
+Es decir, justo en los casos donde la semántica aporta más valor ---afinidad sin coincidencia léxica--- es donde la justificación léxica que el diseño ofrece puede no estar disponible.
+La interpretabilidad por evidencia léxica es, por tanto, un complemento valioso pero no garantizado: cubre las recomendaciones que comparten términos, no necesariamente las que la representación densa rescata por significado.
 
 \section{El coste de poner un LLM en el bucle}
 \label{sec:disc-coste-llm}
@@ -69,7 +71,7 @@ Es un argumento más, en clave de \emph{green computing}, a favor del enfoque lo
 En la consulta, el coste es por interacción y se traduce en latencia percibida y su justificación depende de que la mejora de calidad lo compense.
 Aquí sí lo hace, aunque con matices: las estrategias que invocan el modelo (enriquecida e híbrida) son las más precisas (Tabla~\ref{tab:benchmark}), pero elevan la latencia media desde las dos décimas de segundo de la semántica directa hasta los 11,5 y los 18,7 segundos respectivamente (Tabla~\ref{tab:benchmark-tiempos}).
 Ese tiempo está dominado por la generación local, no por la búsqueda vectorial, que se mantiene por debajo de los seis segundos incluso en la estrategia más cara.
-La mejora de acierto de la híbrida sobre la semántica directa es real pero moderada (\gls{mrr} 0,153 frente a 0,137), de modo que la elección entre máxima calidad y mínima latencia es un compromiso legítimo que el sistema deja en manos del usuario al ofrecer ambas estrategias.
+La mejora de acierto de la híbrida sobre la semántica directa es pequeña y no estadísticamente significativa (\gls{mrr} 0,153 frente a 0,137; Tabla~\ref{tab:benchmark-significancia}), de modo que la elección entre máxima calidad puntual y mínima latencia es un compromiso legítimo que el sistema deja en manos del usuario al ofrecer ambas estrategias.
 
 Conviene subrayar el resultado de viabilidad en sí mismo: todo el sistema (incluida la generación de miles de biografías y la atención interactiva de consultas) opera con un modelo abierto de 7000 millones de parámetros (Qwen2.5-7B-Instruct) en hardware propio, sin enviar un solo dato a servicios externos y con coste marginal nulo por consulta (requisito \ref{req:soberania}).
 Esa viabilidad merece, no obstante, un matiz honesto.
@@ -116,5 +118,6 @@ Tres merecen mención.
 Primera, el \emph{sesgo de visibilidad}: los perfiles con más actividad registrada acumulan más evidencia y, por tanto, más probabilidad de ser recomendados. Sin contrapesos, el sistema puede amplificar la concentración de estudiantes en el profesorado ya saturado y de mayor trayectoria, en detrimento del novel (el arranque en frío señalado en la Sección~\ref{sec:eval-validez}).
 No es un riesgo menor: equilibrar la distribución de tutorías por afinidad temática es precisamente uno de los objetivos del proyecto institucional en que se enmarca este trabajo, por lo que la mitigación de este sesgo debe tratarse como requisito y no como refinamiento opcional.
 Segunda, la \emph{transparencia}: el sistema opera exclusivamente con datos que la universidad ya publica, pero su agregación crea una visibilidad nueva sobre las personas. Esto obliga a la fidelidad estricta a la fuente (el enriquecimiento tiene instrucciones explícitas de no inventar) y a la trazabilidad de toda afirmación mostrada.
-\pendiente{Decir que hay datos que no son accesibles ni aún estando aparentemtente en abierto}
+Conviene matizar, además, que la apertura del portal es desigual y que «estar en abierto» no equivale a ser plenamente accesible ni auditable: hay información que figura como pública pero llega incompleta o sin enlazar (por ejemplo, la mayoría de los investigadores carecen de un vínculo explícito con su escuela, como se observó en la Sección~\ref{sec:res-corpus}) y trabajos listados sin un resumen público aprovechable.
+El sistema hereda esas lagunas de la fuente, lo que acota tanto su cobertura como la propia transparencia que aquí se reivindica: solo puede trazarse y auditarse aquello que la fuente expone de forma completa.
 Tercera, la \emph{posición del sistema en la decisión}: \proyecto informa una decisión que sigue siendo humana y bidireccional (el tutor también elige) y tanto la interfaz como esta memoria lo presentan así, evitando cualquier lectura de asignación automática.

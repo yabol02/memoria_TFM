@@ -76,7 +76,7 @@ La Figura~\ref{fig:arquitectura} muestra la arquitectura completa y la Tabla~\re
        Las etiquetas indican el protocolo o interfaz de cada comunicación.};
     \end{tikzpicture}
   }
-  \caption{Arquitectura tecnológica del sistema y comunicación entre componentes.
+  \caption[Arquitectura tecnológica del sistema y comunicación entre componentes]{Arquitectura tecnológica del sistema y comunicación entre componentes.
   Las filas superiores implementan la preparación del corpus (Figura~\ref{fig:flujo}); la inferior, la atención de consultas.
   Los almacenes (MinIO, Memgraph, Qdrant) materializan los artefactos persistentes entre etapas.
   Cada arista se etiqueta con el protocolo o interfaz de la comunicación (HTTPS, S3, Bolt/Cypher, gRPC, API de Ollama) y su trazo distingue el flujo de datos por lotes de las llamadas de servicio (véase la leyenda).
@@ -112,7 +112,7 @@ La Tabla~\ref{tab:etapas-fases} relaciona las cuatro etapas conceptuales del Cap
 
 \begin{table}[htbp]
   \centering
-  \caption{Correspondencia entre las cuatro etapas metodológicas (Capítulo~\ref{ch:metodologia}) y las siete fases de implementación del pipeline.}
+  \caption[Correspondencia entre las etapas metodológicas y las fases de implementación]{Correspondencia entre las cuatro etapas metodológicas (Capítulo~\ref{ch:metodologia}) y las siete fases de implementación del pipeline.}
   \label{tab:etapas-fases}
   \begin{tabularx}{\textwidth}{l X}
     \toprule
@@ -144,7 +144,7 @@ La Tabla~\ref{tab:corpus-grafo} desglosa su composición por tipo (el esquema de
 
 \begin{table}[htbp]
   \centering
-  \caption{Composición del grafo de conocimiento: nodos y relaciones por tipo.}
+  \caption[Composición del grafo de conocimiento]{Composición del grafo de conocimiento: nodos y relaciones por tipo.}
   \label{tab:corpus-grafo}
   \begin{tabularx}{\textwidth}{l r X}
     \toprule
@@ -196,7 +196,7 @@ Biografía y dominios cubren exactamente el mismo conjunto (toda biografía gene
 
 \begin{table}[htbp]
   \centering
-  \caption{Perímetro por escuela: investigadores, con temas declarados (índice léxico, fase 5) y con biografía y dominios (índice semántico, fase 7). Cada \gls{pdi} se asigna a una única escuela (su primera filiación dentro del perímetro).}
+  \caption[Perímetro por escuela]{Perímetro por escuela: investigadores, con temas declarados (índice léxico, fase 5) y con biografía y dominios (índice semántico, fase 7). Cada \gls{pdi} se asigna a una única escuela (su primera filiación dentro del perímetro).}
   \label{tab:cobertura-fase7}
   \begin{tabularx}{\textwidth}{X r r r}
     \toprule
@@ -232,7 +232,7 @@ Biografía y dominios cubren exactamente el mismo conjunto (toda biografía gene
       \node[anchor=west, font=\scriptsize, color=upmblue!85!black] at (axis cs:284,ETSIT){92,5\%};
     \end{axis}
   \end{tikzpicture}
-  \caption{Cobertura semántica (fase 7) por escuela: investigadores con biografía y dominios (azul) frente al total del perímetro (gris). El porcentaje refleja la completitud del dato público de cada escuela en el portal.}
+  \caption[Cobertura semántica por escuela]{Cobertura semántica (fase 7) por escuela: investigadores con biografía y dominios (azul) frente al total del perímetro (gris). El porcentaje refleja la completitud del dato público de cada escuela en el portal.}
   \label{fig:cobertura}
 \end{figure}
 
@@ -245,7 +245,7 @@ Gracias a estos recursos se puede acelerar bastante todo el proceso de generaci�
 
 \begin{table}[htbp]
   \centering
-  \caption{Duración aproximada de cada fase del pipeline en una ejecución completa sobre el perímetro (servidor de despliegue).}
+  \caption[Duración aproximada de cada fase del pipeline]{Duración aproximada de cada fase del pipeline en una ejecución completa sobre el perímetro (servidor de despliegue).}
   \label{tab:tiempos-fases}
   \begin{tabularx}{\textwidth}{l X r}
     \toprule
@@ -289,7 +289,7 @@ Gracias a estos recursos se puede acelerar bastante todo el proceso de generaci�
     \end{axis}
   \end{tikzpicture}
 
-  \caption{Coste temporal de cada fase del pipeline en una ejecución completa (escala logarítmica). La generación de resúmenes con el modelo de lenguaje local (fase 6, en dorado) domina el coste, más de un orden de magnitud por encima del resto.}
+  \caption[Coste temporal de cada fase del pipeline]{Coste temporal de cada fase del pipeline en una ejecución completa (escala logarítmica). La generación de resúmenes con el modelo de lenguaje local (fase 6, en dorado) domina el coste, más de un orden de magnitud por encima del resto.}
   \label{fig:tiempos}
 
 \end{figure}
@@ -343,7 +343,7 @@ La figura se compone de dos capturas: la primera (\ref{fig:hibrido-interpretacio
     \label{fig:hibrido-resultados}
   \end{subfigure}
 
-  \caption{Estrategia híbrida (la usada por defecto) sobre la consulta de ejemplo: interpretación de la idea (a) y tutores recomendados (b).}
+  \caption[Estrategia híbrida sobre la consulta de ejemplo]{Estrategia híbrida (la usada por defecto) sobre la consulta de ejemplo: interpretación de la idea (a) y tutores recomendados (b).}
   \label{fig:prototipo-hibrido}
 \end{figure}
 
@@ -369,11 +369,13 @@ El prototipo está desplegado y es accesible públicamente en \url{https://wiig.
 
 La Tabla~\ref{tab:benchmark} resume los resultados del banco de pruebas descrito en el Capítulo~\ref{ch:evaluacion} para las cinco estrategias.
 Las consultas son las propuestas reformuladas en primera persona (estándar de plata, Sección~\ref{sec:eval-groundtruth}).
-De los 500 trabajos del conjunto de referencia, 458 quedan tras restringirlas al universo común de investigadores presentes en todos los índices (Sección~\ref{sec:eval-protocolo}) y sobre ese conjunto se calculan todas las métricas.
+De los 500 trabajos del conjunto de referencia, 458 quedan tras restringirlas al universo común de investigadores presentes en todos los índices (Sección~\ref{sec:eval-protocolo}).
+Para acotar la variabilidad que introduce el no-determinismo del \gls{llm} en consulta (Sección~\ref{sec:eval-validez}), la evaluación se repitió en tres ejecuciones independientes: las cifras que siguen son la \emph{media} sobre esas tres ejecuciones, calculadas sobre las 457 consultas presentes en todas ellas (una falló en una de las repeticiones y se descarta para mantener el conjunto idéntico entre ejecuciones).
+La calidad de cada estrategia se acompaña, además, de su intervalo de confianza al 95\,\% por \emph{bootstrap} sobre las consultas y de los contrastes de significación pareados entre estrategias (Tabla~\ref{tab:benchmark-significancia}), de modo que las diferencias se interpreten a la luz de su incertidumbre y no como meras cifras puntuales.
 
 \begin{table}[htbp]
   \centering
-  \caption[Resultados del banco de pruebas sobre la verdad de referencia de supervisión histórica]{Resultados del banco de pruebas sobre la verdad de referencia de supervisión histórica. Las columnas son las métricas que reporta el arnés de evaluación, por haber un único relevante por consulta, $\mathrm{MAP}$ coincide con la $\mathrm{MRR}$ (Sección~\ref{sec:eval-metricas}).}
+  \caption[Resultados del banco de pruebas sobre la verdad de referencia]{Resultados del banco de pruebas sobre la verdad de referencia de supervisión histórica. Las columnas son las métricas que reporta el arnés de evaluación, por haber un único relevante por consulta, $\mathrm{MAP}$ coincide con la $\mathrm{MRR}$ (Sección~\ref{sec:eval-metricas}). Cada cifra es la media de tres ejecuciones independientes ($n=457$); la negrita marca el mejor valor puntual de cada columna, que \emph{no} implica diferencia estadísticamente significativa frente a las otras estrategias semánticas (Tabla~\ref{tab:benchmark-significancia}).}
   \label{tab:benchmark}
   \footnotesize
   \setlength{\tabcolsep}{4pt}
@@ -381,11 +383,11 @@ De los 500 trabajos del conjunto de referencia, 458 quedan tras restringirlas al
     \toprule
     \rowcolor{upmblue!8} \colhead{Estrategia} & \colhead{MRR} & \colhead{MAP} & \colhead{Hit@1} & \colhead{Hit@3} & \colhead{Hit@5} & \colhead{Hit@10} & \colhead{nDCG@5} & \colhead{nDCG@10} \\
     \midrule
-    Léxica con \gls{llm} & 0,091 & 0,091 & 0,041 & 0,094 & 0,146 & 0,218 & 0,093 & 0,116 \\
-    Léxica directa (control) & 0,063 & 0,063 & 0,033 & 0,066 & 0,098 & 0,135 & 0,065 & 0,077 \\
-    Semántica directa & 0,137 & 0,137 & 0,072 & 0,166 & 0,197 & 0,266 & 0,139 & 0,161 \\
-    Semántica enriquecida & 0,146 & 0,146 & 0,085 & 0,168 & 0,205 & 0,284 & 0,148 & 0,173 \\
-    Híbrida & \textbf{0,153} & \textbf{0,153} & \textbf{0,090} & \textbf{0,175} & \textbf{0,218} & \textbf{0,303} & \textbf{0,156} & \textbf{0,184} \\
+    Léxica con \gls{llm} & 0,093 & 0,093 & 0,042 & 0,096 & 0,153 & 0,222 & 0,096 & 0,118 \\
+    Léxica directa (control) & 0,063 & 0,063 & 0,033 & 0,066 & 0,098 & 0,136 & 0,065 & 0,077 \\
+    Semántica directa & 0,137 & 0,137 & 0,072 & 0,166 & 0,197 & 0,267 & 0,139 & 0,161 \\
+    Semántica enriquecida & 0,146 & 0,146 & 0,082 & 0,168 & 0,208 & 0,282 & 0,148 & 0,172 \\
+    Híbrida & \textbf{0,153} & \textbf{0,153} & \textbf{0,088} & \textbf{0,178} & \textbf{0,225} & \textbf{0,303} & \textbf{0,159} & \textbf{0,184} \\
     \bottomrule
   \end{tabularx}
 \end{table}
@@ -405,13 +407,18 @@ De los 500 trabajos del conjunto de referencia, 458 quedan tras restringirlas al
         legend style={at={(0.5,1.03)}, anchor=south, legend columns=-1, font=\footnotesize, draw=black!25},
         legend cell align=left,
       ]
-      \addplot[fill=upmgrey, draw=black!35] coordinates {(0.063,Léxica directa) (0.091,Léxica con LLM)};
-      \addplot[fill=upmblue!45, draw=upmblue!60!black] coordinates {(0.137,Semántica directa) (0.146,Semántica enriquecida)};
-      \addplot[fill=upmblue, draw=upmblue!60!black] coordinates {(0.153,Híbrida)};
+      \addplot[fill=upmgrey, draw=black!35, error bars/.cd, x dir=both, x explicit] coordinates {
+        (0.063,Léxica directa) += (0.019,0) -= (0.017,0)
+        (0.093,Léxica con LLM) += (0.019,0) -= (0.018,0)};
+      \addplot[fill=upmblue!45, draw=upmblue!60!black, error bars/.cd, x dir=both, x explicit] coordinates {
+        (0.137,Semántica directa) += (0.026,0) -= (0.024,0)
+        (0.146,Semántica enriquecida) += (0.026,0) -= (0.025,0)};
+      \addplot[fill=upmblue, draw=upmblue!60!black, error bars/.cd, x dir=both, x explicit] coordinates {
+        (0.153,Híbrida) += (0.028,0) -= (0.025,0)};
       \legend{Léxica, Semántica, Híbrida (defecto)}
     \end{axis}
   \end{tikzpicture}
-  \caption{Calidad de recuperación por estrategia (\acrshort{mrr} sobre el estándar de plata). El color distingue la familia (léxica frente a semántica) y resalta la híbrida, la mejor estrategia y la usada por defecto en el prototipo.}
+  \caption[Calidad de recuperación por estrategia]{Calidad de recuperación por estrategia (\acrshort{mrr} sobre el estándar de plata). El color distingue la familia (léxica frente a semántica) y resalta la híbrida, la usada por defecto en el prototipo. Las barras de error son intervalos de confianza al 95\,\% por \emph{bootstrap} sobre las consultas; su amplio solapamiento entre las tres estrategias densas refleja la ausencia de diferencias significativas, mientras que la separación entre familias sí lo es (Tabla~\ref{tab:benchmark-significancia}).}
   \label{fig:bench-mrr}
 \end{figure}
 
@@ -419,7 +426,7 @@ El tiempo medio por consulta (Tabla~\ref{tab:benchmark-tiempos}) cuantifica el c
 
 \begin{table}[htbp]
   \centering
-  \caption[Tiempo medio por consulta de cada estrategia]{Tiempo por consulta de cada estrategia, en segundos, sobre la misma máquina e índices ($n=458$). La columna \textit{LLM} es la fracción del tiempo total dedicada a la generación (extracción de términos o enriquecimiento); \textit{búsqueda} es el resto (embebido y consulta a Qdrant).}
+  \caption[Tiempo medio por consulta de cada estrategia]{Tiempo por consulta de cada estrategia, en segundos, sobre la misma máquina e índices (media de tres ejecuciones, $n=457$). La columna \textit{LLM} es la fracción del tiempo total dedicada a la generación (extracción de términos o enriquecimiento); \textit{búsqueda} es el resto (embebido y consulta a Qdrant).}
   \label{tab:benchmark-tiempos}
   \footnotesize
   \begin{tabularx}{\textwidth}{X c c c c c}
@@ -435,24 +442,49 @@ El tiempo medio por consulta (Tabla~\ref{tab:benchmark-tiempos}) cuantifica el c
   \end{tabularx}
 \end{table}
 
-De estas cifras se extraen cuatro lecturas, que aquí se enuncian (su discusión e implicaciones se retoman en el Capítulo~\ref{ch:discusion}) y que deben interpretarse como \emph{comparación relativa} entre estrategias, no como medidas absolutas de utilidad (Sección~\ref{sec:eval-validez}).
+De estas cifras se extraen cinco lecturas, que aquí se enuncian (su discusión e implicaciones se retoman en el Capítulo~\ref{ch:discusion}) y que deben interpretarse como \emph{comparación relativa} entre estrategias, no como medidas absolutas de utilidad (Sección~\ref{sec:eval-validez}).
 
 Primera, \textbf{la señal semántica domina a la léxica} (Figura~\ref{fig:bench-mrr}).
-Las tres estrategias densas superan a las dos léxicas en todas las métricas y cortes: la peor de las semánticas (la directa, \gls{mrr} 0,137) aventaja con claridad a la mejor de las léxicas (la guiada por \gls{llm}, 0,091) y esta a su vez al control de coincidencia léxica pura (0,063).
+Las tres estrategias densas superan a las dos léxicas en todas las métricas y cortes: la peor de las semánticas (la directa, \gls{mrr} 0,137) aventaja con claridad a la mejor de las léxicas (la guiada por \gls{llm}, 0,093) y esta a su vez al control de coincidencia léxica pura (0,063).
 La afinidad temática entre la idea del estudiante y la trayectoria del investigador se captura, por tanto, mucho mejor en el espacio denso de los \emph{embeddings} que mediante la coincidencia de términos.
 
 Segunda, \textbf{el \gls{llm} en consulta aporta en ambos frentes}.
-En el léxico, extraer términos con el modelo (0,091) mejora en cerca de la mitad sobre el control directo (0,063): la reinterpretación rescata coincidencias que el texto crudo no producía.
-Y en el semántico, el enriquecimiento (0,146) supera ahora a la semántica directa (0,137) en \gls{mrr} y en todos los cortes, a diferencia de lo observado con el texto sin reformular.
+En el léxico, extraer términos con el modelo (0,093) mejora en cerca de la mitad sobre el control directo (0,063): la reinterpretación rescata coincidencias que el texto crudo no producía.
+Y en el semántico, el enriquecimiento mejora los valores puntuales de la semántica directa (0,146 frente a 0,137 en \gls{mrr} y en todos los cortes), a diferencia de lo observado con el texto sin reformular, aunque esta diferencia interna a la familia densa no alcanza significación estadística (tercera lectura).
 Al partir de una propuesta breve y en lenguaje natural, la traducción y expansión controlada del modelo añade señal recuperable que el embebido directo no alcanzaba.
 
-Tercera, \textbf{la hibridación es la mejor estrategia y justifica su diseño}.
-La híbrida encabeza \emph{todas} las métricas de la Tabla~\ref{tab:benchmark} (\gls{mrr} 0,153, \mbox{Hit@1} 0,090, \mbox{Hit@10} 0,303), por delante del enriquecimiento y de la semántica directa.
-Fusionar la señal dispersa explicable con la densa no solo amplía la cobertura en los cortes bajos, sino que mejora el acierto en cabeza, lo que respalda la decisión de adoptarla como estrategia por defecto del prototipo (Sección~\ref{sec:res-prototipo}).
+Tercera, \textbf{la familia semántica forma un único grupo homogéneo: entre sus tres variantes no hay diferencias estadísticamente significativas}.
+La híbrida obtiene los mejores valores puntuales en el escenario realista (\gls{mrr} 0,153 [IC 95\,\%: 0,128--0,181], \mbox{Hit@10} 0,303) y encabeza nominalmente todas las columnas de la Tabla~\ref{tab:benchmark}.
+Ahora bien, los contrastes pareados entre la híbrida, el enriquecimiento y la semántica directa (Wilcoxon de los rangos con signo sobre el rango recíproco y prueba de McNemar sobre \mbox{Hit@5}, con corrección de Holm y Benjamini-Hochberg por las comparaciones múltiples) \emph{no} alcanzan significación en ninguna de las dos fuentes de consulta: las tres comparten grupo en la Tabla~\ref{tab:benchmark-significancia}, de modo que su orden interno cae dentro del ruido muestral (el detalle de los diez contrastes por pareja, en el Anexo~\ref{annex:resultados-extendidos}, Tablas~\ref{tab:sig-plata} y~\ref{tab:sig-oro}).
+Lo que sí es robusto y altamente significativo ($p<0{,}01$ en todos los pares) es la superioridad de cualquier estrategia densa sobre las dos léxicas, que a su vez se distinguen entre sí: emergen \emph{tres niveles} estadísticamente separables (semántica $\succ$ léxica con \gls{llm} $\succ$ control), idénticos en oro y en plata.
+La hibridación se conserva como estrategia por defecto del prototipo no por ser significativamente superior a las demás densas (no lo es), sino por reunir los mejores estimadores puntuales, ofrecer la mayor cobertura en los cortes altos y no ser nunca significativamente peor que ninguna alternativa (Sección~\ref{sec:res-prototipo}).
 
 Cuarta, \textbf{la calidad se paga en latencia}.
 La estrategia ganadora es también la más cara: la híbrida resuelve en 18,7\,s de media (Tabla~\ref{tab:benchmark-tiempos}), dominados por la generación local, frente a los 0,23\,s de la semántica directa, que no invoca el \gls{llm} en consulta.
-Existe, pues, un compromiso real entre calidad y coste (Sección~\ref{sec:disc-coste-llm}): la semántica directa es una alternativa atractiva cuando la latencia sea crítica, a cambio de una pérdida moderada de acierto (\gls{mrr} 0,137 frente a 0,153).
+Existe, pues, un compromiso real entre calidad y coste (Sección~\ref{sec:disc-coste-llm}): la semántica directa es una alternativa atractiva cuando la latencia sea crítica, a cambio de una pérdida de acierto que, además, \emph{no} resulta estadísticamente significativa (\gls{mrr} 0,137 frente a 0,153; Tabla~\ref{tab:benchmark-significancia}).
+
+Quinta, \textbf{los resultados son estables frente al no-determinismo del modelo}.
+Al repetir tres veces la evaluación de las estrategias que invocan el \gls{llm} en consulta, la desviación típica entre ejecuciones es pequeña ($\le 0{,}005$ en \gls{mrr}), más de un orden de magnitud por debajo de la separación entre las familias léxica y semántica.
+La jerarquía de tres niveles es, por tanto, reproducible y la variabilidad residual del modelo (Sección~\ref{sec:eval-validez}) no compromete las conclusiones.
+Las estrategias deterministas (léxica y semántica directas) son, por construcción, idénticas entre ejecuciones.
+
+\begin{table}[htbp]
+  \centering
+  \caption[Significación estadística y grupos homogéneos]{\gls{mrr} por estrategia con intervalo de confianza al 95\,\% (\emph{bootstrap} sobre las consultas, $n=457$) en ambas fuentes, y grupos homogéneos según el contraste pareado de Wilcoxon sobre el rango recíproco con corrección de Holm ($\alpha=0{,}05$). Las estrategias que comparten letra en la columna \emph{Grupo} no difieren significativamente entre sí, el agrupamiento es idéntico en oro y en plata.}
+  \label{tab:benchmark-significancia}
+  \footnotesize
+  \begin{tabularx}{\textwidth}{X c c c}
+    \toprule
+    \rowcolor{upmblue!8} \colhead{Estrategia} & \colhead{MRR oro [IC 95\,\%]} & \colhead{MRR plata [IC 95\,\%]} & \colhead{Grupo} \\
+    \midrule
+    Híbrida & 0,154 [0,128--0,181] & 0,153 [0,128--0,181] & A \\
+    Semántica enriquecida & 0,153 [0,128--0,180] & 0,146 [0,121--0,172] & A \\
+    Semántica directa & 0,159 [0,132--0,187] & 0,137 [0,113--0,163] & A \\
+    Léxica con \gls{llm} & 0,108 [0,088--0,130] & 0,093 [0,075--0,112] & B \\
+    Léxica directa (control) & 0,077 [0,058--0,097] & 0,063 [0,046--0,082] & C \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
 
 Conviene subrayar que esta jerarquía solo emerge al consultar con las propuestas reformuladas.
 El banco de pruebas admite dos fuentes de consulta sobre la misma verdad de referencia (Sección~\ref{sec:eval-groundtruth}): el \emph{estándar de oro}, que toma directamente el texto original de cada trabajo (título, resumen y palabras clave), y el \emph{estándar de plata}, que lo sustituye por una propuesta breve en primera persona, generada por tres modelos de lenguaje y seleccionada por ellos mismos actuando como jurado.
@@ -460,7 +492,7 @@ Las tablas anteriores corresponden al estándar de plata; la Tabla~\ref{tab:benc
 
 \begin{table}[htbp]
   \centering
-  \caption[Estándar de oro frente a estándar de plata]{Comparación de ambas fuentes de consulta sobre la misma verdad de referencia ($n=458$). El estándar de oro emplea el texto original del trabajo; el de plata, la propuesta reformulada. En negrita, la mejor estrategia de cada columna.}
+  \caption[Estándar de oro frente a estándar de plata]{Comparación de ambas fuentes de consulta sobre la misma verdad de referencia (media de tres ejecuciones, $n=457$). El estándar de oro emplea el texto original del trabajo; el de plata, la propuesta reformulada. En negrita, el mejor valor puntual de cada columna (las diferencias dentro de la familia semántica no son significativas, Tabla~\ref{tab:benchmark-significancia}).}
   \label{tab:benchmark-oro-plata}
   \footnotesize
   \begin{tabularx}{\textwidth}{X c c c c}
@@ -468,11 +500,11 @@ Las tablas anteriores corresponden al estándar de plata; la Tabla~\ref{tab:benc
     \rowcolor{upmblue!8} & \multicolumn{2}{c}{\colhead{MRR}} & \multicolumn{2}{c}{\colhead{Hit@10}} \\
     \rowcolor{upmblue!8} \colhead{Estrategia} & \colhead{Oro} & \colhead{Plata} & \colhead{Oro} & \colhead{Plata} \\
     \midrule
-    Léxica con \gls{llm}     & 0,114 & 0,091 & 0,253 & 0,218 \\
-    Léxica directa (control) & 0,077 & 0,063 & 0,166 & 0,135 \\
-    Semántica directa        & \textbf{0,158} & 0,137 & 0,293 & 0,266 \\
-    Semántica enriquecida    & 0,153 & 0,146 & \textbf{0,299} & 0,284 \\
-    Híbrida                  & 0,150 & \textbf{0,153} & \textbf{0,299} & \textbf{0,303} \\
+    Léxica con \gls{llm}     & 0,108 & 0,093 & 0,231 & 0,222 \\
+    Léxica directa (control) & 0,077 & 0,063 & 0,166 & 0,136 \\
+    Semántica directa        & \textbf{0,159} & 0,137 & 0,293 & 0,267 \\
+    Semántica enriquecida    & 0,153 & 0,146 & \textbf{0,301} & 0,282 \\
+    Híbrida                  & 0,154 & \textbf{0,153} & 0,296 & \textbf{0,303} \\
     \bottomrule
   \end{tabularx}
 \end{table}
@@ -489,11 +521,11 @@ Las tablas anteriores corresponden al estándar de plata; la Tabla~\ref{tab:benc
         yticklabel style={/pgf/number format/.cd, fixed, fixed zerofill, precision=2, use comma},
         clip=false,
       ]
-      \addplot[color=black!35, mark=*, mark size=1.3pt, thick] coordinates {(0,0.114)(1,0.091)};
+      \addplot[color=black!35, mark=*, mark size=1.3pt, thick] coordinates {(0,0.108)(1,0.093)};
       \addplot[color=black!35, mark=*, mark size=1.3pt, thick] coordinates {(0,0.077)(1,0.063)};
       \addplot[color=black!35, mark=*, mark size=1.3pt, thick] coordinates {(0,0.153)(1,0.146)};
-      \addplot[color=umpred, mark=*, mark size=1.9pt, very thick] coordinates {(0,0.158)(1,0.137)};
-      \addplot[color=upmblue, mark=*, mark size=1.9pt, very thick] coordinates {(0,0.150)(1,0.153)};
+      \addplot[color=umpred, mark=*, mark size=1.9pt, very thick] coordinates {(0,0.159)(1,0.137)};
+      \addplot[color=upmblue, mark=*, mark size=1.9pt, very thick] coordinates {(0,0.154)(1,0.153)};
       \node[anchor=west, font=\scriptsize, color=upmblue!85!black] at (axis cs:1.04,0.1545){Híbrida};
       \node[anchor=west, font=\scriptsize, color=black!55]        at (axis cs:1.04,0.1455){Sem. enriquecida};
       \node[anchor=west, font=\scriptsize, color=umpred!85!black] at (axis cs:1.04,0.1355){Sem. directa};
@@ -501,20 +533,21 @@ Las tablas anteriores corresponden al estándar de plata; la Tabla~\ref{tab:benc
       \node[anchor=west, font=\scriptsize, color=black!55]        at (axis cs:1.04,0.0630){Léxica directa};
     \end{axis}
   \end{tikzpicture}
-  \caption{Efecto del estándar de consulta sobre la \acrshort{mrr} de cada estrategia. Al pasar del texto original del trabajo (oro) a la propuesta reformulada (plata), el orden se invierte: la híbrida (azul) pasa a encabezar y la semántica directa (rojo) cae desde la primera posición.}
+  \caption[Efecto del estándar de consulta sobre la MMR de cada estrategia]{Efecto del estándar de consulta sobre la \acrshort{mrr} de cada estrategia. Al pasar del texto original del trabajo (oro) a la propuesta reformulada (plata), el liderazgo pasa de la semántica directa (rojo) a la híbrida (azul), si bien las tres estrategias densas son estadísticamente indistinguibles entre sí en ambas fuentes (Tabla~\ref{tab:benchmark-significancia}), lo que el cambio de fuente sí provoca de forma marcada es la caída de las estrategias literales, que pierden la ventaja artificial del solapamiento léxico.}
   \label{fig:oro-plata}
 \end{figure}
 
 El contraste, que la Figura~\ref{fig:oro-plata} hace visible, es revelador.
-Con el estándar de oro todas las estrategias obtienen cifras más altas y la semántica directa lidera (\gls{mrr} 0,158), mientras que ni el enriquecimiento ni la hibridación aportan nada sobre ella en \gls{mrr} (aunque la igualan o superan ligeramente en \mbox{Hit@10}: 0,299 frente a 0,293).
-Con el estándar de plata, en cambio, todas las estrategias literales caen, la semántica directa pierde más de dos centésimas de \gls{mrr} y solo la híbrida mejora, hasta encabezar la comparación.
+Con el estándar de oro todas las estrategias obtienen cifras más altas y, entre las densas, la semántica directa exhibe el mejor valor puntual de \gls{mrr} (0,159), sin que el enriquecimiento ni la hibridación se distingan de ella de forma significativa (Tabla~\ref{tab:benchmark-significancia}).
+Con el estándar de plata, en cambio, todas las estrategias literales caen con claridad y el mejor estimador puntual pasa a la híbrida, además que las tres densas siguen siendo estadísticamente indistinguibles entre sí.
+El cambio que el estándar de plata revela no es un reordenamiento interno de la familia semántica (cae dentro del ruido muestral) sino la pérdida de la ventaja de las estrategias literales.
 El motivo es el solapamiento léxico entre el texto original del trabajo y el perfil de su propio tutor (que recoge ese mismo trabajo entre los supervisados): un solapamiento que premia artificialmente a las estrategias más literales y que es, precisamente, la amenaza de optimismo por solapamiento de la Sección~\ref{sec:eval-validez}.
 La reformulación en primera persona rompe ese atajo léxico y obliga a las estrategias a competir por afinidad de significado, lo que revela el valor real del \gls{llm} y de la fusión de señales.
 Esto valida empíricamente la decisión de construir las consultas mediante el estándar de plata: es el escenario que mejor aproxima a un estudiante real, que describe su idea con sus propias palabras en lugar de copiar el resumen de un trabajo ya hecho.
 El Anexo~\ref{annex:ejemplo-eval} recorre este proceso de principio a fin sobre un trabajo concreto, desde el texto original hasta la propuesta reformulada con la que finalmente se consulta.
 
-El desglose por tipo de trabajo, escuela y curso (Anexo~\ref{annex:resultados-extendidos}) matiza estas tendencias: el liderazgo de las estrategias enriquecida e híbrida es transversal, con la \gls{etsit} como la escuela mejor recuperada y la \gls{etsii} la más difícil.
-Entre \glspl{tfg} y \glspl{tfm} las diferencias son pequeñas.
+El desglose por tipo de trabajo, escuela y curso (Anexo~\ref{annex:resultados-extendidos}) matiza estas tendencias: la ventaja de las estrategias densas es transversal a todos los segmentos, con la \gls{etsit} como la escuela mejor recuperada y la \gls{etsii} la más difícil.
+Entre \glspl{tfg} y \glspl{tfm} las diferencias apenas son notables.
 
 \section{Casos ilustrativos}
 \label{sec:res-casos}
@@ -529,7 +562,7 @@ La Tabla~\ref{tab:caso-308607} recoge los cinco primeros investigadores devuelto
 
 \begin{table}[htbp]
     \centering
-    \caption{Cinco primeros resultados de la estrategia híbrida para la consulta de ejemplo. La puntuación se normaliza a 100 respecto al primer resultado.}
+    \caption[Ejemplo de resultados de la estrategia híbrida]{Cinco primeros resultados de la estrategia híbrida para la consulta de ejemplo. La puntuación se normaliza a 100 respecto al primer resultado.}
     \label{tab:caso-308607}
     \begin{tabularx}{\textwidth}{l c X}
         \toprule
