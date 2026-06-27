@@ -371,7 +371,7 @@ La Tabla~\ref{tab:benchmark} resume los resultados del banco de pruebas descrito
 Las consultas son las propuestas reformuladas en primera persona (estándar de plata, Sección~\ref{sec:eval-groundtruth}).
 De los 500 trabajos del conjunto de referencia, 458 quedan tras restringirlas al universo común de investigadores presentes en todos los índices (Sección~\ref{sec:eval-protocolo}).
 Para acotar la variabilidad que introduce el no-determinismo del \gls{llm} en consulta (Sección~\ref{sec:eval-validez}), la evaluación se repitió en tres ejecuciones independientes: las cifras que siguen son la \emph{media} sobre esas tres ejecuciones, calculadas sobre las 457 consultas presentes en todas ellas (una falló en una de las repeticiones y se descarta para mantener el conjunto idéntico entre ejecuciones).
-La calidad de cada estrategia se acompaña, además, de su intervalo de confianza al 95\,\% por \emph{bootstrap} sobre las consultas y de los contrastes de significación pareados entre estrategias (Tabla~\ref{tab:benchmark-significancia}), de modo que las diferencias se interpreten a la luz de su incertidumbre y no como meras cifras puntuales.
+La calidad de cada estrategia se acompaña, además, de su intervalo de confianza al 95\% por \emph{bootstrap} sobre las consultas y de los contrastes de significación pareados entre estrategias (Tabla~\ref{tab:benchmark-significancia}), de modo que las diferencias se interpreten a la luz de su incertidumbre y no como meras cifras puntuales.
 
 \begin{table}[htbp]
   \centering
@@ -418,7 +418,7 @@ La calidad de cada estrategia se acompaña, además, de su intervalo de confianz
       \legend{Léxica, Semántica, Híbrida (defecto)}
     \end{axis}
   \end{tikzpicture}
-  \caption[Calidad de recuperación por estrategia]{Calidad de recuperación por estrategia (\acrshort{mrr} sobre el estándar de plata). El color distingue la familia (léxica frente a semántica) y resalta la híbrida, la usada por defecto en el prototipo. Las barras de error son intervalos de confianza al 95\,\% por \emph{bootstrap} sobre las consultas; su amplio solapamiento entre las tres estrategias densas refleja la ausencia de diferencias significativas, mientras que la separación entre familias sí lo es (Tabla~\ref{tab:benchmark-significancia}).}
+  \caption[Calidad de recuperación por estrategia]{Calidad de recuperación por estrategia (\acrshort{mrr} sobre el estándar de plata). El color distingue la familia (léxica frente a semántica) y resalta la híbrida, la usada por defecto en el prototipo. Las barras de error son intervalos de confianza al 95\% por \emph{bootstrap} sobre las consultas; su amplio solapamiento entre las tres estrategias densas refleja la ausencia de diferencias significativas, mientras que la separación entre familias sí lo es (Tabla~\ref{tab:benchmark-significancia}).}
   \label{fig:bench-mrr}
 \end{figure}
 
@@ -454,7 +454,7 @@ Y en el semántico, el enriquecimiento mejora los valores puntuales de la semán
 Al partir de una propuesta breve y en lenguaje natural, la traducción y expansión controlada del modelo añade señal recuperable que el embebido directo no alcanzaba.
 
 Tercera, \textbf{la familia semántica forma un único grupo homogéneo: entre sus tres variantes no hay diferencias estadísticamente significativas}.
-La híbrida obtiene los mejores valores puntuales en el escenario realista (\gls{mrr} 0,153 [IC 95\,\%: 0,128--0,181], \mbox{Hit@10} 0,303) y encabeza nominalmente todas las columnas de la Tabla~\ref{tab:benchmark}.
+La híbrida obtiene los mejores valores puntuales en el escenario realista (\gls{mrr} 0,153 [IC 95\%: 0,128--0,181], \mbox{Hit@10} 0,303) y encabeza nominalmente todas las columnas de la Tabla~\ref{tab:benchmark}.
 Ahora bien, los contrastes pareados entre la híbrida, el enriquecimiento y la semántica directa (Wilcoxon de los rangos con signo sobre el rango recíproco y prueba de McNemar sobre \mbox{Hit@5}, con corrección de Holm y Benjamini-Hochberg por las comparaciones múltiples) \emph{no} alcanzan significación en ninguna de las dos fuentes de consulta: las tres comparten grupo en la Tabla~\ref{tab:benchmark-significancia}, de modo que su orden interno cae dentro del ruido muestral (el detalle de los diez contrastes por pareja, en el Anexo~\ref{annex:resultados-extendidos}, Tablas~\ref{tab:sig-plata} y~\ref{tab:sig-oro}).
 Lo que sí es robusto y altamente significativo ($p<0{,}01$ en todos los pares) es la superioridad de cualquier estrategia densa sobre las dos léxicas, que a su vez se distinguen entre sí: emergen \emph{tres niveles} estadísticamente separables (semántica $\succ$ léxica con \gls{llm} $\succ$ control), idénticos en oro y en plata.
 La hibridación se conserva como estrategia por defecto del prototipo no por ser significativamente superior a las demás densas (no lo es), sino por reunir los mejores estimadores puntuales, ofrecer la mayor cobertura en los cortes altos y no ser nunca significativamente peor que ninguna alternativa (Sección~\ref{sec:res-prototipo}).
@@ -470,12 +470,12 @@ Las estrategias deterministas (léxica y semántica directas) son, por construcc
 
 \begin{table}[htbp]
   \centering
-  \caption[Significación estadística y grupos homogéneos]{\gls{mrr} por estrategia con intervalo de confianza al 95\,\% (\emph{bootstrap} sobre las consultas, $n=457$) en ambas fuentes, y grupos homogéneos según el contraste pareado de Wilcoxon sobre el rango recíproco con corrección de Holm ($\alpha=0{,}05$). Las estrategias que comparten letra en la columna \emph{Grupo} no difieren significativamente entre sí, el agrupamiento es idéntico en oro y en plata.}
+  \caption[Significación estadística y grupos homogéneos]{\gls{mrr} por estrategia con intervalo de confianza al 95\% (\emph{bootstrap} sobre las consultas, $n=457$) en ambas fuentes, y grupos homogéneos según el contraste pareado de Wilcoxon sobre el rango recíproco con corrección de Holm ($\alpha=0{,}05$). Las estrategias que comparten letra en la columna \emph{Grupo} no difieren significativamente entre sí, el agrupamiento es idéntico en oro y en plata.}
   \label{tab:benchmark-significancia}
   \footnotesize
   \begin{tabularx}{\textwidth}{X c c c}
     \toprule
-    \rowcolor{upmblue!8} \colhead{Estrategia} & \colhead{MRR oro [IC 95\,\%]} & \colhead{MRR plata [IC 95\,\%]} & \colhead{Grupo} \\
+    \rowcolor{upmblue!8} \colhead{Estrategia} & \colhead{MRR oro [IC 95\%]} & \colhead{MRR plata [IC 95\%]} & \colhead{Grupo} \\
     \midrule
     Híbrida & 0,154 [0,128--0,181] & 0,153 [0,128--0,181] & A \\
     Semántica enriquecida & 0,153 [0,128--0,180] & 0,146 [0,121--0,172] & A \\
