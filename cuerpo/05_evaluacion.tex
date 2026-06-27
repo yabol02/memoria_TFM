@@ -50,7 +50,7 @@ Este diseño formaliza, además, el \emph{retroanálisis} previsto en el plan de
 
 Cada consulta tiene un único candidato relevante (el supervisor real), lo que sitúa el problema en la variante \emph{de un solo relevante} de las métricas clásicas de recuperación y simplifica varias de ellas.
 Sea $Q$ el conjunto de consultas y, para cada $q \in Q$, sea $r_q$ la posición (rango) en que la estrategia evaluada devuelve al supervisor real, con $r_q = \infty$ si no aparece entre los resultados recuperados.
-Todas las métricas se reportan en los cortes $k \in \{1, 3, 5, 10, 25\}$.
+Todas las métricas se reportan en los cortes $k \in \{1, 3, 5, 10\}$.
 
 El acierto en los $k$ primeros puestos se mide con $\mathrm{Hit@}k$ y, para un único relevante, con la precisión y la exhaustividad asociadas:
 
@@ -88,7 +88,7 @@ La estrategia de control (léxica directa) lanza la búsqueda dispersa con el te
 
 \begin{table}[htbp]
     \centering
-    \caption{Estrategias evaluadas. Las cuatro primeras están disponibles en el prototipo; la quinta es una ablación propia del banco de pruebas.}
+    \caption[Estrategias evaluadas]{Estrategias evaluadas. Las cuatro primeras están disponibles en el prototipo; la quinta es una ablación propia del banco de pruebas.}
     \label{tab:modos}
     \begin{tabularx}{\textwidth}{l X c c}
         \toprule
@@ -168,4 +168,5 @@ Conviene declararlos de forma organizada según su origen, distinguiendo los que
     La hibridación busca compensarlo, pero ninguna representación es completa por sí sola.
     \item[No-determinismo de los modelos de lenguaje.]
     Aunque la interpretación de la consulta y la generación de los perfiles se realizan con temperatura baja y semilla fija (Secciones~\ref{sec:met-emparejamiento} y~\ref{sec:eval-groundtruth}), la inferencia de un \gls{llm} puede no ser perfectamente reproducible entre ejecuciones o entornos de cómputo, lo que introduce una variabilidad residual en las representaciones y, por tanto, en las cifras exactas.
+    Esta variabilidad se acotó empíricamente repitiendo la evaluación de las estrategias afectadas en tres ejecuciones independientes (Sección~\ref{sec:res-benchmark} y Anexo~\ref{annex:resultados-extendidos}): su efecto sobre la \gls{mrr} es de orden $\le 0{,}005$, muy inferior a las diferencias entre familias de estrategias, de modo que no compromete las conclusiones comparativas.
 \end{mydescription}
