@@ -25,11 +25,14 @@ jobs:
             pdflatex -interaction=nonstopmode main.tex'
 
       - name: Renombrar y verificar el PDF
+        env:
+          TAG_NAME: ${{ github.event.release.tag_name }}
         run: |
           test -f main.pdf
-          cp main.pdf "UPM-Match-Memoria-${{ github.event.release.tag_name }}.pdf"
+          cp main.pdf "UPM-Match-Memoria-${TAG_NAME}.pdf"
 
       - name: Adjuntar a la release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ github.event.release.tag_name }}
           files: UPM-Match-Memoria-*.pdf
